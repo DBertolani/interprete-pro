@@ -27,12 +27,11 @@
         <h2>Portal IntérpretePro</h2>
         <p style="color: #666; margin-bottom: 25px;">Faça login com sua conta Google para acessar o sistema.</p>
         
-        <div id="g_id_onload"
-             data-client_id="824713665703-lr9iacceof0mg41c0gb61lm3qia4bpr7.apps.googleusercontent.com"
-             data-callback="handleCredentialResponse"
-             data-auto_prompt="false">
-        </div>
-        <div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline" data-text="signin_with" data-size="large" data-logo_alignment="left"></div>
+            <button onclick="solicitarAcessoSaaS()" class="btn-primario" style="background: #4285F4; border: none; display: flex; align-items: center; justify-content: center; gap: 10px; margin: 0 auto; padding: 12px 24px;">
+              <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" width="20">
+              Autorizar e Entrar
+            </button>
+          
       </div>
 
       <div id="tela-loading" class="card" style="display: none;"><h3>A Sincronizar...</h3><div class="loader"></div></div>
@@ -159,5 +158,39 @@
     </div>
 
     <script src="script.js"></script>
+
+    <script>
+  function solicitarAcessoSaaS() {
+    const client = google.accounts.oauth2.initTokenClient({
+      client_id: '824713665703-lr9iacceof0mg41c0gb61lm3qia4bpr7.apps.googleusercontent.com',
+      scope: 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.email',
+      callback: (tokenResponse) => {
+        if (tokenResponse && tokenResponse.access_token) {
+          // Salva o token de acesso para o script.js usar nas chamadas
+          localStorage.setItem("google_access_token", tokenResponse.access_token);
+          
+          // Agora buscamos o e-mail do usuário para validar o acesso
+          fetch('https://www.googleapis.com/oauth2/v3/userinfo?access_token=' + tokenResponse.access_token)
+            .then(res => res.json())
+            .then(data => {
+              localStorage.setItem("user_email", data.email);
+              // Dispara a função que já existe no seu script.js para montar o app
+              handleSaaSLogin(data.email);
+            });
+        }
+      },
+    });
+    client.requestAccessToken();
+  }
+
+  async function handleSaaSLogin(email) {
+    document.getElementById('tela-loading').style.display = 'block';
+    document.getElementById('tela-login-google').style.display = 'none';
+    
+    // Chama a função verificarAcesso que está no seu Código.gs
+    const res = await chamarGoogle("verificarAcesso");
+    validarPortaria(res);
+  }
+</script>
 </body>
 </html>
