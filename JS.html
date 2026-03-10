@@ -1,0 +1,673 @@
+<script>
+  var dadosFiltradosAtuais = []; // <-- ADICIONE ESTA NOVA VARIÁVEL
+  var agenciasGlobais = [], dadosPagosGlobais = [], historicoGlobal = [], equipeGlobal = [], clientesGlobais = [];
+
+  // --- UTILITÁRIOS ---
+  function formatarMoeda(e) {
+    var v = e.value.replace(/\D/g, ''); if (v === "") return;
+    v = (v / 100).toFixed(2) + ''; v = v.replace(".", ","); v = v.replace(/(\d)(\d{3})(?=\,)/g, "$1.$2");
+    e.value = v;
+  }
+  
+  function converterParaFloat(t) {
+    if (!t) return 0;
+    if (typeof t === 'number') return t;
+    let val = String(t).trim().replace("R$", "").trim();
+    if (val.includes(",") && val.includes(".")) {
+      return parseFloat(val.replace(/\./g, "").replace(",", "."));
+    }
+    if (val.includes(",")) return parseFloat(val.replace(",", "."));
+    return parseFloat(val) || 0;
+  }
+
+  function extrairMesAno(dataStr) {
+    if (!dataStr) return "";
+    if (dataStr.includes("-")) return dataStr.substring(0, 7);
+    if (dataStr.includes("/")) {
+      var partes = dataStr.split("/");
+      if (partes.length === 3) return partes[2] + "-" + partes[1];
+    }
+    return "";
+  }
+
+  // --- NAVEGAÇÃO ---
+  function mudarAba(aba) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById('btn-tab-' + aba).classList.add('active');
+    document.getElementById('content-' + aba).classList.add('active');
+  }
+
+  window.onload = function() { google.script.run.withSuccessHandler(carregarTudo).inicializarSistema(); };
+  
+  function carregarTudo() { 
+    document.getElementById('tela-loading').style.display = 'block';
+    // MUDANÇA: Chama o Segurança (verificarAcesso) antes de carregar os dados
+    google.script.run.withSuccessHandler(validarPortaria).verificarAcesso(); 
+  }
+
+  // NOVA FUNÇÃO: A Portaria do App
+  function validarPortaria(resposta) {
+    if (resposta.liberado === true) {
+      // É cliente! Carrega a planilha dele.
+      google.script.run.withSuccessHandler(montarApp).carregarDadosIniciais(); 
+    } else {
+      // É penetra! Mostra a tela de bloqueio.
+      document.getElementById('tela-loading').style.display = 'none';
+      document.getElementById('email-bloqueado').innerText = resposta.email || "não identificado";
+      document.getElementById('tela-bloqueio').style.display = 'block';
+    }
+  }
+  
+  function voltarDashboard() {
+    document.querySelectorAll('.container-app > div').forEach(d => d.style.display = 'none');
+    document.getElementById('tela-app').style.display = 'block';
+    google.script.run.withSuccessHandler(function(dados){
+      document.getElementById('valor-pendente').innerText = "R$ " + dados.pendente;
+    }).carregarDadosIniciais();
+  }
+
+  function montarApp(dados) {
+    document.getElementById('tela-loading').style.display = 'none'; 
+    document.querySelectorAll('.container-app > div:not(#tela-loading)').forEach(d => d.style.display = 'none');
+    document.getElementById('tela-app').style.display = 'block';
+    document.getElementById('valor-pendente').innerText = "R$ " + dados.pendente;
+    atualizarSelectsFormulario(dados);
+  }
+
+  function atualizarSelectsFormulario(d) {
+    var selServ = document.getElementById('tipoServico');
+    if (selServ) {
+      selServ.innerHTML = '<option value="" disabled selected>O que foi feito?</option>';
+      if(d.tiposServico) d.tiposServico.forEach(s => selServ.innerHTML += `<option value="${s}">${s}</option>`);
+    }
+
+    var selAg = document.getElementById('agencia');
+    if (selAg) {
+      selAg.innerHTML = '<option value="" disabled selected>Escolha...</option>';
+      d.agencias.forEach(a => selAg.innerHTML += `<option value="${a.nome}">${a.nome}</option>`);
+    }
+    
+    var selEq = document.getElementById('interprete');
+    if (selEq) {
+      selEq.innerHTML = '<option value="" disabled selected>Quem executou?</option>';
+      d.equipe.forEach(e => selEq.innerHTML += `<option value="${e}">${e}</option>`);
+    }
+
+    var dl = document.getElementById('listaEmpresasDatalist');
+    if (dl) {
+      dl.innerHTML = "";
+      if (d.clientes) d.clientes.forEach(c => dl.innerHTML += `<option value="${c}">`);
+    }
+    agenciasGlobais = d.agencias;
+    equipeGlobal = d.equipe;
+    clientesGlobais = d.clientes;
+  }
+
+  // --- REGISTROS ---
+  function abrirRegistro(linha = "", dados = null) {
+    document.getElementById('tela-app').style.display = 'none'; 
+    document.getElementById('tela-registro').style.display = 'block';
+    document.getElementById('linha-edicao').value = linha;
+    if (linha === "") {
+      document.getElementById('formRegistro').reset(); 
+      document.getElementById('data').valueAsDate = new Date();
+      document.getElementById('valor-live-preview').innerText = "R$ 0,00";
+    } else {
+      document.getElementById('data').value = dados.dataOriginal; 
+      document.getElementById('agencia').value = dados.agencia;
+      document.getElementById('empresa').value = dados.empresa; 
+      document.getElementById('inicio').value = dados.inicio;
+      document.getElementById('fim').value = dados.fim; 
+      document.getElementById('interprete').value = dados.interprete;
+      document.getElementById('tipoServico').value = dados.tipoServico || "";
+      document.getElementById('valor-base').value = dados.valor.replace("R$ ", "").trim(); 
+      document.getElementById('obs').value = dados.obs;
+      document.getElementById('status-antigo').value = dados.status; 
+      document.getElementById('data-pgto-antiga').value = dados.dataPgto;
+    } 
+    calcularTotalLive();
+  }
+
+  function aoMudarAgencia() {
+    var ag = document.getElementById('agencia').value;
+    var obj = agenciasGlobais.find(a => a.nome === ag);
+    if (obj) { 
+      var num = converterParaFloat(obj.valor);
+      document.getElementById('valor-base').value = num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      calcularTotalLive(); 
+    }
+  }
+
+  function calcularTotalLive() {
+    var tipo = document.querySelector('input[name="tipoCobranca"]:checked').value;
+    var campoValor = document.getElementById('valor-base');
+    var vI = converterParaFloat(campoValor.value);
+    var p = document.getElementById('valor-live-preview');
+    var hI = document.getElementById('inicio').value, hF = document.getElementById('fim').value;
+    var horas = 0;
+
+    if (hI && hF) {
+      var dI = new Date(0,0,0,hI.split(":")[0], hI.split(":")[1]), dF = new Date(0,0,0,hF.split(":")[0], hF.split(":")[1]);
+      if (dF < dI) dF.setDate(dF.getDate() + 1);
+      horas = (dF - dI) / 3600000;
+    }
+
+    var agNome = document.getElementById('agencia').value;
+    var objAg = agenciasGlobais.find(a => a.nome === agNome);
+    var valorAgencia = objAg ? converterParaFloat(objAg.valor) : 0;
+
+    if (tipo === "hora") {
+      if (objAg && vI !== valorAgencia && vI > valorAgencia) {
+         vI = valorAgencia;
+         campoValor.value = vI.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      }
+      var subtotal = horas * vI;
+      p.innerText = "R$ " + subtotal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    } else {
+      if (objAg && vI === valorAgencia && horas > 0) {
+         vI = horas * valorAgencia;
+         campoValor.value = vI.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      }
+      p.innerText = "R$ " + vI.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+  }
+
+  function enviarDados(e) {
+    e.preventDefault(); 
+    var btn = document.getElementById('btnSalvar');
+    var textoOriginal = btn.innerText;
+    btn.disabled = true;
+    btn.innerText = "⏳ Salvando...";
+    btn.style.opacity = "0.7";
+
+    var d = {
+      tipoServico: document.getElementById('tipoServico').value,
+      data: document.getElementById('data').value, 
+      agencia: document.getElementById('agencia').value, 
+      empresa: document.getElementById('empresa').value,
+      inicio: document.getElementById('inicio').value, 
+      fim: document.getElementById('fim').value, 
+      interprete: document.getElementById('interprete').value,
+      valorFinal: document.getElementById('valor-live-preview').innerText.replace("R$ ", ""), 
+      obs: document.getElementById('obs').value,
+      statusAntigo: document.getElementById('status-antigo').value || "Pendente", 
+      dataPgtoAntiga: document.getElementById('data-pgto-antiga').value || ""
+    };
+    
+    var l = document.getElementById('linha-edicao').value;
+    var erroAoSalvar = function() {
+      btn.disabled = false;
+      btn.innerText = textoOriginal;
+      btn.style.opacity = "1";
+      mostrarToast("❌ Erro ao salvar. Verifique sua conexão.", "erro");
+    };
+
+    if (l === "") {
+      google.script.run
+        .withSuccessHandler(function() { 
+          mostrarToast("✅ Salvo com sucesso!", "sucesso");
+          voltarDashboard(); 
+        })
+        .withFailureHandler(erroAoSalvar)
+        .salvarRegistro(d);
+    } else {
+      google.script.run
+        .withSuccessHandler(function() { 
+          mostrarToast("✅ Atualizado com sucesso!", "sucesso");
+          voltarDashboard(); 
+        })
+        .withFailureHandler(erroAoSalvar)
+        .atualizarRegistro(l, d);
+    }
+  }
+
+  // --- HISTÓRICO ---
+  function abrirHistorico() { 
+    document.querySelectorAll('.container-app > div').forEach(d => d.style.display = 'none');
+    document.getElementById('tela-historico').style.display = 'block';
+    document.getElementById('lista-html').innerHTML = '<div class="loader"></div>';
+    document.getElementById('dataRecebimento').valueAsDate = new Date();
+    google.script.run.withSuccessHandler(renderizarHistorico).buscarTodosServicos(); 
+  }
+
+  function renderizarHistorico(l) {
+    document.getElementById('tela-historico').style.display = 'block'; 
+    historicoGlobal = l;
+    var c = document.getElementById('lista-html'); c.innerHTML = "";
+    var fA = document.getElementById('filtroAgenciaHist'); fA.innerHTML = '<option value="todas">Todas</option>';
+    var fI = document.getElementById('filtroInterpreteHist'); fI.innerHTML = '<option value="todos">Todos</option>';
+    var agenciasLidas = [], membrosLidos = []; 
+    
+    l.forEach(i => { 
+      if(!agenciasLidas.includes(i.agencia)){ agenciasLidas.push(i.agencia); fA.innerHTML += `<option value="${i.agencia.toLowerCase()}">${i.agencia}</option>`; }
+      if(!membrosLidos.includes(i.interprete)){ membrosLidos.push(i.interprete); fI.innerHTML += `<option value="${i.interprete.toLowerCase()}">${i.interprete}</option>`; }
+      
+      var p = i.status === "Pago";
+      c.innerHTML += `<div class="item-pendente item-historico" style="border-left-color:${p?'#4CAF50':'#ff9800'}" 
+        data-status="${p?'pago':'pendente'}" data-agencia="${i.agencia.toLowerCase()}" data-empresa="${i.empresa.toLowerCase()}" 
+        data-interprete="${i.interprete.toLowerCase()}" data-data="${i.data}">
+          <div style="display:flex; justify-content:space-between;"><strong>${i.agencia}</strong> <span style="font-size:11px; color:#9c27b0;">👤 ${i.interprete}</span></div>
+          <span style="font-size:12px;">📅 ${i.data} - ${i.empresa}</span><br><strong>${i.valor}</strong>
+          <div class="acoes-card">
+            <button class="btn-acao btn-excluir" onclick="chamarExcluir(${i.linha})">🗑️</button>
+            <button class="btn-acao btn-editar" onclick="chamarEditar(${i.linha})">✏️</button>
+            ${p?'':`<button class="btn-acao btn-baixa" onclick="confirmarBaixa(${i.linha})">✔️</button>`}
+          </div></div>`;
+    }); 
+    filtrarListaHistorico();
+  }
+
+  function filtrarListaHistorico() {
+    var st = document.getElementById('filtroStatus').value, ag = document.getElementById('filtroAgenciaHist').value, 
+        mem = document.getElementById('filtroInterpreteHist').value, cl = document.getElementById('filtroClienteHist').value.toLowerCase(), 
+        dt = document.getElementById('filtroDataHist').value.toLowerCase();
+    Array.from(document.getElementsByClassName('item-historico')).forEach(i => {
+      var ok = (st==='todos'||i.dataset.status===st) && (ag==='todas'||i.dataset.agencia===ag) && 
+               (mem==='todos'||i.dataset.interprete===mem) && (!cl||i.dataset.empresa.includes(cl)) && (!dt||i.dataset.data.includes(dt));
+      i.style.display = ok ? 'block' : 'none';
+    });
+  }
+
+  function confirmarBaixa(l) { 
+    var dt = document.getElementById('dataRecebimento').value; 
+    if(!dt) return mostrarToast("⚠️ Selecione a data!", "erro"); 
+    google.script.run.withSuccessHandler(abrirHistorico).darBaixaPagamento(l, dt); 
+  }
+
+  function chamarExcluir(l) { if(confirm("Excluir registro?")) google.script.run.withSuccessHandler(abrirHistorico).excluirRegistro(l); }
+  function chamarEditar(l) { var i = historicoGlobal.find(x => x.linha === l); abrirRegistro(l, i); }
+
+// Variável para guardar todos os serviços (pagos e pendentes)
+  var dadosGeraisRelatorio = []; 
+
+  // --- RELATÓRIOS ---
+  function abrirRelatorios() { 
+    document.querySelectorAll('.container-app > div').forEach(d => d.style.display = 'none');
+    document.getElementById('tela-relatorios').style.display = 'block';
+    document.getElementById('lista-relatorio').innerHTML = '<div class="loader"></div>';
+
+    // Mudança: Agora busca TODOS os serviços, e não apenas os pagos
+    google.script.run.withSuccessHandler(function(l){
+      dadosGeraisRelatorio = l; 
+      var hj = new Date(); 
+      document.getElementById('filtroMesRelatorio').value = hj.getFullYear() + "-" + ("0" + (hj.getMonth() + 1)).slice(-2);
+      
+      var sa = document.getElementById('filtroAgenciaRelatorio'); sa.innerHTML = '<option value="todas">Todas as Agências</option>';
+      var sm = document.getElementById('filtroMembroRelatorio'); sm.innerHTML = '<option value="todos">Todos os Membros</option>';
+      var lidasAg = [], lidasMem = [];
+
+      l.forEach(i => { 
+        if(!lidasAg.includes(i.agencia)){ lidasAg.push(i.agencia); sa.innerHTML += `<option value="${i.agencia}">${i.agencia}</option>`; } 
+        if(!lidasMem.includes(i.interprete)){ lidasMem.push(i.interprete); sm.innerHTML += `<option value="${i.interprete}">${i.interprete}</option>`; } 
+      });
+
+      gerarRelatorio();
+    }).buscarTodosServicos(); 
+  }
+  
+function gerarRelatorio() {
+    var tipo = document.getElementById('tipoRelatorio').value;
+    var mesFiltro = document.getElementById('filtroMesRelatorio').value; 
+    var agFiltro = document.getElementById('filtroAgenciaRelatorio').value; 
+    var memFiltro = document.getElementById('filtroMembroRelatorio').value;
+    var container = document.getElementById('lista-relatorio'); 
+    
+    var cardFaturamento = document.getElementById('valor-total-relatorio');
+    var cardHoras = document.getElementById('horas-total-relatorio');
+    
+    var labelMes = document.getElementById('labelMesFiltro');
+    if (labelMes) {
+      labelMes.innerText = tipo === 'nf' ? "Mês Recebido (PGTO):" : "Mês do Serviço:";
+    }
+    
+    container.innerHTML = ""; 
+    var faturamentoTotal = 0;
+    var horasTotal = 0;
+
+    // LÓGICA DE FILTRAGEM INTELIGENTE
+    var filtrados = dadosGeraisRelatorio.filter(i => {
+      var mesItem = "";
+      
+      if (tipo === 'nf') {
+        if (i.status !== "Pago" && !i.status.includes("Pago")) return false;
+        mesItem = extrairMesAno(i.dataPgto); 
+      } else {
+        mesItem = extrairMesAno(i.dataOriginal); 
+      }
+
+      return (mesFiltro === "" || mesItem === mesFiltro) && 
+             (agFiltro === "todas" || i.agencia === agFiltro) &&
+             (memFiltro === "todos" || i.interprete === memFiltro);
+    });
+
+    // Salva para o botão de copiar e foto
+    dadosFiltradosAtuais = filtrados; 
+
+    if (filtrados.length === 0) {
+      cardFaturamento.innerText = "R$ 0,00";
+      cardHoras.innerText = "0.00h";
+      container.innerHTML = "<p style='text-align:center; color:#666; padding:20px;'>Nenhum dado encontrado para este filtro.</p>";
+      return;
+    }
+
+    // Calcula Totais dos Cards
+    filtrados.forEach(i => {
+      faturamentoTotal += i.valorNum;
+      if (i.inicio && i.fim) {
+        var dI = new Date(0,0,0, i.inicio.split(":")[0], i.inicio.split(":")[1]);
+        var dF = new Date(0,0,0, i.fim.split(":")[0], i.fim.split(":")[1]);
+        if (dF < dI) dF.setDate(dF.getDate() + 1);
+        horasTotal += (dF - dI) / 3600000;
+      }
+    });
+
+    cardFaturamento.innerText = "R$ " + faturamentoTotal.toLocaleString('pt-BR', {minimumFractionDigits:2});
+    cardHoras.innerText = horasTotal.toFixed(2) + "h";
+
+    // Constrói as listas visuais
+    if (tipo === 'nf') {
+      // 1. Agrupa PRIMEIRO por Membro, e DEPOIS por Agência
+      var nfPorMembro = {}; 
+      filtrados.forEach(it => { 
+        if(!nfPorMembro[it.interprete]) nfPorMembro[it.interprete] = { t: 0, agencias: {} }; 
+        if(!nfPorMembro[it.interprete].agencias[it.agencia]) nfPorMembro[it.interprete].agencias[it.agencia] = { t: 0, its: [] }; 
+        
+        nfPorMembro[it.interprete].t += it.valorNum; 
+        nfPorMembro[it.interprete].agencias[it.agencia].t += it.valorNum; 
+        nfPorMembro[it.interprete].agencias[it.agencia].its.push(it); 
+      });
+
+      // 2. Desenha o HTML da Nota Fiscal
+      Object.keys(nfPorMembro).forEach(nomeMembro => {
+        var h = `
+          <div class="item-pendente" style="border-left: 5px solid #9c27b0; margin-bottom: 12px; padding-bottom: 8px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <strong style="font-size: 15px;">👤 ${nomeMembro}</strong>
+              <strong style="color:#2e7d32; font-size: 15px;">R$ ${nfPorMembro[nomeMembro].t.toLocaleString('pt-BR', {minimumFractionDigits:2})}</strong>
+            </div>
+            <div style="font-size:12px; color:#666; margin-top: 4px;">Total a emitir no período</div>`;
+        
+        Object.keys(nfPorMembro[nomeMembro].agencias).forEach(ag => {
+          h += `
+            <details style="margin-top: 10px; border-top: 1px solid #eee; padding-top: 8px;">
+              <summary style="font-size: 12px; color: #7b1fa2; cursor: pointer; font-weight: 600; outline: none;">
+                🏢 Emitir para: ${ag} ➔ R$ ${nfPorMembro[nomeMembro].agencias[ag].t.toLocaleString('pt-BR', {minimumFractionDigits:2})} 🔽
+              </summary>
+              <div style="margin-top: 8px; background: #fafafa; padding: 8px; border-radius: 6px; border: 1px solid #e0e0e0;">`;
+          
+          nfPorMembro[nomeMembro].agencias[ag].its.forEach(it => {
+            h += `
+                <div style="font-size:11px; padding: 4px 0; border-bottom: 1px dashed #ccc; display:flex; justify-content:space-between;">
+                  <span>📅 ${it.data} - ${it.empresa}</span>
+                  <span style="color:#2e7d32; font-weight: bold;">R$ ${it.valorNum.toLocaleString('pt-BR', {minimumFractionDigits:2})}</span>
+                </div>`;
+          });
+          
+          h += `</div></details>`;
+        });
+        
+        h += `</div>`;
+        container.innerHTML += h;
+      }); 
+
+    } else {
+      // RELATÓRIO DE PRODUTIVIDADE
+      var prod = {};
+      
+      filtrados.forEach(i => {
+        if(!prod[i.interprete]) prod[i.interprete] = {h:0, jobs:0, fat:0, itensDetalhes: []};
+        
+        var diff = 0;
+        if (i.inicio && i.fim) {
+            var dI = new Date(0,0,0, i.inicio.split(":")[0], i.inicio.split(":")[1]);
+            var dF = new Date(0,0,0, i.fim.split(":")[0], i.fim.split(":")[1]);
+            if (dF < dI) dF.setDate(dF.getDate() + 1);
+            diff = (dF - dI) / 3600000;
+        }
+        
+        prod[i.interprete].h += diff;
+        prod[i.interprete].jobs += 1;
+        prod[i.interprete].fat += i.valorNum;
+        
+        i.horasCalculadas = diff;
+        prod[i.interprete].itensDetalhes.push(i);
+      });
+
+      Object.keys(prod).forEach(nome => {
+        var htmlMembro = `
+          <div class="item-pendente" style="border-left: 5px solid #2196F3; margin-bottom: 12px; padding-bottom: 8px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <strong style="font-size: 15px;">👤 ${nome}</strong>
+              <strong style="color:#1a237e; font-size: 15px;">${prod[nome].h.toFixed(2)}h</strong>
+            </div>
+            <div style="font-size:12px; color:#666; margin-top: 4px; display:flex; justify-content:space-between;">
+              <span>${prod[nome].jobs} atendimentos</span>
+              <span style="color:#2e7d32; font-weight:bold;">R$ ${prod[nome].fat.toLocaleString('pt-BR', {minimumFractionDigits:2})}</span>
+            </div>
+            
+            <details style="margin-top: 10px; border-top: 1px solid #eee; padding-top: 8px;">
+              <summary style="font-size: 12px; color: #1976d2; cursor: pointer; font-weight: 500; outline: none;">
+                Ver Detalhamento 🔽
+              </summary>
+              <div style="margin-top: 8px; background: #f8f9fa; padding: 8px; border-radius: 6px; border: 1px solid #e0e0e0;">`;
+              
+        prod[nome].itensDetalhes.forEach(it => {
+          htmlMembro += `
+                <div style="font-size:11px; padding: 6px 0; border-bottom: 1px dashed #ccc;">
+                  <div style="display:flex; justify-content:space-between; color:#333; margin-bottom: 4px;">
+                    <strong>📅 ${it.data} - ${it.empresa}</strong>
+                    <span style="color:#d32f2f; font-weight: bold;">⏱️ ${it.inicio} às ${it.fim} (${it.horasCalculadas.toFixed(2)}h)</span>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; color:#555;">
+                    <span>🏢 ${it.agencia} | 🛠️ ${it.tipoServico || 'Geral'}</span>
+                    <span style="color:#2e7d32; font-weight: bold;">R$ ${it.valorNum.toLocaleString('pt-BR', {minimumFractionDigits:2})}</span>
+                  </div>
+                </div>`;
+        });
+
+        htmlMembro += `
+              </div>
+            </details>
+          </div>`;
+          
+        container.innerHTML += htmlMembro;
+      });
+    }
+  }
+
+function copiarResumo() { 
+    var tipo = document.getElementById('tipoRelatorio').value;
+    var mes = document.getElementById('filtroMesRelatorio').value;
+    var textoFinal = "";
+
+    if (dadosFiltradosAtuais.length === 0) return mostrarToast("⚠️ Nada para copiar!", "erro");
+
+    if (tipo === 'nf') {
+      textoFinal += `*RESUMO PARA NOTA FISCAL*\nReferência PGTO: ${mes || 'Geral'}\n\n`;
+      
+      // Agrupa por Intérprete para facilitar a NF de cada um
+      var nfPorMembro = {};
+      dadosFiltradosAtuais.forEach(i => {
+        if (!nfPorMembro[i.interprete]) nfPorMembro[i.interprete] = { total: 0, agencias: {} };
+        if (!nfPorMembro[i.interprete].agencias[i.agencia]) nfPorMembro[i.interprete].agencias[i.agencia] = 0;
+        
+        nfPorMembro[i.interprete].agencias[i.agencia] += i.valorNum;
+        nfPorMembro[i.interprete].total += i.valorNum;
+      });
+
+      Object.keys(nfPorMembro).forEach(membro => {
+        textoFinal += `👤 *${membro}*\n`;
+        textoFinal += `💰 Total a Emitir: R$ ${nfPorMembro[membro].total.toLocaleString('pt-BR', {minimumFractionDigits:2})}\n`;
+        textoFinal += `Detalhes por Agência:\n`;
+        Object.keys(nfPorMembro[membro].agencias).forEach(ag => {
+          textoFinal += ` 🏢 ${ag}: R$ ${nfPorMembro[membro].agencias[ag].toLocaleString('pt-BR', {minimumFractionDigits:2})}\n`;
+        });
+        textoFinal += `\n`;
+      });
+
+    } else {
+      textoFinal += `*CONFIRMAÇÃO DE ATENDIMENTOS (PRODUTIVIDADE)*\nPeríodo: ${mes || 'Geral'}\n\n`;
+      
+      var prod = {};
+      dadosFiltradosAtuais.forEach(i => {
+        if(!prod[i.interprete]) prod[i.interprete] = {h:0, fat:0, itens:[]};
+        var diff = 0;
+        if (i.inicio && i.fim) {
+            var dI = new Date(0,0,0, i.inicio.split(":")[0], i.inicio.split(":")[1]);
+            var dF = new Date(0,0,0, i.fim.split(":")[0], i.fim.split(":")[1]);
+            if (dF < dI) dF.setDate(dF.getDate() + 1);
+            diff = (dF - dI) / 3600000;
+        }
+        prod[i.interprete].h += diff;
+        prod[i.interprete].fat += i.valorNum;
+        prod[i.interprete].itens.push(`📅 ${i.data} | ${i.inicio}-${i.fim} | ${i.empresa} (${i.agencia}) - R$ ${i.valorNum.toLocaleString('pt-BR', {minimumFractionDigits:2})}`);
+      });
+
+      Object.keys(prod).forEach(membro => {
+        textoFinal += `👤 *${membro}* | ⏱️ ${prod[membro].h.toFixed(2)}h | Bruto: R$ ${prod[membro].fat.toLocaleString('pt-BR', {minimumFractionDigits:2})}\n`;
+        prod[membro].itens.forEach(item => textoFinal += ` ${item}\n`);
+        textoFinal += `\n`;
+      });
+    }
+
+    navigator.clipboard.writeText(textoFinal).then(() => mostrarToast("📋 Copiado para o WhatsApp!"));
+  }
+
+  function baixarImagemRelatorio() {
+    var btn = document.getElementById('btnBaixarImagem');
+    var originalText = btn.innerHTML;
+    btn.innerHTML = "⏳ Gerando Foto...";
+    btn.disabled = true;
+
+    // Abre todas as "Sanfonas" de detalhamento para a foto sair completa
+    document.querySelectorAll('details').forEach(d => d.open = true);
+
+    // Tira um "print" da div principal do relatório
+    var elemento = document.querySelector('#tela-relatorios .card');
+    
+    html2canvas(elemento, { scale: 2, backgroundColor: "#f9f9f9", borderRadius: 12 }).then(canvas => {
+      var link = document.createElement('a');
+      link.download = `Relatorio_InterpretePro_${document.getElementById('filtroMesRelatorio').value}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      
+      btn.innerHTML = originalText;
+      btn.disabled = false;
+      mostrarToast("🖼️ Imagem salva na galeria/downloads!");
+    }).catch(err => {
+      btn.innerHTML = originalText;
+      btn.disabled = false;
+      mostrarToast("❌ Erro ao gerar imagem", "erro");
+    });
+  }
+
+  // --- CONFIGURAÇÕES ---
+  function abrirConfiguracoes() {
+    document.querySelectorAll('.container-app > div').forEach(d => d.style.display = 'none');
+    document.getElementById('tela-configuracoes').style.display = 'block';
+    document.getElementById('lista-servicos-ui').innerHTML = '<div class="loader"></div>';
+    document.getElementById('lista-equipe-ui').innerHTML = '<div class="loader"></div>';
+    document.getElementById('lista-configuracoes').innerHTML = '<div class="loader"></div>';
+    document.getElementById('lista-clientes-ui').innerHTML = '<div class="loader"></div>';
+
+    google.script.run.withSuccessHandler(function(d){
+      var cs = document.getElementById('lista-servicos-ui'); cs.innerHTML = "";
+      if(d.tiposServico) d.tiposServico.forEach(s => {
+        cs.innerHTML += `<div class="item-pendente item-config-flex" style="border-left-color:#546e7a"><strong>${s}</strong><div>
+          <button class="btn-acao btn-excluir" onclick="excluirConfig('Tipos_Servico','${s}')">🗑️</button>
+          <button class="btn-acao btn-editar" onclick="editarServico('${s}')">✏️</button></div></div>`;
+      });
+      var ce = document.getElementById('lista-equipe-ui'); ce.innerHTML = "";
+      d.equipe.forEach(n => {
+        ce.innerHTML += `<div class="item-pendente item-config-flex" style="border-left-color:#9c27b0"><strong>${n}</strong><div>
+          <button class="btn-acao btn-excluir" onclick="excluirConfig('Minha_Equipe','${n}')">🗑️</button>
+          <button class="btn-acao btn-editar" onclick="editarEq('${n}')">✏️</button></div></div>`;
+      });
+      var ca = document.getElementById('lista-configuracoes'); ca.innerHTML = "";
+      d.agencias.forEach(i => {
+        var num = converterParaFloat(i.valor);
+        var valorF = num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        ca.innerHTML += `<div class="item-pendente item-config-flex" style="border-left-color:#607d8b"><div style="flex:1.5"><strong>${i.nome}</strong></div>
+          <div style="flex:1.2; text-align:center; color:#2e7d32">R$ ${valorF}</div>
+          <div style="flex:1; display:flex; justify-content:flex-end; gap:5px;"><button class="btn-acao btn-excluir" onclick="excluirConfig('Minhas_Empresas','${i.nome}')">🗑️</button>
+          <button class="btn-acao btn-editar" onclick="editarAg('${i.nome}','${i.valor}')">✏️</button></div></div>`;
+      });
+      var cl = document.getElementById('lista-clientes-ui'); cl.innerHTML = "";
+      if(d.clientes) d.clientes.forEach(n => {
+        cl.innerHTML += `<div class="item-pendente item-config-flex" style="border-left-color:#FF9800"><strong>${n}</strong><div>
+          <button class="btn-acao btn-excluir" onclick="excluirConfig('Minhas_Empresas_Finais','${n}')">🗑️</button>
+          <button class="btn-acao btn-editar" onclick="editarCl('${n}')">✏️</button></div></div>`;
+      });
+      atualizarSelectsFormulario(d);
+    }).buscarConfigAgencias();
+  }
+
+  function salvarAgencia(e) { 
+    e.preventDefault(); 
+    google.script.run.withSuccessHandler(function() { 
+      mostrarToast("✅ Agência salva!"); 
+      abrirConfiguracoes(); 
+    }).salvarConfigAgencia({
+      nome: document.getElementById('configNome').value, valor: document.getElementById('configValor').value, 
+      nomeAntigo: document.getElementById('agencia-antigo').value || ""
+    }); 
+    document.getElementById('formConfig').reset(); 
+  }
+
+  function editarAg(n, v) {
+    var num = converterParaFloat(v);
+    document.getElementById('configNome').value = n;
+    document.getElementById('configValor').value = num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    document.getElementById('agencia-antigo').value = n; 
+    window.scrollTo(0,0); 
+  }
+
+  function excluirConfig(aba, val) { 
+    if(confirm("Deseja excluir este item?")) {
+      google.script.run.withSuccessHandler(function() {
+        mostrarToast("🗑️ Item removido!");
+        abrirConfiguracoes();
+      }).excluirConfig(aba, val); 
+    }
+  }
+
+  function editarEq(nome) { document.getElementById('configEquipeNome').value = nome; document.getElementById('equipe-antigo').value = nome; window.scrollTo(0,0); }
+  function salvarEquipe(e) {
+    e.preventDefault();
+    google.script.run.withSuccessHandler(function() {
+      mostrarToast("✅ Membro salvo!");
+      abrirConfiguracoes();
+    }).salvarMembroEquipe(document.getElementById('configEquipeNome').value, document.getElementById('equipe-antigo').value);
+    document.getElementById('formEquipe').reset();
+  }
+
+  function editarCl(nome) { document.getElementById('configClienteNome').value = nome; document.getElementById('cliente-antigo').value = nome; window.scrollTo(0,0); }
+  function salvarCliente(e) {
+    e.preventDefault();
+    google.script.run.withSuccessHandler(function() {
+      mostrarToast("✅ Cliente salvo!");
+      abrirConfiguracoes();
+    }).salvarEmpresaFinal(document.getElementById('configClienteNome').value, document.getElementById('cliente-antigo').value);
+    document.getElementById('formClientes').reset();
+  }
+
+  function editarServico(nome) { document.getElementById('configServicoNome').value = nome; document.getElementById('servico-antigo').value = nome; window.scrollTo(0,0); }
+  function salvarTipoServico(e) {
+    e.preventDefault();
+    google.script.run.withSuccessHandler(function() {
+      mostrarToast("✅ Serviço salvo!");
+      abrirConfiguracoes();
+    }).salvarTipoServico(document.getElementById('configServicoNome').value, document.getElementById('servico-antigo').value);
+    document.getElementById('formServicos').reset();
+  }
+
+  function mostrarToast(mensagem, tipo = 'sucesso') {
+    var container = document.getElementById('toast-container');
+    var toast = document.createElement('div');
+    toast.className = 'toast ' + tipo;
+    toast.innerText = mensagem;
+    container.appendChild(toast);
+    setTimeout(function() { toast.remove(); }, 3000);
+  }
+</script>

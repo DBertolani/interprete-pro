@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <base target="_top">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+    
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#9c27b0"> <title>IntérpretePro</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <?!= include('CSS'); ?>
+  </head>
+  <body>
+    <div id="toast-container" class="toast-container"></div>
+    <div class="container-app">
+      
+      <div id="tela-loading" class="card"><h3>A Sincronizar...</h3><div class="loader"></div></div>
+
+      <div id="tela-bloqueio" class="card" style="display: none; text-align: center; padding: 40px 20px;">
+        <div style="font-size: 50px; margin-bottom: 10px;">🔒</div>
+        <h2 style="color: #c62828;">Acesso Restrito</h2>
+        <p style="color: #666; margin-top: 10px;">O e-mail <br><strong id="email-bloqueado" style="color:#000;"></strong><br> não possui uma licença ativa.</p>
+        <p style="margin-top: 25px; font-size: 14px;">Para adquirir o sistema <strong>IntérpretePro</strong> ou renovar seu acesso, entre em contato:</p>
+        <a href="https://wa.me/5527996962395?text=Olá, Danilo! Gostaria de liberar meu acesso ao App InterpretePro." target="_blank" class="btn-primario" style="background: #25D366; display: inline-block; margin-top: 15px; text-decoration: none;">📲 Falar no WhatsApp</a>
+      </div>
+
+      <div id="tela-app" style="display: none;">
+        <div class="dash-card"><p class="dash-title">Total a Receber</p><p class="dash-value" id="valor-pendente">R$ 0,00</p></div>
+        <div class="menu-grid">
+          <button class="menu-btn" onclick="abrirRegistro()"><div class="menu-icon">➕</div><div class="menu-text">Novo Serviço</div></button>
+          <button class="menu-btn" onclick="abrirHistorico()"><div class="menu-icon">🧾</div><div class="menu-text">Histórico</div></button>
+          <button class="menu-btn" onclick="abrirRelatorios()"><div class="menu-icon">📊</div><div class="menu-text">Relatórios/NF</div></button>
+          <button class="menu-btn" onclick="abrirConfiguracoes()"><div class="menu-icon">⚙️</div><div class="menu-text">Ajustes / Equipe</div></button>
+        </div>
+      </div>
+
+      <div id="tela-registro" style="display: none;">
+        <div class="card">
+          <div class="header-app"><button class="btn-voltar-topo" onclick="voltarDashboard()">⬅</button><h2 id="titulo-form">Atendimento</h2></div>
+          <form id="formRegistro" onsubmit="enviarDados(event)">
+            <input type="hidden" id="linha-edicao"><input type="hidden" id="status-antigo"><input type="hidden" id="data-pgto-antiga">
+            <label>Tipo de Serviço:</label><select id="tipoServico" required></select>
+            <label>Intérprete:</label><select id="interprete" required></select>
+            <label>Data:</label><input type="date" id="data" required>
+            <label>Agência:</label><select id="agencia" required onchange="aoMudarAgencia()"></select>
+            
+            <label>Cliente/Empresa Final:</label>
+            <input type="text" id="empresa" list="listaEmpresasDatalist" required placeholder="Selecione ou digite novo...">
+            <datalist id="listaEmpresasDatalist"></datalist>
+
+            <div style="display: flex; gap: 10px;"><div style="flex: 1;"><label>Início:</label><input type="time" id="inicio" required onchange="calcularTotalLive()"></div><div style="flex: 1;"><label>Término:</label><input type="time" id="fim" required onchange="calcularTotalLive()"></div></div>
+            <label>Cobrança:</label>
+            <div style="display: flex; gap: 10px; margin-top:5px;"><label style="font-weight:normal;"><input type="radio" name="tipoCobranca" value="hora" checked onchange="calcularTotalLive()"> Hora</label><label style="font-weight:normal;"><input type="radio" name="tipoCobranca" value="fixo" onchange="calcularTotalLive()"> Fixo</label></div>
+            <label id="label-valor">Valor:</label><input type="text" inputmode="numeric" id="valor-base" oninput="formatarMoeda(this); calcularTotalLive()" required>
+            <div class="box-valor-live"><span style="font-size:11px; color:#2e7d32;">Subtotal</span><strong style="font-size:20px; color:#1b5e20;" id="valor-live-preview">R$ 0,00</strong></div>
+            <label>Obs:</label><textarea id="obs" rows="2"></textarea>
+            <button type="submit" id="btnSalvar" class="btn-primario">Salvar</button>
+            <button type="button" class="btn-voltar" onclick="voltarDashboard()">Cancelar</button>
+          </form>
+        </div>
+      </div>
+
+      <div id="tela-historico" style="display: none;">
+        <div class="card">
+          <div class="header-app"><button class="btn-voltar-topo" onclick="voltarDashboard()">⬅</button><h2>Histórico</h2></div>
+          
+          <div class="filtros-box">
+            <div class="grid-filtros">
+              <div>
+                <label>Status:</label>
+                <select id="filtroStatus" onchange="filtrarListaHistorico()" style="background: #fff;">
+                  <option value="pendente" selected>⏳ Pendentes</option>
+                  <option value="pago">✔️ Pagos</option>
+                  <option value="todos">📋 Todos</option>
+                </select>
+              </div>
+              <div>
+                <label>Agência:</label>
+                <select id="filtroAgenciaHist" onchange="filtrarListaHistorico()"></select>
+              </div>
+              <div>
+                <label>Membro:</label>
+                <select id="filtroInterpreteHist" onchange="filtrarListaHistorico()"></select>
+              </div>
+              <div>
+                <label>Cliente:</label>
+                <input type="text" id="filtroClienteHist" onkeyup="filtrarListaHistorico()" placeholder="Buscar...">
+              </div>
+            </div>
+            <div style="margin-top:8px;">
+              <label>Filtrar Data:</label>
+              <input type="text" id="filtroDataHist" onkeyup="filtrarListaHistorico()" placeholder="Ex: 09/03">
+            </div>
+          </div>
+
+          <div id="caixaBaixaLote" style="background: #fff3e0; padding: 12px; border-radius: 8px; margin-bottom: 15px;">
+            <label>Data Recebimento (PGTO):</label>
+            <input type="date" id="dataRecebimento">
+          </div>
+          
+          <div id="lista-html"></div>
+        </div>
+      </div>
+
+      <div id="tela-relatorios" style="display: none;">
+        <div class="card">
+          <div class="header-app"><button class="btn-voltar-topo" onclick="voltarDashboard()">⬅</button><h2>Relatórios</h2></div>
+          
+          <div class="filtros-box" style="background: #f3e5f5;">
+            <label>Tipo de Relatório:</label>
+            <select id="tipoRelatorio" onchange="gerarRelatorio()">
+              <option value="nf">📄 Nota Fiscal (Por Agência/Membro)</option>
+              <option value="horas">⏱️ Produtividade (Total de Horas)</option>
+            </select>
+
+            <label id="labelMesFiltro">Mês Recebido:</label>
+            <input type="month" id="filtroMesRelatorio" onchange="gerarRelatorio()">
+            
+            <label>Membro (Intérprete):</label>
+            <select id="filtroMembroRelatorio" onchange="gerarRelatorio()"></select>
+
+            <label>Agência (Opcional):</label>
+            <select id="filtroAgenciaRelatorio" onchange="gerarRelatorio()"></select>
+          </div>
+
+          <div class="relatorio-stats">
+            <div class="stat-card">
+              <span class="stat-label">Faturamento</span>
+              <strong id="valor-total-relatorio">R$ 0,00</strong>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Total Horas</span>
+              <strong id="horas-total-relatorio">0.00h</strong>
+            </div>
+          </div>
+          
+          <div id="lista-relatorio"></div>
+            
+          <div style="display: flex; gap: 10px; margin-top: 15px;">
+            <button id="btnCopiarRelatorio" class="btn-primario" style="background-color: #9c27b0; flex: 1;" onclick="copiarResumo()">📋 Copiar Texto</button>
+            <button id="btnBaixarImagem" class="btn-primario" style="background-color: #1976d2; flex: 1;" onclick="baixarImagemRelatorio()">🖼️ Salvar Imagem</button>
+          </div>
+            
+        </div> 
+      </div> 
+
+      <div id="tela-configuracoes" style="display: none;">
+        <div class="card">
+          <div class="header-app"><button class="btn-voltar-topo" onclick="voltarDashboard()">⬅</button><h2>Ajustes</h2></div>
+           
+          <div class="tabs-nav">
+            <button class="tab-btn active" id="btn-tab-servicos" onclick="mudarAba('servicos')">🛠️ Tipos de Serviço</button>
+            <button class="tab-btn" id="btn-tab-equipe" onclick="mudarAba('equipe')">👥 Equipe</button>
+            <button class="tab-btn" id="btn-tab-agencias" onclick="mudarAba('agencias')">🏢 Agências</button>
+            <button class="tab-btn" id="btn-tab-clientes" onclick="mudarAba('clientes')">🏬 Clientes</button>
+          </div>
+
+          <div id="content-servicos" class="tab-content active">
+            <form id="formServicos" onsubmit="salvarTipoServico(event)">
+              <input type="hidden" id="servico-antigo">
+              <label>Novo Tipo de Serviço:</label>
+              <input type="text" id="configServicoNome" required placeholder="Ex: Tradução, Interpretação...">
+              <button type="submit" class="btn-primario" style="background:#546e7a;">Salvar Serviço</button>
+            </form>
+            <div id="lista-servicos-ui" style="margin-top:15px;"></div>
+          </div>
+
+          <div id="content-equipe" class="tab-content">
+            <form id="formEquipe" onsubmit="salvarEquipe(event)">
+              <input type="hidden" id="equipe-antigo"> <label>Membro:</label><input type="text" id="configEquipeNome" required>
+              <button type="submit" class="btn-primario" style="background:#546e7a;">Salvar</button>
+            </form>
+            <div id="lista-equipe-ui" style="margin-top:15px;"></div>
+          </div>
+
+          <div id="content-agencias" class="tab-content">
+            <form id="formConfig" onsubmit="salvarAgencia(event)"><label>Agência:</label><input type="text" id="configNome" required><label>Valor Hora:</label><input type="text" inputmode="numeric" id="configValor" oninput="formatarMoeda(this)" required><button type="submit" class="btn-primario" style="background:#607d8b;">Salvar</button></form>
+            <div id="lista-configuracoes" style="margin-top:15px;"></div>
+          </div>
+
+          <div id="content-clientes" class="tab-content">
+            <form id="formClientes" onsubmit="salvarCliente(event)">
+              <input type="hidden" id="cliente-antigo"> <label>Cliente/Empresa:</label><input type="text" id="configClienteNome" required>
+              <button type="submit" class="btn-primario" style="background:#FF9800;">Salvar Cliente</button>
+            </form>
+            <div id="lista-clientes-ui" style="margin-top:15px;"></div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+    <?!= include('JS'); ?>
+  </body>
+</html>
