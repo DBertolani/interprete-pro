@@ -66,13 +66,15 @@ function mudarAba(aba) {
 // --- 4. NAVEGAÇÃO E PORTARIA ---
 function validarPortaria(resposta) {
   if (resposta && resposta.liberado === true) {
-    // Agora os dados já estão dentro da 'resposta', não precisa chamar de novo!
+    // IMPORTANTE: Agora usamos 'resposta.dadosIniciais' que veio do doPost
     montarApp(resposta.dadosIniciais); 
   } else {
     document.getElementById('tela-loading').style.display = 'none';
     document.getElementById('email-bloqueado').innerText = (resposta && resposta.email) || "não identificado";
+    
     const msgErro = (resposta && resposta.motivo) ? resposta.motivo : "E-mail sem licença ativa.";
     document.getElementById('motivo-bloqueio').innerText = msgErro;
+    
     document.getElementById('tela-bloqueio').style.display = 'block';
   }
 }
