@@ -70,6 +70,11 @@ async function validarPortaria(resposta) {
   } else {
     document.getElementById('tela-loading').style.display = 'none';
     document.getElementById('email-bloqueado').innerText = (resposta && resposta.email) || "não identificado";
+    
+    // Essa linha abaixo preenche o novo <p> que criamos no HTML
+    const msgErro = (resposta && resposta.motivo) ? resposta.motivo : "E-mail sem licença ativa.";
+    document.getElementById('motivo-bloqueio').innerText = msgErro;
+    
     document.getElementById('tela-bloqueio').style.display = 'block';
   }
 }
