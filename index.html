@@ -22,17 +22,24 @@
     
     <div class="container-app">
       
-      <div id="tela-login-google" class="card" style="text-align: center; padding: 40px 20px;">
-        <div style="font-size: 50px; margin-bottom: 10px;">👋</div>
-        <h2>Portal IntérpretePro</h2>
-        <p style="color: #666; margin-bottom: 25px;">Faça login com sua conta Google para acessar o sistema.</p>
-        
-            <button onclick="solicitarAcessoSaaS()" class="btn-primario" style="background: #4285F4; border: none; display: flex; align-items: center; justify-content: center; gap: 10px; margin: 0 auto; padding: 12px 24px;">
-              <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" width="20">
-              Autorizar e Entrar
-            </button>
-          
-      </div>
+            <div id="tela-login-google" class="card" style="text-align: center; padding: 40px 20px;">
+              <div style="font-size: 50px; margin-bottom: 10px;">👋</div>
+              <h2>Portal IntérpretePro</h2>
+              <p style="color: #666; margin-bottom: 25px;">Faça login com sua conta Google para acessar o sistema.</p>
+              
+              <button onclick="solicitarAcessoSaaS()" class="btn-primario" style="background: #4285F4; border: none; display: flex; align-items: center; justify-content: center; gap: 10px; margin: 0 auto; padding: 12px 24px;">
+                <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" width="20">
+                Autorizar e Entrar
+              </button>
+            
+              <div style="margin-top: 20px; font-size: 13px; color: #555;">
+                <label style="display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                  <input type="checkbox" id="aceito-termos" style="margin-right: 8px; transform: scale(1.2);">
+                  Estou de acordo com os 
+                  <a href="#" onclick="abrirModalTermos(event)" style="color: #4285F4; font-weight: bold; margin-left: 4px; text-decoration: underline;">Termos de Uso</a>.
+                </label>
+              </div>
+            </div>
 
       <div id="tela-loading" class="card" style="display: none;"><h3>A Sincronizar...</h3><div class="loader"></div></div>
 
@@ -208,42 +215,73 @@
           }
         };
         
-  function solicitarAcessoSaaS() {
-    const client = google.accounts.oauth2.initTokenClient({
-      client_id: '824713665703-lr9iacceof0mg41c0gb61lm3qia4bpr7.apps.googleusercontent.com',
-      scope: 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.email',
-      callback: (tokenResponse) => {
-        if (tokenResponse && tokenResponse.access_token) {
-          // Salva o token de acesso para o script.js usar nas chamadas
-          localStorage.setItem("google_access_token", tokenResponse.access_token);
-          
-          // Agora buscamos o e-mail do usuário para validar o acesso
-          fetch('https://www.googleapis.com/oauth2/v3/userinfo?access_token=' + tokenResponse.access_token)
-            .then(res => res.json())
-            .then(data => {
-              localStorage.setItem("user_email", data.email);
-              // Dispara a função que já existe no seu script.js para montar o app
-              handleSaaSLogin(data.email);
-            });
-        }
-      },
-    });
-    client.requestAccessToken();
+// Funções de Controle do Modal (Adicione estas duas)
+function abrirModalTermos(e) {
+  e.preventDefault();
+  document.getElementById('modal-termos').style.display = 'flex';
+}
+
+function fecharModalTermos() {
+  document.getElementById('modal-termos').style.display = 'none';
+}
+
+// Atualize a solicitarAcessoSaaS para checar o checkbox
+function solicitarAcessoSaaS() {
+  // VERIFICAÇÃO LGPD ANTES DE ABRIR O GOOGLE
+  const aceito = document.getElementById('aceito-termos').checked;
+  if (!aceito) {
+    mostrarToast("⚠️ Você precisa aceitar os Termos para continuar.", "erro");
+    return;
   }
 
+  const client = google.accounts.oauth2.initTokenClient({
+    client_id: '824713665703-lr9iacceof0mg41c0gb61lm3qia4bpr7.apps.googleusercontent.com',
+    scope: 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.email',
+    callback: (tokenResponse) => {
+      if (tokenResponse && tokenResponse.access_token) {
+        localStorage.setItem("google_access_token", tokenResponse.access_token);
+        fetch('https://www.googleapis.com/oauth2/v3/userinfo?access_token=' + tokenResponse.access_token)
+          .then(res => res.json())
+          .then(data => {
+            localStorage.setItem("user_email", data.email);
+            handleSaaSLogin(data.email);
+          });
+      }
+    },
+  });
+  client.requestAccessToken();
+}
+
+// Atualize a handleSaaSLogin
 async function handleSaaSLogin(email) {
+  // Se o login for automático (via window.onload), o checkbox não precisa estar visível
   document.getElementById('tela-loading').style.display = 'block';
   document.getElementById('tela-login-google').style.display = 'none';
   
   try {
     const res = await chamarGoogle("verificarAcesso");
-    console.log("Resposta do Google:", res); // Veja isso no F12
     validarPortaria(res);
   } catch (e) {
     console.error("Erro no Login:", e);
-    mostrarToast("❌ Falha na comunicação. Tente novamente.", "erro");
+    mostrarToast("❌ Falha na comunicação.", "erro");
   }
 }
 </script>
+
+    <div id="modal-termos" class="modal-lgpd" style="display: none;">
+  <div class="modal-content">
+    <div class="header-app" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+      <h2 style="margin:0; font-size: 18px;">Termos e Privacidade</h2>
+      <button onclick="fecharModalTermos()" style="background:none; border:none; font-size:28px; cursor:pointer; color:#666;">&times;</button>
+    </div>
+    <div class="modal-body" style="text-align: left; padding: 15px 0; max-height: 350px; overflow-y: auto; font-size: 14px; line-height: 1.5; color: #444;">
+      <p><strong>1. Uso de Dados:</strong> O App utiliza seu e-mail apenas para autenticação e controle de licença.</p>
+      <p><strong>2. Armazenamento:</strong> Seus registros são salvos em uma planilha privada vinculada ao sistema SaaS, garantindo que apenas você (via App) e o administrador tenham acesso técnico.</p>
+      <p><strong>3. Seus Direitos:</strong> Sob a LGPD, você pode solicitar a exclusão de seus dados a qualquer momento via suporte.</p>
+      <p><strong>4. Segurança:</strong> Utilizamos protocolos de segurança do Google para proteger suas informações.</p>
+    </div>
+    <button class="btn-primario" onclick="fecharModalTermos()" style="width: 100%; margin-top: 10px;">Entendi e Fechar</button>
+  </div>
+</div>
 </body>
 </html>
