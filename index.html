@@ -22,24 +22,31 @@
     
     <div class="container-app">
       
-            <div id="tela-login-google" class="card" style="text-align: center; padding: 40px 20px;">
-              <div style="font-size: 50px; margin-bottom: 10px;">👋</div>
-              <h2>Portal IntérpretePro</h2>
-              <p style="color: #666; margin-bottom: 25px;">Faça login com sua conta Google para acessar o sistema.</p>
-              
-              <button onclick="solicitarAcessoSaaS()" class="btn-primario" style="background: #4285F4; border: none; display: flex; align-items: center; justify-content: center; gap: 10px; margin: 0 auto; padding: 12px 24px;">
-                <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" width="20">
-                Autorizar e Entrar
-              </button>
-            
-              <div style="margin-top: 20px; font-size: 13px; color: #555;">
-                <label style="display: flex; align-items: center; justify-content: center; cursor: pointer;">
-                  <input type="checkbox" id="aceito-termos" style="margin-right: 8px; transform: scale(1.2);">
-                  Estou de acordo com os 
-                  <a href="#" onclick="abrirModalTermos(event)" style="color: #4285F4; font-weight: bold; margin-left: 4px; text-decoration: underline;">Termos de Uso</a>.
-                </label>
-              </div>
-            </div>
+        <div id="tela-login-google" class="card" style="text-align: center; padding: 40px 20px;">
+          <div style="margin-bottom: 15px;">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Libras.svg/200px-Libras.svg.png" 
+                 alt="LIBRAS" 
+                 style="width: 80px; height: auto;">
+          </div>
+          
+          <h2 style="color: #1a237e;">Portal IntérpretePro</h2>
+          <p style="color: #666; margin-bottom: 25px; font-size: 14px;">Gestão inteligente para intérpretes de LIBRAS.</p>
+          
+          <button onclick="solicitarAcessoSaaS()" class="btn-primario" style="background: #4285F4; border: none; display: flex; align-items: center; justify-content: center; gap: 10px; margin: 0 auto; padding: 14px 24px; width: 100%; border-radius: 8px; font-weight: 600;">
+            <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" width="20">
+            Autorizar e Entrar com Google
+          </button>
+        
+          <div style="margin-top: 30px; padding: 15px; background: #f1f3f4; border-radius: 10px; border: 1px solid #e0e0e0;">
+            <label style="display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; line-height: 1.5; color: #444;">
+              <input type="checkbox" id="aceito-termos" style="margin-right: 12px; transform: scale(1.3); min-width: 20px; cursor: pointer;">
+              <span style="text-align: left;">
+                Estou de acordo com os 
+                <a href="#" onclick="abrirModalTermos(event)" style="color: #1a237e; font-weight: bold; text-decoration: underline;">Termos de Uso e Privacidade</a>.
+              </span>
+            </label>
+          </div>
+        </div>
 
       <div id="tela-loading" class="card" style="display: none;"><h3>A Sincronizar...</h3><div class="loader"></div></div>
 
