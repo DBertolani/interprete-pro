@@ -452,7 +452,7 @@ async function abrirConfiguracoes() {
   document.getElementById('tela-app').style.display = 'none';
   document.getElementById('tela-loading').style.display = 'flex';
 
-  // 2. Busca os dados no Google
+  // 2. Busca os dados no Google (Apenas uma vez!)
   const res = await chamarGoogle("buscarConfigAgencias");
   const d = res.dados;
   
@@ -460,8 +460,7 @@ async function abrirConfiguracoes() {
   document.getElementById('tela-loading').style.display = 'none';
   document.getElementById('tela-configuracoes').style.display = 'block';
   
-  const res = await chamarGoogle("buscarConfigAgencias");
-  const d = res.dados;
+  // --- RENDERIZAÇÃO DAS LISTAS ---
   
   // Lista de Serviços
   var cs = document.getElementById('lista-servicos-ui'); cs.innerHTML = "";
@@ -469,11 +468,11 @@ async function abrirConfiguracoes() {
   
   // Lista de Equipe
   var ce = document.getElementById('lista-equipe-ui'); ce.innerHTML = "";
-  d.equipe.forEach(n => ce.innerHTML += `<div class="item-pendente item-config-flex" style="border-left-color:#9c27b0"><strong>${n}</strong><div><button class="btn-acao btn-editar" onclick="editarConfig('equipe','${n}')">✏️</button><button class="btn-acao btn-excluir" onclick="excluirConfig('Minha_Equipe','${n}')">🗑️</button></div></div>`);
+  if(d.equipe) d.equipe.forEach(n => ce.innerHTML += `<div class="item-pendente item-config-flex" style="border-left-color:#9c27b0"><strong>${n}</strong><div><button class="btn-acao btn-editar" onclick="editarConfig('equipe','${n}')">✏️</button><button class="btn-acao btn-excluir" onclick="excluirConfig('Minha_Equipe','${n}')">🗑️</button></div></div>`);
   
   // Lista de Agências
   var ca = document.getElementById('lista-configuracoes'); ca.innerHTML = "";
-  d.agencias.forEach(i => ca.innerHTML += `<div class="item-pendente item-config-flex" style="border-left-color:#607d8b"><strong>${i.nome}</strong> - R$ ${i.valor}<div><button class="btn-acao btn-editar" onclick="editarConfig('agencia','${i.nome}','${i.valor}')">✏️</button><button class="btn-acao btn-excluir" onclick="excluirConfig('Minhas_Empresas','${i.nome}')">🗑️</button></div></div>`);
+  if(d.agencias) d.agencias.forEach(i => ca.innerHTML += `<div class="item-pendente item-config-flex" style="border-left-color:#607d8b"><strong>${i.nome}</strong> - R$ ${i.valor}<div><button class="btn-acao btn-editar" onclick="editarConfig('agencia','${i.nome}','${i.valor}')">✏️</button><button class="btn-acao btn-excluir" onclick="excluirConfig('Minhas_Empresas','${i.nome}')">🗑️</button></div></div>`);
   
   // Lista de Clientes
   var cl = document.getElementById('lista-clientes-ui'); cl.innerHTML = "";
