@@ -448,8 +448,18 @@ function baixarImagemRelatorio() {
 
 // --- 8. CONFIGURAÇÕES ---
 async function abrirConfiguracoes() {
-  document.querySelectorAll('.container-app > div').forEach(d => d.style.display = 'none');
+  // 1. Mostra o loading primeiro para dar feedback visual
+  document.getElementById('tela-app').style.display = 'none';
+  document.getElementById('tela-loading').style.display = 'flex';
+
+  // 2. Busca os dados no Google
+  const res = await chamarGoogle("buscarConfigAgencias");
+  const d = res.dados;
+  
+  // 3. Só agora esconde o loading e mostra a tela de ajustes
+  document.getElementById('tela-loading').style.display = 'none';
   document.getElementById('tela-configuracoes').style.display = 'block';
+  
   const res = await chamarGoogle("buscarConfigAgencias");
   const d = res.dados;
   
@@ -573,10 +583,16 @@ function mostrarToast(mensagem, tipo = 'sucesso') {
 
 // Função para sair do sistema
 function logout() {
-  if(confirm("Deseja realmente sair da conta?")) {
-    localStorage.clear(); // Limpa os dados de login salvos
-    location.reload();    // Recarrega a página para a tela de login
-  }
+  document.getElementById('modal-logout').style.display = 'flex';
+}
+
+function fecharModalLogout() {
+  document.getElementById('modal-logout').style.display = 'none';
+}
+
+function confirmarLogout() {
+  localStorage.clear();
+  location.reload();
 }
 
 // Verifica login automático quando a página carrega
