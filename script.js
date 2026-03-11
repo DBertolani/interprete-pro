@@ -583,7 +583,51 @@ function logout() {
 window.onload = () => {
   const token = localStorage.getItem("google_access_token");
   const email = localStorage.getItem("user_email");
+  // Se já existe e-mail salvo, entra direto pulando o checkbox
   if (token && email) {
     handleSaaSLogin(email);
   }
 };
+
+
+// Funções para o Modal de Termos
+function abrirModalTermos(e) {
+  e.preventDefault();
+  document.getElementById('modal-termos').style.display = 'flex';
+}
+
+function fecharModalTermos() {
+  document.getElementById('modal-termos').style.display = 'none';
+}
+
+// AJUSTE NA FUNÇÃO DE LOGIN EXISTENTE
+// AJUSTE FINAL: Compatível com o botão azul e login automático
+async function handleSaaSLogin(email) {
+  // 1. Só verifica o checkbox se a tela de login estiver visível (evita travar o login automático)
+  const telaLogin = document.getElementById('tela-login-google');
+  if (telaLogin.style.display !== 'none') {
+    const aceito = document.getElementById('aceito-termos').checked;
+    if (!aceito) {
+      fecharModalTermos();
+      mostrarToast("⚠️ Você precisa aceitar os Termos de Uso para entrar.", "erro");
+      return; 
+    }
+  }
+
+  // 2. Prossiga com o login
+  document.getElementById('tela-loading').style.display = 'flex';
+  telaLogin.style.display = 'none';
+  
+  // O e-mail já vem como parâmetro, não precisa de 'response.credential'
+  localStorage.setItem("user_email", email);
+
+  try {
+    const res = await chamarGoogle("verificarAcesso");
+    validarPortaria(res);
+  } catch (e) {
+    console.error("Erro no Login:", e);
+    mostrarToast("❌ Falha na comunicação.", "erro");
+    telaLogin.style.display = 'block';
+    document.getElementById('tela-loading').style.display = 'none';
+  }
+}
