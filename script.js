@@ -500,8 +500,16 @@ async function salvarTipoServico(e) {
   document.getElementById('formServicos').reset(); abrirConfiguracoes();
 }
 
-async function excluirConfig(aba, val) { 
-  if(confirm("Deseja excluir este item?")) { await chamarGoogle("excluirConfig", { aba: aba, valor: val }); abrirConfiguracoes(); }
+// Melhore a exclusão para não deletar sem querer no celular
+async function excluirConfig(aba, valor) {
+  if(!confirm(`Tem certeza que deseja excluir "${valor}"?`)) return;
+  
+  mostrarToast("Excluindo...");
+  const res = await chamarGoogle("excluirConfig", { aba: aba, valor: valor });
+  if(res.status === "Sucesso") {
+    abrirConfiguracoes(); // Recarrega a lista
+    mostrarToast("✅ Excluído com sucesso");
+  }
 }
 
 function mostrarToast(mensagem, tipo = 'sucesso') {
@@ -510,4 +518,11 @@ function mostrarToast(mensagem, tipo = 'sucesso') {
   toast.className = 'toast ' + tipo; toast.innerText = mensagem;
   container.appendChild(toast);
   setTimeout(function() { toast.remove(); }, 3000);
+}
+
+function logout() {
+  if(confirm("Deseja realmente sair do sistema?")) {
+    localStorage.clear();
+    location.reload();
+  }
 }
