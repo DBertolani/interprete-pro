@@ -6,18 +6,17 @@ var dadosGeraisRelatorio = [];
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxbYi7t7TjEi0TX750IzWDwy5QGBXKIqcRAOZ8ZLEvMHwqvoyIT_4jfrE2vFSU2EU16/exec"; // <--- COLOQUE SEU LINK /exec AQUI
 
 async function chamarGoogle(acao, dadosExtras = {}) {
-  // O segredo está aqui: pegamos o token que o botão do index.html salvou
   const token = localStorage.getItem("google_access_token");
+  const email = localStorage.getItem("user_email"); // <-- Pegamos o e-mail salvo no login
   
   try {
     const response = await fetch(SCRIPT_URL, {
       method: "POST",
       headers: {
-        // Esta linha diz ao Google: "Tenho permissão do usuário para agir em nome dele"
         "Authorization": "Bearer " + token 
       },
-      // Note que não precisamos mais enviar o e-mail no body, o Google identifica pelo Token
-      body: JSON.stringify({ acao: acao, dados: dadosExtras })
+      // Agora enviamos o e-mail explicitamente no body
+      body: JSON.stringify({ acao: acao, email: email, dados: dadosExtras })
     });
     return await response.json();
   } catch (erro) {
