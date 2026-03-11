@@ -64,18 +64,15 @@ function mudarAba(aba) {
 }
 
 // --- 4. NAVEGAÇÃO E PORTARIA ---
-async function validarPortaria(resposta) {
+function validarPortaria(resposta) {
   if (resposta && resposta.liberado === true) {
-    const resDados = await chamarGoogle("carregarDadosIniciais");
-    montarApp(resDados.dados); 
+    // Agora os dados já estão dentro da 'resposta', não precisa chamar de novo!
+    montarApp(resposta.dadosIniciais); 
   } else {
     document.getElementById('tela-loading').style.display = 'none';
     document.getElementById('email-bloqueado').innerText = (resposta && resposta.email) || "não identificado";
-    
-    // Essa linha abaixo preenche o novo <p> que criamos no HTML
     const msgErro = (resposta && resposta.motivo) ? resposta.motivo : "E-mail sem licença ativa.";
     document.getElementById('motivo-bloqueio').innerText = msgErro;
-    
     document.getElementById('tela-bloqueio').style.display = 'block';
   }
 }
@@ -96,13 +93,12 @@ function montarApp(dados) {
 }
 
 function atualizarSelectsFormulario(d) {
-  // Salva na memória global para uso instantâneo depois
+  // Salva tudo na memória global para usar nos Ajustes depois sem carregar
   agenciasGlobais = d.agencias || [];
   equipeGlobal = d.equipe || [];
   clientesGlobais = d.clientes || [];
-  tiposServicoGlobal = d.tiposServico || [];
+  tiposServicoGlobal = d.tiposServico || []; 
 
-  // Preenche os selects (Código que você já tinha)
   var selServ = document.getElementById('tipoServico');
   if (selServ) {
     selServ.innerHTML = '<option value="" disabled selected>O que foi feito?</option>';
@@ -453,11 +449,11 @@ function baixarImagemRelatorio() {
 
 // --- 8. CONFIGURAÇÕES ---
 function abrirConfiguracoes() {
-  // 1. Esconde o Dashboard e mostra Ajustes (Instantâneo)
+  // 1. Abre a tela na hora (sem chamar o Google!)
   document.getElementById('tela-app').style.display = 'none';
   document.getElementById('tela-configuracoes').style.display = 'block';
 
-  // 2. Prepara os dados que já estão na memória
+  // 2. Usa o que já está guardado nas variáveis globais
   const d = {
     tiposServico: tiposServicoGlobal,
     equipe: equipeGlobal,
@@ -465,8 +461,18 @@ function abrirConfiguracoes() {
     clientes: clientesGlobais
   };
   
-  // 3. Renderiza as listas na tela
-  renderizarListasConfig(d);
+  // 3. Renderiza as listas (Aproveitando o código que você já tem)
+  var cs = document.getElementById('lista-servicos-ui'); cs.innerHTML = "";
+  d.tiposServico.forEach(s => cs.innerHTML += `<div class="item-pendente item-config-flex" style="border-left-color:#546e7a"><strong>${s}</strong><div><button class="btn-acao btn-editar" onclick="editarConfig('servico','${s}')">✏️</button><button class="btn-acao btn-excluir" onclick="excluirConfig('Tipos_Servico','${s}')">🗑️</button></div></div>`);
+  
+  var ce = document.getElementById('lista-equipe-ui'); ce.innerHTML = "";
+  d.equipe.forEach(n => ce.innerHTML += `<div class="item-pendente item-config-flex" style="border-left-color:#9c27b0"><strong>${n}</strong><div><button class="btn-acao btn-editar" onclick="editarConfig('equipe','${n}')">✏️</button><button class="btn-acao btn-excluir" onclick="excluirConfig('Minha_Equipe','${n}')">🗑️</button></div></div>`);
+  
+  var ca = document.getElementById('lista-configuracoes'); ca.innerHTML = "";
+  d.agencias.forEach(i => ca.innerHTML += `<div class="item-pendente item-config-flex" style="border-left-color:#607d8b"><strong>${i.nome}</strong> - R$ ${i.valor}<div><button class="btn-acao btn-editar" onclick="editarConfig('agencia','${i.nome}','${i.valor}')">✏️</button><button class="btn-acao btn-excluir" onclick="excluirConfig('Minhas_Empresas','${i.nome}')">🗑️</button></div></div>`);
+  
+  var cl = document.getElementById('lista-clientes-ui'); cl.innerHTML = "";
+  d.clientes.forEach(n => cl.innerHTML += `<div class="item-pendente item-config-flex" style="border-left-color:#FF9800"><strong>${n}</strong><div><button class="btn-acao btn-editar" onclick="editarConfig('cliente','${n}')">✏️</button><button class="btn-acao btn-excluir" onclick="excluirConfig('Minhas_Empresas_Finais','${n}')">🗑️</button></div></div>`);
 }
 
 // Nova função auxiliar para organizar o código
