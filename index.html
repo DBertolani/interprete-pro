@@ -160,6 +160,15 @@
     <script src="script.js"></script>
 
     <script>
+        window.onload = () => {
+          const token = localStorage.getItem("google_access_token");
+          const email = localStorage.getItem("user_email");
+          // Se já existe token e e-mail salvos, tenta entrar direto
+          if (token && email) {
+            handleSaaSLogin(email);
+          }
+        };
+        
   function solicitarAcessoSaaS() {
     const client = google.accounts.oauth2.initTokenClient({
       client_id: '824713665703-lr9iacceof0mg41c0gb61lm3qia4bpr7.apps.googleusercontent.com',
