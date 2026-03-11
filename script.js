@@ -472,32 +472,78 @@ function editarConfig(tipo, nome, valor = "") {
   if (tipo === 'servico') { document.getElementById('servico-antigo').value = nome; document.getElementById('configServicoNome').value = nome; }
   if (tipo === 'equipe') { document.getElementById('equipe-antigo').value = nome; document.getElementById('configEquipeNome').value = nome; }
   if (tipo === 'cliente') { document.getElementById('cliente-antigo').value = nome; document.getElementById('configClienteNome').value = nome; }
-  if (tipo === 'agencia') { document.getElementById('configNome').value = nome; document.getElementById('configValor').value = valor; }
+  if (tipo === 'agencia') { document.getElementById('agencia-antigo').value = nome; document.getElementById('configNome').value = nome; document.getElementById('configValor').value = valor; }
   window.scrollTo(0,0); // Sobe a tela para o formulário
 }
 
+// --- SALVAR AGÊNCIA (Editando ou Criando) ---
 async function salvarAgencia(e) { 
   e.preventDefault(); 
-  await chamarGoogle("salvarConfigAgencia", { nome: document.getElementById('configNome').value, valor: document.getElementById('configValor').value });
-  document.getElementById('formConfig').reset(); abrirConfiguracoes(); 
+  const nomeNovo = document.getElementById('configNome').value;
+  const valorNovo = document.getElementById('configValor').value;
+  const nomeAntigo = document.getElementById('agencia-antigo').value; // Pega o que estava no hidden
+
+  mostrarToast("Salvando agência...");
+  await chamarGoogle("salvarConfigAgencia", { 
+    nome: nomeNovo, 
+    valor: valorNovo, 
+    antigo: nomeAntigo 
+  });
+
+  document.getElementById('formConfig').reset(); 
+  document.getElementById('agencia-antigo').value = ""; // Limpa para o próximo
+  abrirConfiguracoes(); 
 }
 
+// --- SALVAR EQUIPE ---
 async function salvarEquipe(e) {
   e.preventDefault();
-  await chamarGoogle("salvarMembroEquipe", { nome: document.getElementById('configEquipeNome').value });
-  document.getElementById('formEquipe').reset(); abrirConfiguracoes();
+  const nomeNovo = document.getElementById('configEquipeNome').value;
+  const nomeAntigo = document.getElementById('equipe-antigo').value;
+
+  mostrarToast("Salvando membro...");
+  await chamarGoogle("salvarMembroEquipe", { 
+    nome: nomeNovo, 
+    antigo: nomeAntigo 
+  });
+
+  document.getElementById('formEquipe').reset(); 
+  document.getElementById('equipe-antigo').value = "";
+  abrirConfiguracoes();
 }
 
+// --- SALVAR CLIENTE ---
 async function salvarCliente(e) {
   e.preventDefault();
-  await chamarGoogle("salvarEmpresaFinal", { nome: document.getElementById('configClienteNome').value });
-  document.getElementById('formClientes').reset(); abrirConfiguracoes();
+  const nomeNovo = document.getElementById('configClienteNome').value;
+  const nomeAntigo = document.getElementById('cliente-antigo').value;
+
+  mostrarToast("Salvando cliente...");
+  await chamarGoogle("salvarEmpresaFinal", { 
+    nome: nomeNovo, 
+    antigo: nomeAntigo 
+  });
+
+  document.getElementById('formClientes').reset(); 
+  document.getElementById('cliente-antigo').value = "";
+  abrirConfiguracoes();
 }
 
+// --- SALVAR TIPO DE SERVIÇO ---
 async function salvarTipoServico(e) {
   e.preventDefault();
-  await chamarGoogle("salvarTipoServico", { nome: document.getElementById('configServicoNome').value });
-  document.getElementById('formServicos').reset(); abrirConfiguracoes();
+  const nomeNovo = document.getElementById('configServicoNome').value;
+  const nomeAntigo = document.getElementById('servico-antigo').value;
+
+  mostrarToast("Salvando serviço...");
+  await chamarGoogle("salvarTipoServico", { 
+    nome: nomeNovo, 
+    antigo: nomeAntigo 
+  });
+
+  document.getElementById('formServicos').reset(); 
+  document.getElementById('servico-antigo').value = "";
+  abrirConfiguracoes();
 }
 
 // Melhore a exclusão para não deletar sem querer no celular
@@ -520,9 +566,19 @@ function mostrarToast(mensagem, tipo = 'sucesso') {
   setTimeout(function() { toast.remove(); }, 3000);
 }
 
+// Função para sair do sistema
 function logout() {
-  if(confirm("Deseja realmente sair do sistema?")) {
-    localStorage.clear();
-    location.reload();
+  if(confirm("Deseja realmente sair da conta?")) {
+    localStorage.clear(); // Limpa os dados de login salvos
+    location.reload();    // Recarrega a página para a tela de login
   }
 }
+
+// Verifica login automático quando a página carrega
+window.onload = () => {
+  const token = localStorage.getItem("google_access_token");
+  const email = localStorage.getItem("user_email");
+  if (token && email) {
+    handleSaaSLogin(email);
+  }
+};
