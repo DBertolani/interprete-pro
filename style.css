@@ -1,6 +1,6 @@
 <style>
   body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; padding: 15px 0; margin: 0; display:flex; justify-content:center; }
-  .container-app { width: 100%; max-width: 450px; padding: 0 15px; box-sizing: border-box; }
+  .container-app { width: 100%; max-width: 450px; margin: 0 auto; padding: 0 15px; box-sizing: border-box; }
   .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); margin-bottom: 15px; box-sizing: border-box; width:100%;}
   
   .dash-card { background: linear-gradient(135deg, #4CAF50, #2E7D32); color:white; text-align: center; padding: 25px 15px; border-radius: 16px;}
