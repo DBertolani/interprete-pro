@@ -201,4 +201,33 @@
 .stat-card:active {
   transform: scale(0.98); /* Efeito de clique */
 }
+
+/* Estilo do Modal LGPD */
+.modal-lgpd {
+  position: fixed;
+  z-index: 9999;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background-color: #fff;
+  width: 90%;
+  max-width: 450px;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  animation: subirModal 0.3s ease-out;
+}
+
+@keyframes subirModal {
+  from { transform: translateY(50px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
 </style>
