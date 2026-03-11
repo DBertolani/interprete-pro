@@ -6,22 +6,22 @@ var dadosGeraisRelatorio = [];
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxbYi7t7TjEi0TX750IzWDwy5QGBXKIqcRAOZ8ZLEvMHwqvoyIT_4jfrE2vFSU2EU16/exec"; // <--- COLOQUE SEU LINK /exec AQUI
 
 async function chamarGoogle(acao, dadosExtras = {}) {
-  const token = localStorage.getItem("google_access_token");
-  const email = localStorage.getItem("user_email"); // <-- Pegamos o e-mail salvo no login
+  const email = localStorage.getItem("user_email");
   
   try {
     const response = await fetch(SCRIPT_URL, {
       method: "POST",
-      headers: {
-        "Authorization": "Bearer " + token 
-      },
-      // Agora enviamos o e-mail explicitamente no body
-      body: JSON.stringify({ acao: acao, email: email, dados: dadosExtras })
+      // REMOVEMOS OS HEADERS DAQUI PARA EVITAR O ERRO DE CORS
+      body: JSON.stringify({ 
+        acao: acao, 
+        email: email, 
+        dados: dadosExtras 
+      })
     });
     return await response.json();
   } catch (erro) {
     console.error("Erro:", erro);
-    mostrarToast("❌ Erro de conexão ou autorização", "erro");
+    mostrarToast("❌ Erro de conexão com o servidor", "erro");
   }
 }
 
