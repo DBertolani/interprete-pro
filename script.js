@@ -6,30 +6,27 @@ var dadosGeraisRelatorio = [];
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxbYi7t7TjEi0TX750IzWDwy5QGBXKIqcRAOZ8ZLEvMHwqvoyIT_4jfrE2vFSU2EU16/exec"; // <--- COLOQUE SEU LINK /exec AQUI
 
 async function chamarGoogle(acao, dadosExtras = {}) {
-  const email = localStorage.getItem("user_email");
+  // O segredo está aqui: pegamos o token que o botão do index.html salvou
+  const token = localStorage.getItem("google_access_token");
+  
   try {
     const response = await fetch(SCRIPT_URL, {
       method: "POST",
-      body: JSON.stringify({ acao: acao, email: email, dados: dadosExtras })
+      headers: {
+        // Esta linha diz ao Google: "Tenho permissão do usuário para agir em nome dele"
+        "Authorization": "Bearer " + token 
+      },
+      // Note que não precisamos mais enviar o e-mail no body, o Google identifica pelo Token
+      body: JSON.stringify({ acao: acao, dados: dadosExtras })
     });
     return await response.json();
   } catch (erro) {
     console.error("Erro:", erro);
-    mostrarToast("❌ Erro de conexão com o servidor", "erro");
+    mostrarToast("❌ Erro de conexão ou autorização", "erro");
   }
 }
 
-// --- 2. SISTEMA DE LOGIN ---
-async function handleCredentialResponse(response) {
-  const data = JSON.parse(window.atob(response.credential.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
-  localStorage.setItem("user_email", data.email);
-  
-  document.getElementById('tela-loading').style.display = 'block';
-  document.getElementById('tela-login-google').style.display = 'none';
-  
-  const res = await chamarGoogle("verificarAcesso");
-  validarPortaria(res);
-}
+
 
 // --- 3. UTILITÁRIOS ---
 function formatarMoeda(e) {
