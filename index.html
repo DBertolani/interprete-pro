@@ -183,14 +183,19 @@
     client.requestAccessToken();
   }
 
-  async function handleSaaSLogin(email) {
-    document.getElementById('tela-loading').style.display = 'block';
-    document.getElementById('tela-login-google').style.display = 'none';
-    
-    // Chama a função verificarAcesso que está no seu Código.gs
+async function handleSaaSLogin(email) {
+  document.getElementById('tela-loading').style.display = 'block';
+  document.getElementById('tela-login-google').style.display = 'none';
+  
+  try {
     const res = await chamarGoogle("verificarAcesso");
+    console.log("Resposta do Google:", res); // Veja isso no F12
     validarPortaria(res);
+  } catch (e) {
+    console.error("Erro no Login:", e);
+    mostrarToast("❌ Falha na comunicação. Tente novamente.", "erro");
   }
+}
 </script>
 </body>
 </html>
