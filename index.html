@@ -68,13 +68,21 @@
               <a href="https://wa.me/5527996962395?text=Olá, Danilo! Gostaria de liberar meu acesso ao App InterpretePro." target="_blank" class="btn-primario" style="background: #25D366; display: inline-block; margin-top: 15px; text-decoration: none;">📲 Falar no WhatsApp</a>
             </div>
 
-      <div id="tela-app" style="display: none;">
+        <div id="tela-app" style="display: none;">
           
-        <div style="text-align: right; margin-bottom: 10px;">
-            <a href="#" onclick="logout()" style="color: #ff5252; text-decoration: none; font-size: 14px; font-weight: bold;">Sair da Conta</a>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #e0e0e0;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <img src="logo.png" alt="Logo" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+              <span style="font-weight: bold; color: #4a148c; font-size: 16px;">IntérpretePro</span>
+            </div>
+            <a href="#" onclick="logout()" style="color: #d32f2f; text-decoration: none; font-size: 14px; font-weight: 600; padding: 6px 12px; background: #ffebee; border-radius: 6px;">Sair</a>
           </div>
           
-        <div class="dash-card"><p class="dash-title">Total a Receber</p><p class="dash-value" id="valor-pendente">R$ 0,00</p></div>
+          <div class="dash-card">
+            <p class="dash-title">Total a Receber</p>
+            <p class="dash-value" id="valor-pendente">R$ 0,00</p>
+          </div>
+    
         <div class="menu-grid">
           <button class="menu-btn" onclick="abrirRegistro()"><div class="menu-icon">➕</div><div class="menu-text">Novo Serviço</div></button>
           <button class="menu-btn" onclick="abrirHistorico()"><div class="menu-icon">🧾</div><div class="menu-text">Histórico</div></button>
@@ -168,6 +176,7 @@
       <button class="tab-btn" id="btn-tab-equipe" onclick="mudarAba('equipe')">👥 Equipe</button>
       <button class="tab-btn" id="btn-tab-agencias" onclick="mudarAba('agencias')">🏢 Agências</button>
       <button class="tab-btn" id="btn-tab-clientes" onclick="mudarAba('clientes')">🏬 Clientes</button>
+      <button class="tab-btn" id="btn-tab-sobre" onclick="mudarAba('sobre')">ℹ️ Sobre</button>
     </div>
 
     <div id="content-servicos" class="tab-content active">
@@ -207,6 +216,20 @@
       </form>
       <div id="lista-clientes-ui" style="margin-top:15px;"></div>
     </div>
+
+      <div id="content-sobre" class="tab-content" style="text-align: center; padding: 30px 10px;">
+  <img src="logo.png" alt="IntérpretePro" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin-bottom: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+  <h2 style="color: #4a148c; margin-bottom: 5px;">IntérpretePro</h2>
+  <p style="color: #666; font-size: 14px; margin-bottom: 20px;">Versão 1.0.0</p>
+  
+  <p style="font-size: 14px; line-height: 1.5; color: #444; margin-bottom: 20px;">
+    Sistema de gestão desenvolvido exclusivamente para facilitar o dia a dia e o controle financeiro de intérpretes de LIBRAS. </p>
+
+  <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #eee; text-align: left;">
+    <p style="font-size: 13px; margin: 0 0 10px 0;"><strong>Desenvolvido por:</strong> Danilo Bertolani</p>
+    <p style="font-size: 13px; margin: 0;"><strong>Suporte Técnico:</strong> <br>
+      <a href="https://wa.me/5527996962395" target="_blank" style="color: #25D366; text-decoration: none; font-weight: bold;">📱 Chamar no WhatsApp</a></p></div>
+</div>
   </div>
 </div>
 
