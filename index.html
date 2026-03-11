@@ -275,18 +275,18 @@ async function handleSaaSLogin(email) {
       <button onclick="fecharModalTermos()" style="background:none; border:none; font-size:28px; cursor:pointer; color:#666;">&times;</button>
     </div>
 
-      <div id="modal-logout" class="modal-lgpd" style="display: none;">
-  <div class="modal-content" style="text-align: center;">
-    <div style="font-size: 40px; margin-bottom: 10px;">🚪</div>
-    <h3>Deseja sair?</h3>
-    <p style="color: #666; font-size: 14px; margin-bottom: 20px;">Você precisará fazer login novamente para acessar seus dados.</p>
-    
-    <div style="display: flex; gap: 10px;">
-      <button class="btn-voltar" onclick="fecharModalLogout()" style="flex: 1; margin: 0;">Cancelar</button>
-      <button class="btn-primario" onclick="confirmarLogout()" style="flex: 1; margin: 0; background: #ff5252;">Sair agora</button>
-    </div>
-  </div>
-</div>
+        <div id="modal-logout" class="modal-lgpd" style="display: none;">
+          <div class="modal-content" style="text-align: center;">
+            <div style="font-size: 40px; margin-bottom: 10px;">🚪</div>
+            <h3>Deseja sair?</h3>
+            <p style="color: #666; font-size: 14px; margin-bottom: 20px;">Você precisará fazer login novamente para acessar seus dados.</p>
+            <div style="display: flex; gap: 10px;">
+              <button class="btn-voltar" onclick="fecharModalLogout()" style="flex: 1; margin: 0;">Cancelar</button>
+              <button class="btn-primario" onclick="confirmarLogout()" style="flex: 1; margin: 0; background: #ff5252;">Sair agora</button>
+            </div>
+          </div>
+        </div>
+      
     <div class="modal-body" style="text-align: left; padding: 15px 0; max-height: 350px; overflow-y: auto; font-size: 14px; line-height: 1.5; color: #444;">
       <p><strong>1. Uso de Dados:</strong> O App utiliza seu e-mail apenas para autenticação e controle de licença.</p>
       <p><strong>2. Armazenamento:</strong> Seus registros são salvos em uma planilha privada vinculada ao sistema SaaS, garantindo que apenas você (via App) e o administrador tenham acesso técnico.</p>
