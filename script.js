@@ -448,37 +448,38 @@ function baixarImagemRelatorio() {
 
 // --- 8. CONFIGURAÇÕES ---
 async function abrirConfiguracoes() {
-  // 1. Mostra o loading primeiro para dar feedback visual
+  // 1. Mostra o loading primeiro
   document.getElementById('tela-app').style.display = 'none';
   document.getElementById('tela-loading').style.display = 'flex';
 
-  // 2. Busca os dados no Google (Apenas uma vez!)
-  const res = await chamarGoogle("buscarConfigAgencias");
-  const d = res.dados;
-  
-  // 3. Só agora esconde o loading e mostra a tela de ajustes
-  document.getElementById('tela-loading').style.display = 'none';
-  document.getElementById('tela-configuracoes').style.display = 'block';
-  
-  // --- RENDERIZAÇÃO DAS LISTAS ---
-  
-  // Lista de Serviços
-  var cs = document.getElementById('lista-servicos-ui'); cs.innerHTML = "";
-  if(d.tiposServico) d.tiposServico.forEach(s => cs.innerHTML += `<div class="item-pendente item-config-flex" style="border-left-color:#546e7a"><strong>${s}</strong><div><button class="btn-acao btn-editar" onclick="editarConfig('servico','${s}')">✏️</button><button class="btn-acao btn-excluir" onclick="excluirConfig('Tipos_Servico','${s}')">🗑️</button></div></div>`);
-  
-  // Lista de Equipe
-  var ce = document.getElementById('lista-equipe-ui'); ce.innerHTML = "";
-  if(d.equipe) d.equipe.forEach(n => ce.innerHTML += `<div class="item-pendente item-config-flex" style="border-left-color:#9c27b0"><strong>${n}</strong><div><button class="btn-acao btn-editar" onclick="editarConfig('equipe','${n}')">✏️</button><button class="btn-acao btn-excluir" onclick="excluirConfig('Minha_Equipe','${n}')">🗑️</button></div></div>`);
-  
-  // Lista de Agências
-  var ca = document.getElementById('lista-configuracoes'); ca.innerHTML = "";
-  if(d.agencias) d.agencias.forEach(i => ca.innerHTML += `<div class="item-pendente item-config-flex" style="border-left-color:#607d8b"><strong>${i.nome}</strong> - R$ ${i.valor}<div><button class="btn-acao btn-editar" onclick="editarConfig('agencia','${i.nome}','${i.valor}')">✏️</button><button class="btn-acao btn-excluir" onclick="excluirConfig('Minhas_Empresas','${i.nome}')">🗑️</button></div></div>`);
-  
-  // Lista de Clientes
-  var cl = document.getElementById('lista-clientes-ui'); cl.innerHTML = "";
-  if(d.clientes) d.clientes.forEach(n => cl.innerHTML += `<div class="item-pendente item-config-flex" style="border-left-color:#FF9800"><strong>${n}</strong><div><button class="btn-acao btn-editar" onclick="editarConfig('cliente','${n}')">✏️</button><button class="btn-acao btn-excluir" onclick="excluirConfig('Minhas_Empresas_Finais','${n}')">🗑️</button></div></div>`);
-  
-  atualizarSelectsFormulario(d);
+  try {
+    // 2. Busca os dados (APENAS UMA VEZ!)
+    const res = await chamarGoogle("buscarConfigAgencias");
+    const d = res.dados;
+    
+    // 3. Esconde o loading e mostra os ajustes
+    document.getElementById('tela-loading').style.display = 'none';
+    document.getElementById('tela-configuracoes').style.display = 'block';
+    
+    // --- RENDERIZAÇÃO DAS LISTAS ---
+    var cs = document.getElementById('lista-servicos-ui'); cs.innerHTML = "";
+    if(d.tiposServico) d.tiposServico.forEach(s => cs.innerHTML += `<div class="item-pendente item-config-flex" style="border-left-color:#546e7a"><strong>${s}</strong><div><button class="btn-acao btn-editar" onclick="editarConfig('servico','${s}')">✏️</button><button class="btn-acao btn-excluir" onclick="excluirConfig('Tipos_Servico','${s}')">🗑️</button></div></div>`);
+    
+    var ce = document.getElementById('lista-equipe-ui'); ce.innerHTML = "";
+    if(d.equipe) d.equipe.forEach(n => ce.innerHTML += `<div class="item-pendente item-config-flex" style="border-left-color:#9c27b0"><strong>${n}</strong><div><button class="btn-acao btn-editar" onclick="editarConfig('equipe','${n}')">✏️</button><button class="btn-acao btn-excluir" onclick="excluirConfig('Minha_Equipe','${n}')">🗑️</button></div></div>`);
+    
+    var ca = document.getElementById('lista-configuracoes'); ca.innerHTML = "";
+    if(d.agencias) d.agencias.forEach(i => ca.innerHTML += `<div class="item-pendente item-config-flex" style="border-left-color:#607d8b"><strong>${i.nome}</strong> - R$ ${i.valor}<div><button class="btn-acao btn-editar" onclick="editarConfig('agencia','${i.nome}','${i.valor}')">✏️</button><button class="btn-acao btn-excluir" onclick="excluirConfig('Minhas_Empresas','${i.nome}')">🗑️</button></div></div>`);
+    
+    var cl = document.getElementById('lista-clientes-ui'); cl.innerHTML = "";
+    if(d.clientes) d.clientes.forEach(n => cl.innerHTML += `<div class="item-pendente item-config-flex" style="border-left-color:#FF9800"><strong>${n}</strong><div><button class="btn-acao btn-editar" onclick="editarConfig('cliente','${n}')">✏️</button><button class="btn-acao btn-excluir" onclick="excluirConfig('Minhas_Empresas_Finais','${n}')">🗑️</button></div></div>`);
+    
+    atualizarSelectsFormulario(d);
+  } catch (erro) {
+    console.error("Erro ao carregar configurações:", erro);
+    mostrarToast("❌ Erro ao buscar dados do servidor", "erro");
+    voltarDashboard();
+  }
 }
 
 // ADICIONE ESTA NOVA FUNÇÃO NO FINAL DO script.js
