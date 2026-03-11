@@ -11,14 +11,22 @@ async function chamarGoogle(acao, dadosExtras = {}) {
   try {
     const response = await fetch(SCRIPT_URL, {
       method: "POST",
-      // REMOVEMOS OS HEADERS DAQUI PARA EVITAR O ERRO DE CORS
+      mode: "no-cors", // Esta linha é importante para evitar o bloqueio inicial
       body: JSON.stringify({ 
         acao: acao, 
         email: email, 
         dados: dadosExtras 
       })
     });
-    return await response.json();
+    
+    // Como usamos no-cors, precisamos de um tratamento especial para ler a resposta
+    // Se o no-cors der erro de leitura, use o modo padrão sem o cabeçalho Authorization
+    const responsePadrao = await fetch(SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify({ acao: acao, email: email, dados: dadosExtras })
+    });
+    return await responsePadrao.json();
+    
   } catch (erro) {
     console.error("Erro:", erro);
     mostrarToast("❌ Erro de conexão com o servidor", "erro");
