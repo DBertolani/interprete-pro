@@ -66,9 +66,38 @@
   .btn-excluir { background-color: #e53935; color: white; }
 
   /* ESTILO DAS ABAS */
-  .tabs-nav { display: flex; background: #eceff1; border-radius: 10px; padding: 5px; margin-bottom: 20px; }
-  .tab-btn { flex: 1; border: none; background: none; padding: 10px; border-radius: 8px; font-weight: bold; color: #546e7a; cursor: pointer; transition: 0.3s; font-size: 13px;}
-  .tab-btn.active { background: white; color: #2E7D32; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+.tabs-nav {
+  display: flex;
+  overflow-x: auto; /* Permite arrastar para o lado */
+  gap: 8px;
+  margin-bottom: 15px;
+  padding-bottom: 8px;
+  -webkit-overflow-scrolling: touch; /* Rolagem suave no iPhone */
+}
+
+/* Oculta a barra de rolagem feia, mantendo a função */
+.tabs-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.tab-btn {
+  flex: 0 0 auto; /* Impede o botão de encolher */
+  white-space: nowrap; /* Impede o texto de quebrar linha */
+  padding: 10px 15px;
+  background: #f1f3f4;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  color: #555;
+  transition: 0.2s;
+}
+
+.tab-btn.active {
+  background: #9c27b0;
+  color: white;
+  box-shadow: 0 4px 6px rgba(156, 39, 176, 0.3);
+}
   .tab-content { display: none; }
   .tab-content.active { display: block; }
 
