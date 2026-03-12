@@ -80,13 +80,14 @@
             </div>
         </div>
             
-<div id="tela-loading" class="card" style="display: none; border-radius: 15px; border-top: 5px solid #4a148c; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
-  <div style="text-align: center; padding: 60px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 50vh;">
-    <img src="logo.png" style="width: 120px; height: 120px; border-radius: 50%; margin-bottom: 25px; box-shadow: 0 6px 15px rgba(0,0,0,0.15);">
-    <h2 style="color: #4a148c; margin-bottom: 15px; font-weight: 900; font-size: 28px; line-height: 1.2;">Olá,<br><span id="nome-usuario-loading" style="color: #FF9800;">Intérprete</span>! 🤟</h2>
-    <p style="color: #666; font-size: 16px; margin-bottom: 35px;">Estamos organizando o seu escritório...</p>
-    <div class="loader" style="transform: scale(1.5);"></div>
-  </div>
+    <div id="tela-loading" class="card" style="display: none; border-radius: 15px; border-top: 5px solid #4a148c; padding: 40px 20px; text-align: center;">
+      <div style="margin-bottom: 25px;">
+        <img src="logo.png" style="width: 110px; height: 110px; border-radius: 50%; box-shadow: 0 6px 15px rgba(0,0,0,0.15);">
+      </div>
+      <h2 style="color: #4a148c; margin: 0 0 10px 0; font-weight: 900; font-size: 26px;">Olá, <span id="nome-usuario-loading" style="color: #FF9800;">Intérprete</span>! 🤟</h2>
+      <p style="color: #666; font-size: 15px; margin: 0 0 30px 0;">Estamos organizando o seu escritório...</p>
+      <div class="loader" style="margin: 0 auto; transform: scale(1.3);"></div>
+    </div>
 </div>
 
         <div id="tela-trial" class="card" style="display: none; text-align: center; padding: 40px 20px;">
@@ -272,19 +273,20 @@
           </div>
         </div>
 
-<div id="tela-configuracoes" style="display: none;">
-  <div class="card">
-    <div class="header-app">
-      <button class="btn-voltar-topo" onclick="voltarDashboard()">⬅</button>
-      <h2>Ajustes</h2>
-    </div>
+        <div id="tela-configuracoes" style="display: none;">
+          <div class="card">
+            <div class="header-app">
+              <button class="btn-voltar-topo" onclick="voltarDashboard()">⬅</button>
+              <h2>Ajustes</h2>
+            </div>
 
-    <div class="tabs-nav">
-      <button class="tab-btn active" id="btn-tab-servicos" onclick="mudarAba('servicos')">🛠️ Tipos de Serviço</button>
-      <button class="tab-btn" id="btn-tab-equipe" onclick="mudarAba('equipe')">👥 Equipe</button>
-      <button class="tab-btn" id="btn-tab-agencias" onclick="mudarAba('agencias')">🏢 Agências</button>
-      <button class="tab-btn" id="btn-tab-clientes" onclick="mudarAba('clientes')">🏬 Clientes</button>
-      <button class="tab-btn" id="btn-tab-sobre" onclick="mudarAba('sobre')">ℹ️ Sobre</button>
+    <div class="tabs-wrapper"> <div class="tabs-nav">
+        <button class="tab-btn active" id="btn-tab-servicos" onclick="mudarAba('servicos')">🛠️ Serviços</button>
+        <button class="tab-btn" id="btn-tab-equipe" onclick="mudarAba('equipe')">👥 Equipe</button>
+        <button class="tab-btn" id="btn-tab-agencias" onclick="mudarAba('agencias')">🏢 Agências</button>
+        <button class="tab-btn" id="btn-tab-clientes" onclick="mudarAba('clientes')">🏬 Clientes</button>
+        <button class="tab-btn" id="btn-tab-sobre" onclick="mudarAba('sobre')">ℹ️ Sobre</button>
+      </div>
     </div>
 
     <div id="content-servicos" class="tab-content active">
