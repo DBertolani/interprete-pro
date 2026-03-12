@@ -8,6 +8,16 @@
     justify-content: center; 
     align-items: flex-start; 
     min-height: 100vh; 
+    align-items: center; /* Centraliza verticalmente no PC se a tela for alta */
+    padding: 20px 0;    /* Dá uma margem no topo e fundo para não colar no navegador */
+  }
+
+/* LOGO + NOME NO TOPO (MAIS VISÍVEL) */
+  .header-app-logo {
+    font-size: 20px !important;
+    font-weight: 800 !important;
+    color: #4a148c;
+    letter-spacing: -0.5px;
   }
   
   .container-app { 
@@ -33,17 +43,19 @@
   .menu-icon { font-size: 28px; margin-bottom: 8px; }
   .menu-text { font-size: 13px; font-weight: 600; color: #455a64; }
 
-  /* TELA DE BOAS-VINDAS (LOADING) - GRANDE E CENTRALIZADA NO MEIO */
+/* TELA DE BOAS-VINDAS REALMENTE CENTRALIZADA */
   #tela-loading { 
-    flex: 1; /* Ocupa a altura total disponível */
-    display: none; /* JS muda para 'flex' no login */
+    display: none; /* Ativado via JS como flex */
     flex-direction: column;
-    justify-content: center; /* Centraliza no meio vertical */
+    justify-content: center; 
     align-items: center; 
     text-align: center;
+    position: fixed; /* Ocupa a tela toda de forma absoluta */
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 10000;
     background: white;
-    padding: 20px;
   }
+
   .loader { border: 6px solid #f3f3f3; border-top: 6px solid #FF9800; border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; margin: 25px auto; }
   @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
   
@@ -78,6 +90,15 @@
     box-shadow: 0 2px 5px rgba(0,0,0,0.06); 
   }
 
+/* ALINHAMENTO DAS LISTAS (BOTÕES À DIREITA) */
+  .item-config-flex { 
+    display: flex !important; 
+    justify-content: space-between !important; 
+    align-items: center !important; 
+    gap: 15px; 
+  }
+  .item-config-flex strong { flex: 1; } /* Faz o texto ocupar o espaço e empurrar botões */
+
   .acoes-card { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; border-top: 1px solid #eee; padding-top: 10px; }
 
   .btn-acao { border: none; padding: 8px 12px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer;}
@@ -85,21 +106,39 @@
   .btn-editar { background-color: #ffb300; color: white; }
   .btn-excluir { background-color: #e53935; color: white; }
 
-  /* CARROSSEL DE AJUSTES - MELHORADO PARA PC E MOBILE */
+/* SETAS DE NAVEGAÇÃO NOS AJUSTES */
   .tabs-wrapper {
     position: relative;
-    margin-bottom: 20px;
-    width: 100%;
+    display: flex;
+    align-items: center;
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 0 10px;
   }
+
+.scroll-arrow {
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: #9c27b0;
+    cursor: pointer;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    opacity: 0.6;
+    transition: 0.2s;
+  }
+  .scroll-arrow:hover { opacity: 1; transform: scale(1.2); }
 
   .tabs-nav {
     display: flex;
     overflow-x: auto; /* Habilita o scroll horizontal */
     gap: 12px;
-    padding: 10px 5px 20px 5px; /* Aumentado o padding inferior para o texto não encostar na barra */
     -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin; /* Barra fina no Firefox */
     scrollbar-color: #ccc #f1f1f1;
+    scrollbar-width: none; 
+    -ms-overflow-style: none;
+    padding: 15px 0 !important;
   }
 
   /* Estilização da barra para o computador (Chrome/Edge/Safari) */
