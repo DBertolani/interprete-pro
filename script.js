@@ -742,16 +742,43 @@ async function abrirAdmin() {
   }
 }
 
+// Variável para controlar a promessa do modal
+let confirmacaoResolve;
+
 async function gerenciarAcesso(emailAlvo, novoStatus) {
-  if(!confirm(`Deseja alterar o acesso de ${emailAlvo} para ${novoStatus}?`)) return;
+  // Configura os textos do modal bonito
+  document.getElementById('confirm-titulo').innerText = "Alterar Acesso";
+  document.getElementById('confirm-mensagem').innerHTML = `Deseja alterar o acesso de <b>${emailAlvo}</b> para <b>${novoStatus}</b>?`;
+  document.getElementById('confirm-icon').innerText = novoStatus === 'Ativo' ? "✅" : "🚫";
   
-  mostrarToast("⏳ Atualizando...");
-  const res = await chamarGoogle("alterarStatusCliente", { emailAlvo: emailAlvo, novoStatus: novoStatus });
+  // Abre o modal
+  document.getElementById('modal-confirmacao').style.display = 'flex';
+
+  // Espera o usuário clicar em Sim ou Não
+  const confirmado = await esperarConfirmacao();
   
-  if (res.status === "Sucesso") {
-    mostrarToast("✅ Acesso atualizado!");
-    abrirAdmin(); // Recarrega a lista
-  } else {
-    mostrarToast("❌ Erro na atualização.", "erro");
+  if (confirmado) {
+    mostrarToast("⏳ Atualizando...");
+    const res = await chamarGoogle("alterarStatusCliente", { emailAlvo: emailAlvo, novoStatus: novoStatus });
+    
+    if (res.status === "Sucesso") {
+      mostrarToast("✅ Acesso atualizado!");
+      abrirAdmin(); // Recarrega a lista
+    } else {
+      mostrarToast("❌ Erro na atualização.", "erro");
+    }
   }
+}
+
+// Funções de suporte para o modal de confirmação
+function esperarConfirmacao() {
+  return new Promise((resolve) => {
+    confirmacaoResolve = resolve;
+    document.getElementById('btn-confirmar-ok').onclick = () => fecharConfirmacao(true);
+  });
+}
+
+function fecharConfirmacao(valor) {
+  document.getElementById('modal-confirmacao').style.display = 'none';
+  if (confirmacaoResolve) confirmacaoResolve(valor);
 }
