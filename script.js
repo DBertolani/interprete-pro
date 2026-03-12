@@ -93,26 +93,21 @@ function montarApp(dados) {
   // 1. Esconde o loading
   document.getElementById('tela-loading').style.display = 'none'; 
   
-  // 2. Garante que todas as telas estão escondidas antes de mostrar a correta
+  // 2. Esconde TUDO (Vitrine, Login, etc) para limpar a tela
   document.querySelectorAll('.container-app > div:not(#tela-loading)').forEach(d => d.style.display = 'none');
   
-  // 3. MOSTRA A TELA HOME (Página Inicial/Feedback) primeiro
-  document.getElementById('tela-home').style.display = 'block';
+  // 3. MOSTRA O DASHBOARD (Tela do App) diretamente
+  document.getElementById('tela-app').style.display = 'block';
   
-  // 4. Carrega os dados em segundo plano (assim o Dashboard já fica pronto)
+  // 4. Preenche os dados do usuário
   document.getElementById('valor-pendente').innerText = "R$ " + dados.pendente;
   atualizarSelectsFormulario(dados);
 
-  // 5. TRAVA DE VISUALIZAÇÃO MASTER (Mantida)
+  // 5. Trava do Admin
   const emailLogado = localStorage.getItem("user_email");
   const btnAdmin = document.getElementById('btn-tab-admin');
-  
   if (btnAdmin) {
-    if (emailLogado === "danilobertolani@gmail.com") {
-      btnAdmin.style.display = 'block';
-    } else {
-      btnAdmin.style.display = 'none';
-    }
+    btnAdmin.style.display = (emailLogado === "danilobertolani@gmail.com") ? 'block' : 'none';
   }
 }
 
@@ -120,6 +115,12 @@ function montarApp(dados) {
 function irParaDashboard() {
   document.getElementById('tela-home').style.display = 'none';
   document.getElementById('tela-app').style.display = 'block';
+}
+
+// Função para sair da Vitrine e ir para a tela de Login
+function mostrarTelaLogin() {
+  document.getElementById('tela-home').style.display = 'none';
+  document.getElementById('tela-login-google').style.display = 'block';
 }
 
 function atualizarSelectsFormulario(d) {
@@ -821,5 +822,35 @@ async function gerarPagamento() {
     btn.disabled = false;
     btn.innerText = textoOriginal;
     btn.style.opacity = "1";
+  }
+}
+
+// Função para processar e salvar o feedback na planilha
+async function enviarFeedback(e) {
+  e.preventDefault();
+  const btn = document.getElementById('btn-feedback');
+  const textoOriginal = btn.innerText;
+  
+  btn.innerText = "⏳ Enviando...";
+  btn.disabled = true;
+
+  const dados = {
+    ideia: document.getElementById('fb-ideia').value,
+    preco: document.getElementById('fb-preco').value,
+    obs: document.getElementById('fb-obs').value
+  };
+
+  try {
+    const res = await chamarGoogle("salvarFeedback", dados);
+    if(res.status === "Sucesso") {
+      mostrarToast("✅ Feedback enviado! Muito obrigado!", "sucesso");
+      // Substitui o formulário por uma mensagem de agradecimento
+      document.getElementById('area-feedback').innerHTML = 
+        "<p style='text-align:center; color:#2e7d32; font-weight:bold; padding:20px;'>Obrigado! Sua opinião foi salva com sucesso. 🙏</p>";
+    }
+  } catch (err) {
+    mostrarToast("❌ Erro ao enviar feedback.", "erro");
+    btn.innerText = textoOriginal;
+    btn.disabled = false;
   }
 }
