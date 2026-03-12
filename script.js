@@ -361,7 +361,7 @@ function gerarRelatorio() {
               <summary style="font-size:12px; color:#7b1fa2; cursor:pointer; font-weight:600;">🏢 ${ag} ➔ R$ ${nfPorM[nome].ags[ag].t.toLocaleString('pt-BR',{minimumFractionDigits:2})} 🔽</summary>
               <div style="margin-top:8px; background:#fafafa; padding:8px; border-radius:6px; border:1px solid #e0e0e0;">`;
           nfPorM[nome].ags[ag].items.forEach(it => {
-            h += `<div style="font-size:11px; padding:4px 0; border-bottom:1px dashed #ccc; display:flex; justify-content:space-between;">
+            h += `<div style="font-size:13px; padding:8px 0; border-bottom:1px dashed #ccc; display:flex; justify-content:space-between;">
                 <span>📅 ${it.data} - ${it.empresa}</span><span style="color:#2e7d32; font-weight:bold;">R$ ${it.valorNum.toLocaleString('pt-BR',{minimumFractionDigits:2})}</span></div>`;
           });
           h += `</div></details>`;
@@ -390,7 +390,7 @@ function gerarRelatorio() {
               <summary style="font-size:12px; color:#1976d2; cursor:pointer;">Ver Detalhamento 🔽</summary>
               <div style="margin-top:8px; background:#f8f9fa; padding:8px; border-radius:6px; border:1px solid #e0e0e0;">`;
         pM[nome].list.forEach(it => {
-          h += `<div style="font-size:11px; padding:6px 0; border-bottom:1px dashed #ccc;">
+          h += `<div style="font-size:13px; padding:8px 0; border-bottom:1px dashed #ccc;">
               <div style="display:flex; justify-content:space-between;"><strong>📅 ${it.data} - ${it.empresa}</strong><span style="color:#d32f2f;">⏱️ ${it.hCalc.toFixed(2)}h</span></div>
               <div style="display:flex; justify-content:space-between; color:#555;"><span>🏢 ${it.agencia}</span><span style="color:#2e7d32;">R$ ${it.valorNum.toLocaleString('pt-BR',{minimumFractionDigits:2})}</span></div></div>`;
         });
