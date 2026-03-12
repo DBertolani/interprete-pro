@@ -90,24 +90,36 @@ async function voltarDashboard() {
 }
 
 function montarApp(dados) {
+  // 1. Esconde o loading
   document.getElementById('tela-loading').style.display = 'none'; 
+  
+  // 2. Garante que todas as telas estão escondidas antes de mostrar a correta
   document.querySelectorAll('.container-app > div:not(#tela-loading)').forEach(d => d.style.display = 'none');
-  document.getElementById('tela-app').style.display = 'block';
+  
+  // 3. MOSTRA A TELA HOME (Página Inicial/Feedback) primeiro
+  document.getElementById('tela-home').style.display = 'block';
+  
+  // 4. Carrega os dados em segundo plano (assim o Dashboard já fica pronto)
   document.getElementById('valor-pendente').innerText = "R$ " + dados.pendente;
   atualizarSelectsFormulario(dados);
 
-  // --- TRAVA DE VISUALIZAÇÃO MASTER ---
+  // 5. TRAVA DE VISUALIZAÇÃO MASTER (Mantida)
   const emailLogado = localStorage.getItem("user_email");
   const btnAdmin = document.getElementById('btn-tab-admin');
   
   if (btnAdmin) {
-    // Só mostra o botão se o e-mail logado for o seu
     if (emailLogado === "danilobertolani@gmail.com") {
       btnAdmin.style.display = 'block';
     } else {
       btnAdmin.style.display = 'none';
     }
   }
+}
+
+// --- FUNÇÃO AUXILIAR PARA O BOTÃO "ENTRAR NO SISTEMA" ---
+function irParaDashboard() {
+  document.getElementById('tela-home').style.display = 'none';
+  document.getElementById('tela-app').style.display = 'block';
 }
 
 function atualizarSelectsFormulario(d) {
