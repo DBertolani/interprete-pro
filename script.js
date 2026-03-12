@@ -667,7 +667,6 @@ function fecharModalTermos() {
   document.getElementById('modal-termos').style.display = 'none';
 }
 
-// AJUSTE NA FUNÇÃO DE LOGIN EXISTENTE
 async function handleSaaSLogin(email) {
   const telaLogin = document.getElementById('tela-login-google');
   
@@ -681,12 +680,21 @@ async function handleSaaSLogin(email) {
     }
   }
 
-  // 2. ESCONDE TUDO E MOSTRA SÓ O LOADING VIP
+  // 2. BUSCA O NOME E ATUALIZA A TELA DE BOAS-VINDAS ANTES DE MOSTRAR
+  const nomeCompleto = localStorage.getItem("user_name");
+  if (nomeCompleto && nomeCompleto !== "Usuário") {
+    const primeiroNome = nomeCompleto.split(" ")[0];
+    const spanNome = document.getElementById('nome-usuario-loading');
+    if (spanNome) spanNome.innerText = primeiroNome;
+  }
+
+  // 3. ESCONDE TUDO E MOSTRA O LOADING CENTRALIZADO (MUDANÇA PARA 'FLEX')
   document.querySelectorAll('.container-app > div').forEach(d => d.style.display = 'none');
-  document.getElementById('tela-loading').style.display = 'block';
+  
+  const loading = document.getElementById('tela-loading');
+  loading.style.display = 'flex'; // <--- O AJUSTE ESTÁ AQUI (de block para flex)
   
   localStorage.setItem("user_email", email);
-  if (typeof nome !== 'undefined') localStorage.setItem("user_name", nome);
 
   try {
     const res = await chamarGoogle("verificarAcesso");
@@ -694,8 +702,7 @@ async function handleSaaSLogin(email) {
   } catch (e) {
     console.error("Erro no Login:", e);
     mostrarToast("❌ Falha na comunicação.", "erro");
-    // Em caso de erro, volta para a tela inicial
-    document.getElementById('tela-loading').style.display = 'none';
+    loading.style.display = 'none';
     document.getElementById('tela-home').style.display = 'block';
   }
 }
