@@ -116,58 +116,31 @@
               <a href="https://wa.me/5527996962395?text=Olá, Danilo! Gostaria de liberar meu acesso ao App InterpretePro." target="_blank" class="btn-primario" style="background: #25D366; display: inline-block; margin-top: 15px; text-decoration: none;">📲 Falar no WhatsApp</a>
             </div>
 
-<div id="tela-home" class="card" style="display: block; padding: 25px 20px;">
-  <div style="text-align: center; margin-bottom: 20px;">
-    <img src="logo.png" style="width: 80px; height: 80px; border-radius: 50%; margin-bottom: 10px;">
-    <h2 style="color: #4a148c; margin: 0;">Bem-vindo ao IntérpretePro!🤟</h2>
-    <p style="color: #666; font-size: 14px;">Seu parceiro na gestão financeira de LIBRAS.</p>
+<div id="tela-home" class="card" style="display: block; padding: 35px 20px;">
+  <div style="text-align: center; margin-bottom: 25px;">
+    <img src="logo.png" style="width: 90px; height: 90px; border-radius: 50%; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+    <h1 style="color: #4a148c; margin: 0; font-size: 24px; font-weight: 800;">IntérpretePro</h1>
+    <p style="color: #666; font-size: 15px; margin-top: 5px;">A gestão inteligente da sua carreira em LIBRAS.</p>
   </div>
 
-  <div class="infos-app" style="margin-bottom: 25px;">
-    <div style="background: #f3e5f5; padding: 12px; border-radius: 8px; margin-bottom: 10px; font-size: 14px; border-left: 4px solid #9c27b0;">
-      <strong>📈 Controle Total:</strong> Registre seus atendimentos e valores em segundos.
+  <div class="infos-app" style="margin-bottom: 30px;">
+    <div style="background: #fdfbfb; border: 1px solid #eee; padding: 15px; border-radius: 12px; margin-bottom: 12px; font-size: 14px; display: flex; align-items: center; gap: 10px;">
+      <span style="font-size: 20px;">📈</span> <span><strong>Controle Total:</strong> Registre horas, valores e atendimentos rapidamente.</span>
     </div>
-    <div style="background: #f3e5f5; padding: 12px; border-radius: 8px; margin-bottom: 10px; font-size: 14px; border-left: 4px solid #9c27b0;">
-      <strong>📄 Relatórios Rápidos:</strong> Gere resumos para agências ou faturamento de NF.
+    <div style="background: #fdfbfb; border: 1px solid #eee; padding: 15px; border-radius: 12px; margin-bottom: 12px; font-size: 14px; display: flex; align-items: center; gap: 10px;">
+      <span style="font-size: 20px;">📄</span> <span><strong>Relatórios Fáceis:</strong> Gere resumos para agências e feche a NF num clique.</span>
     </div>
-    <div style="background: #e8f5e9; padding: 12px; border-radius: 8px; font-size: 14px; border-left: 4px solid #2e7d32;">
-      <strong>🎁 Período Grátis:</strong> Teste o sistema completo por 7 dias grátis!
+    <div style="background: #fff8e1; border: 1px solid #ffe082; padding: 15px; border-radius: 12px; font-size: 14px; display: flex; align-items: center; gap: 10px;">
+      <span style="font-size: 20px;">🎁</span> <span><strong>Teste sem risco:</strong> Use todas as ferramentas por 7 dias grátis.</span>
     </div>
   </div>
 
-  <button onclick="mostrarTelaLogin()" class="btn-primario" style="width: 100%; background: #4a148c; padding: 15px; font-size: 16px; margin-bottom: 30px;">
-    🚀 Acessar / Testar Grátis
+  <button onclick="mostrarTelaLogin()" style="width: 100%; background: linear-gradient(135deg, #FF9800, #F57C00); color: white; border: none; padding: 16px; font-size: 18px; font-weight: bold; border-radius: 30px; box-shadow: 0 6px 15px rgba(255, 152, 0, 0.4); margin-bottom: 20px; cursor: pointer;">
+    🚀 Começar meu Teste Grátis
   </button>
 
-  <hr style="border: 0; border-top: 1px dashed #ccc; margin-bottom: 25px;">
-
-  <div id="area-feedback">
-    <h3 style="color: #4a148c; text-align: center; margin-bottom: 15px;">Sua opinião vale muito! 💬</h3>
-    <form id="formFeedback" onsubmit="enviarFeedback(event)">
-      <label style="font-size: 13px; font-weight: bold; color: #444;">O que achou da ideia do App?</label>
-      <select id="fb-ideia" class="input-field" required style="margin-bottom: 15px; width: 100%;">
-        <option value="" disabled selected>Escolha uma opção...</option>
-        <option value="Excelente">Excelente, resolve meu problema!</option>
-        <option value="Boa">Boa, mas pode melhorar.</option>
-        <option value="Regular">Regular, não vi muita vantagem.</option>
-      </select>
-
-      <label style="font-size: 13px; font-weight: bold; color: #444;">Quanto você pagaria por mês?</label>
-      <select id="fb-preco" class="input-field" required style="margin-bottom: 15px; width: 100%;">
-        <option value="" disabled selected>Escolha um valor mensal...</option>
-        <option value="15-25">R$ 15,00 a R$ 25,00</option>
-        <option value="26-40">R$ 26,00 a R$ 40,00</option>
-        <option value="41-60">R$ 41,00 a R$ 60,00</option>
-        <option value="Nao_Pagaria">Não tenho interesse em pagar.</option>
-      </select>
-
-      <label style="font-size: 13px; font-weight: bold; color: #444;">O que faria você assinar o app hoje?</label>
-      <textarea id="fb-obs" class="input-field" rows="3" placeholder="Sugestões, críticas ou elogios..." style="margin-bottom: 15px; width: 100%;"></textarea>
-
-      <button type="submit" id="btn-feedback" class="btn-primario" style="background: #607d8b; border: none; font-size: 14px;">
-        Enviar Minha Opinião
-      </button>
-    </form>
+  <div style="text-align: center;">
+    <a href="#" onclick="abrirModalFeedback(event)" style="color: #9e9e9e; font-size: 13px; text-decoration: underline;">💡 Tem uma sugestão? Deixe seu feedback</a>
   </div>
 </div>
         <div id="tela-app" style="display: none;">
@@ -468,6 +441,41 @@ async function handleSaaSLogin(email) {
     </div>
   </div>
 </div>
+
+
+<div id="modal-feedback" class="modal-lgpd" style="display: none; z-index: 9999;">
+  <div class="modal-content" style="max-width: 400px; text-align: left;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+      <h3 style="color: #4a148c; margin: 0;">Sua opinião nos ajuda! 💬</h3>
+      <button onclick="fecharModalFeedback()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #999;">&times;</button>
+    </div>
     
+    <form id="formFeedback" onsubmit="enviarFeedback(event)">
+      <label style="font-size: 13px; font-weight: bold; color: #444;">O que achou da ideia do App?</label>
+      <select id="fb-ideia" class="input-field" required style="margin-bottom: 15px;">
+        <option value="" disabled selected>Escolha uma opção...</option>
+        <option value="Excelente">Excelente, resolve meu problema!</option>
+        <option value="Boa">Boa, mas pode melhorar.</option>
+        <option value="Regular">Regular, não vi muita vantagem.</option>
+      </select>
+
+      <label style="font-size: 13px; font-weight: bold; color: #444;">Quanto você pagaria por mês?</label>
+      <select id="fb-preco" class="input-field" required style="margin-bottom: 15px;">
+        <option value="" disabled selected>Escolha um valor mensal...</option>
+        <option value="15-25">R$ 15,00 a R$ 25,00</option>
+        <option value="26-40">R$ 26,00 a R$ 40,00</option>
+        <option value="41-60">R$ 41,00 a R$ 60,00</option>
+        <option value="Nao_Pagaria">Não tenho interesse em pagar.</option>
+      </select>
+
+      <label style="font-size: 13px; font-weight: bold; color: #444;">O que faria você assinar hoje?</label>
+      <textarea id="fb-obs" class="input-field" rows="3" placeholder="Sugestões ou críticas..." style="margin-bottom: 15px;"></textarea>
+
+      <button type="submit" id="btn-feedback" class="btn-primario" style="background: #4a148c; width: 100%;">Enviar Feedback</button>
+    </form>
+  </div>
+</div>
+
+
 </body>
 </html>
