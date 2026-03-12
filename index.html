@@ -302,7 +302,7 @@ function fecharModalTermos() {
   document.getElementById('modal-termos').style.display = 'none';
 }
 
-// Atualize a solicitarAcessoSaaS para checar o checkbox
+// Atualize a solicitarAcessoSaaS para checar o checkbox, pegar o nome e remover o aviso do Google
 function solicitarAcessoSaaS() {
   // VERIFICAÇÃO LGPD ANTES DE ABRIR O GOOGLE
   const aceito = document.getElementById('aceito-termos').checked;
@@ -313,7 +313,10 @@ function solicitarAcessoSaaS() {
 
   const client = google.accounts.oauth2.initTokenClient({
     client_id: '824713665703-lr9iacceof0mg41c0gb61lm3qia4bpr7.apps.googleusercontent.com',
-    scope: 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.email',
+    
+    // 1. MUDANÇA CRÍTICA AQUI: Trocamos o drive pelo profile (Isso remove a tela de aviso do Google e traz o nome)
+    scope: 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile',
+    
     callback: (tokenResponse) => {
       if (tokenResponse && tokenResponse.access_token) {
         localStorage.setItem("google_access_token", tokenResponse.access_token);
@@ -321,16 +324,26 @@ function solicitarAcessoSaaS() {
         fetch('https://www.googleapis.com/oauth2/v3/userinfo?access_token=' + tokenResponse.access_token)
           .then(res => res.json())
           .then(data => {
+            // 2. MUDANÇA AQUI: Trava de segurança para garantir que pega o nome ou "Usuário"
+            const nomeCorreto = data.name || data.given_name || "Usuário";
+            
             localStorage.setItem("user_email", data.email);
-            localStorage.setItem("user_name", data.name); // <--- LINHA NOVA: Salva o nome real
+            localStorage.setItem("user_name", nomeCorreto); 
+            
             handleSaaSLogin(data.email);
+          })
+          .catch(err => {
+            console.error("Erro ao buscar dados do Google:", err);
+            // Em caso de falha de rede, previne o erro de undefined
+            localStorage.setItem("user_email", "Sem email");
+            localStorage.setItem("user_name", "Usuário");
+            handleSaaSLogin("Sem email");
           });
       }
     },
   });
   client.requestAccessToken();
 }
-
 // Atualize a handleSaaSLogin
 async function handleSaaSLogin(email) {
   // Se o login for automático (via window.onload), o checkbox não precisa estar visível
