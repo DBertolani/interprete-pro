@@ -668,22 +668,22 @@ async function iniciarTesteGratis() {
   document.getElementById('tela-trial').style.display = 'none';
   document.getElementById('tela-loading').style.display = 'flex';
   
-  // Busca o nome que salvamos no login. Se não achar, usa "Novo Usuário"
-  const nomeParaPlanilha = localStorage.getItem("user_name") || "Novo Usuário";
-  
+  // Lê o nome salvo no index.html. Se der erro e vier vazio, usa "Novo Usuário"
+  const nomeReal = localStorage.getItem("user_name") || "Novo Usuário";
+
   try {
-    // Agora enviamos a variável correta 'nomeParaPlanilha'
-    const res = await chamarGoogle("ativarTesteGratis", { nome: nomeParaPlanilha });
+    // Envia a variável nomeReal que acabamos de buscar
+    const res = await chamarGoogle("ativarTesteGratis", { nome: nomeReal });
     
     if (res && res.liberado) {
-      mostrarToast("🎉 Teste de 7 dias ativado com sucesso!", "sucesso");
+      mostrarToast("🎉 Teste de 7 dias ativado!", "sucesso");
       montarApp(res.dadosIniciais);
     } else {
       mostrarToast("❌ Erro ao ativar teste. Fale com o suporte.", "erro");
       location.reload(); 
     }
   } catch (err) {
-    console.error("Erro ao iniciar trial:", err);
+    console.error("Erro no trial:", err);
     mostrarToast("❌ Erro de conexão.", "erro");
   }
 }
