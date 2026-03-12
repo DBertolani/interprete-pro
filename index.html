@@ -129,6 +129,8 @@
           </div>
     
         <div class="menu-grid">
+
+          <button id="btn-tab-admin" class="menu-btn" onclick="abrirAdmin()" style="display:none; border: 2px solid #9c27b0; background: #f3e5f5;"><div class="menu-icon">🔑</div><div class="menu-text" style="color:#4a148c; font-weight:bold;">Master Admin</div></button>
           <button class="menu-btn" onclick="abrirRegistro()"><div class="menu-icon">➕</div><div class="menu-text">Novo Serviço</div></button>
           <button class="menu-btn" onclick="abrirHistorico()"><div class="menu-icon">🧾</div><div class="menu-text">Histórico</div></button>
           <button class="menu-btn" onclick="abrirRelatorios()"><div class="menu-icon">📊</div><div class="menu-text">Relatórios/NF</div></button>
@@ -208,6 +210,15 @@
           </div>
         </div> 
       </div> 
+
+        <div id="tela-admin" style="display: none;">
+          <div class="card">
+            <div class="header-app"><button class="btn-voltar-topo" onclick="voltarDashboard()">⬅</button><h2>Gestão Master</h2></div>
+            <p style="font-size:12px; color:#666; margin-bottom:15px;">Gerencie acessos e assinaturas dos usuários.</p>
+            <div id="lista-clientes-master">
+              </div>
+          </div>
+        </div>
 
 <div id="tela-configuracoes" style="display: none;">
   <div class="card">
