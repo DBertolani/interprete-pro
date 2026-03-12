@@ -95,6 +95,19 @@ function montarApp(dados) {
   document.getElementById('tela-app').style.display = 'block';
   document.getElementById('valor-pendente').innerText = "R$ " + dados.pendente;
   atualizarSelectsFormulario(dados);
+
+  // --- TRAVA DE VISUALIZAÇÃO MASTER ---
+  const emailLogado = localStorage.getItem("user_email");
+  const btnAdmin = document.getElementById('btn-tab-admin');
+  
+  if (btnAdmin) {
+    // Só mostra o botão se o e-mail logado for o seu
+    if (emailLogado === "danilobertolani@gmail.com") {
+      btnAdmin.style.display = 'block';
+    } else {
+      btnAdmin.style.display = 'none';
+    }
+  }
 }
 
 function atualizarSelectsFormulario(d) {
@@ -685,5 +698,60 @@ async function iniciarTesteGratis() {
   } catch (err) {
     console.error("Erro no trial:", err);
     mostrarToast("❌ Erro de conexão.", "erro");
+  }
+}
+
+
+async function abrirAdmin() {
+  document.getElementById('tela-app').style.display = 'none';
+  document.getElementById('tela-admin').style.display = 'block';
+  const container = document.getElementById('lista-clientes-master');
+  container.innerHTML = '<div class="loader"></div>';
+
+  try {
+    const res = await chamarGoogle("buscarTodosClientes");
+    container.innerHTML = "";
+
+    if (res.clientes && res.clientes.length > 0) {
+      res.clientes.forEach(c => {
+        const corStatus = c.status === 'Ativo' ? '#2e7d32' : '#c62828';
+        container.innerHTML += `
+          <div class="item-pendente" style="border-left: 5px solid ${corStatus}; margin-bottom:10px;">
+            <div style="display:flex; justify-content:space-between; align-items: start;">
+              <div style="flex: 1;">
+                <strong style="display: block; font-size: 14px;">${c.nome}</strong>
+                <span style="font-size: 12px; color: #666;">${c.email}</span>
+              </div>
+              <span style="font-size:10px; padding:3px 8px; border-radius:12px; background:#f0f0f0; font-weight: bold;">${c.status}</span>
+            </div>
+            <div style="font-size:12px; margin-top:8px; padding-top: 8px; border-top: 1px solid #f0f0f0;">
+              📅 Expira: <strong>${c.vencimento}</strong> | <span style="color: #9c27b0;">${c.plano || 'S/ Plano'}</span>
+            </div>
+            <div style="margin-top:12px; display:flex; gap:8px;">
+              <button onclick="gerenciarAcesso('${c.email}', 'Ativo')" style="flex:1; padding:10px; font-size:11px; background:#e8f5e9; color:#2e7d32; border:1px solid #2e7d32; border-radius:6px; cursor:pointer; font-weight: bold;">Ativar/Renovar</button>
+              <button onclick="gerenciarAcesso('${c.email}', 'Suspenso')" style="flex:1; padding:10px; font-size:11px; background:#ffebee; color:#c62828; border:1px solid #c62828; border-radius:6px; cursor:pointer; font-weight: bold;">Bloquear</button>
+            </div>
+          </div>
+        `;
+      });
+    } else {
+      container.innerHTML = "<p style='text-align:center; color:#666;'>Nenhum cliente encontrado.</p>";
+    }
+  } catch (err) {
+    mostrarToast("❌ Erro ao carregar painel master.", "erro");
+  }
+}
+
+async function gerenciarAcesso(emailAlvo, novoStatus) {
+  if(!confirm(`Deseja alterar o acesso de ${emailAlvo} para ${novoStatus}?`)) return;
+  
+  mostrarToast("⏳ Atualizando...");
+  const res = await chamarGoogle("alterarStatusCliente", { emailAlvo: emailAlvo, novoStatus: novoStatus });
+  
+  if (res.status === "Sucesso") {
+    mostrarToast("✅ Acesso atualizado!");
+    abrirAdmin(); // Recarrega a lista
+  } else {
+    mostrarToast("❌ Erro na atualização.", "erro");
   }
 }
