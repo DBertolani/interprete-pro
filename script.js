@@ -815,7 +815,7 @@ async function gerarPagamento() {
     } else {
       throw new Error(res.mensagem || "Erro desconhecido");
     }
-} catch (err) {
+  } catch (err) {  // <-- AGORA SIM, A CHAVE DO TRY FOI FECHADA CORRETAMENTE ANTES DO CATCH
     console.error("Erro ao gerar pagamento:", err);
     mostrarToast("❌ Erro ao gerar pagamento. Tente novamente.", "erro");
     btn.disabled = false;
