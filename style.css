@@ -68,21 +68,15 @@
   /* ESTILO DAS ABAS */
 .tabs-nav {
   display: flex;
-  overflow-x: auto; /* Permite arrastar para o lado */
+  flex-wrap: wrap; /* O segredo: permite que os botões desçam de linha */
+  justify-content: center; /* Centraliza o bloco de botões */
   gap: 8px;
-  margin-bottom: 15px;
-  padding-bottom: 8px;
-  -webkit-overflow-scrolling: touch; /* Rolagem suave no iPhone */
-}
-
-/* Oculta a barra de rolagem feia, mantendo a função */
-.tabs-nav::-webkit-scrollbar {
-  display: none;
+  margin-bottom: 20px;
 }
 
 .tab-btn {
-  flex: 0 0 auto; /* Impede o botão de encolher */
-  white-space: nowrap; /* Impede o texto de quebrar linha */
+  flex: 1 1 auto; /* Cresce para preencher o espaço de forma igual */
+  white-space: nowrap; /* Mantém o ícone junto com a palavra */
   padding: 10px 15px;
   background: #f1f3f4;
   border: none;
@@ -90,7 +84,9 @@
   cursor: pointer;
   font-weight: 600;
   color: #555;
+  font-size: 13px;
   transition: 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05); /* Leve sombra para destacar */
 }
 
 .tab-btn.active {
