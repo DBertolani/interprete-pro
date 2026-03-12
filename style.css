@@ -6,7 +6,7 @@
     margin: 0; 
     display: flex; 
     justify-content: center; 
-    align-items: flex-start; /* Mantém o app no topo mas centralizado */
+    align-items: flex-start; 
     min-height: 100vh; 
   }
   
@@ -18,7 +18,7 @@
     box-shadow: 0 0 20px rgba(0,0,0,0.1);
     display: flex;
     flex-direction: column;
-    margin: 0 auto; /* Centralização garantida no PC */
+    margin: 0 auto;
   }
 
   .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); margin-bottom: 15px; box-sizing: border-box; width:100%;}
@@ -36,10 +36,10 @@
   /* TELA DE LOADING PREMIUM - CENTRALIZADA E MAIOR */
   #tela-loading { 
     text-align: center; 
-    flex: 1; /* Ocupa o espaço todo disponível */
-    display: none; /* Ativado via JS como 'flex' */
+    flex: 1;
+    display: none; 
     flex-direction: column;
-    justify-content: center; /* Centraliza verticalmente */
+    justify-content: center; 
     align-items: center; 
     padding: 20px;
     background: white;
@@ -66,7 +66,7 @@
   .header-app h2 { margin: 0; font-size: 20px; flex: 1; text-align: center; color: #333;}
   .btn-voltar-topo { background: none; border: none; font-size: 26px !important; color: #666; cursor: pointer; padding: 5px 15px 5px 0; }
 
-  /* CARROSSEL DE AJUSTES MAIOR */
+  /* CARROSSEL DE AJUSTES MAIOR E FUNCIONAL NO PC */
   .tabs-wrapper {
     position: relative;
     margin-bottom: 20px;
@@ -78,13 +78,18 @@
     overflow-x: auto;
     gap: 12px;
     padding: 10px 5px;
-    scrollbar-width: none; /* Firefox */
+    scrollbar-width: thin; /* Mostra barra fina no Firefox PC */
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
   }
-  .tabs-nav::-webkit-scrollbar { display: none; } /* Chrome/Safari */
+  /* Mostra uma barra de rolagem discreta no PC para indicar que desliza */
+  .tabs-nav::-webkit-scrollbar { height: 4px; display: block; } 
+  .tabs-nav::-webkit-scrollbar-track { background: #f1f1f1; }
+  .tabs-nav::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
 
   .tab-btn {
-    flex: 0 0 110px; /* Mais largo */
-    height: 110px;   /* Mais alto (Quadrado) */
+    flex: 0 0 110px; 
+    height: 110px;   
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -92,10 +97,11 @@
     background: #f8f9fa;
     border: 2px solid #eee;
     border-radius: 18px;
-    font-size: 15px; /* Fonte maior */
+    font-size: 15px; 
     font-weight: bold;
     text-align: center;
     cursor: pointer;
+    transition: 0.2s;
   }
   .tab-btn.active {
     background: #f3e5f5;
@@ -107,7 +113,13 @@
   .tab-content { display: none; }
   .tab-content.active { display: block; }
 
-  /* Toast, Relatórios e Modais (Mantidos) */
+  .item-config-flex { display: flex !important; justify-content: space-between !important; align-items: center !important; gap: 10px; }
+  .item-config-flex div:last-child { display: flex; gap: 5px; flex-shrink: 0; }
+
+  .filtros-box label { margin-top: 5px; font-size: 12px; color: #1a237e; }
+  .filtros-box select, .filtros-box input { padding: 10px; font-size: 14px; margin-top: 2px; }
+  .grid-filtros { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
   .toast-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; width: 90%; max-width: 400px; }
   .toast { background: #323232; color: white; padding: 12px 20px; border-radius: 8px; margin-top: 10px; font-size: 14px; font-weight: 500; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15); animation: slideUp 0.3s ease, fadeOut 0.5s ease 2.5s forwards; }
   .toast.sucesso { background: #2e7d32; border-left: 5px solid #1b5e20; }
