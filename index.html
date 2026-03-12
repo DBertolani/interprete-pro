@@ -317,10 +317,12 @@ function solicitarAcessoSaaS() {
     callback: (tokenResponse) => {
       if (tokenResponse && tokenResponse.access_token) {
         localStorage.setItem("google_access_token", tokenResponse.access_token);
+          
         fetch('https://www.googleapis.com/oauth2/v3/userinfo?access_token=' + tokenResponse.access_token)
           .then(res => res.json())
           .then(data => {
             localStorage.setItem("user_email", data.email);
+            localStorage.setItem("user_name", data.name); // <--- LINHA NOVA: Salva o nome real
             handleSaaSLogin(data.email);
           });
       }
