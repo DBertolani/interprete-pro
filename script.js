@@ -826,6 +826,17 @@ async function gerarPagamento() {
 }
 
 // Função para processar e salvar o feedback na planilha
+// Controles do Modal de Feedback
+function abrirModalFeedback(e) {
+  if (e) e.preventDefault();
+  document.getElementById('modal-feedback').style.display = 'flex';
+}
+
+function fecharModalFeedback() {
+  document.getElementById('modal-feedback').style.display = 'none';
+}
+
+// Envio Inteligente do Feedback (Sem travar a tela)
 async function enviarFeedback(e) {
   e.preventDefault();
   const btn = document.getElementById('btn-feedback');
@@ -842,14 +853,19 @@ async function enviarFeedback(e) {
 
   try {
     const res = await chamarGoogle("salvarFeedback", dados);
-    if(res.status === "Sucesso") {
-      mostrarToast("✅ Feedback enviado! Muito obrigado!", "sucesso");
-      // Substitui o formulário por uma mensagem de agradecimento
-      document.getElementById('area-feedback').innerHTML = 
-        "<p style='text-align:center; color:#2e7d32; font-weight:bold; padding:20px;'>Obrigado! Sua opinião foi salva com sucesso. 🙏</p>";
+    
+    // Verifica se deu certo
+    if(res && res.status === "Sucesso") {
+      mostrarToast("✅ Feedback recebido! Muito obrigado.", "sucesso");
+      document.getElementById('formFeedback').reset();
+      fecharModalFeedback();
+    } else {
+      throw new Error("Erro no retorno do servidor");
     }
   } catch (err) {
-    mostrarToast("❌ Erro ao enviar feedback.", "erro");
+    mostrarToast("❌ Falha ao enviar. Tente novamente.", "erro");
+  } finally {
+    // Isso é crucial: independentemente de dar certo ou errado, destrava o botão!
     btn.innerText = textoOriginal;
     btn.disabled = false;
   }
