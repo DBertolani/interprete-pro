@@ -649,6 +649,9 @@ async function handleSaaSLogin(email) {
   
   // O e-mail já vem como parâmetro, não precisa de 'response.credential'
   localStorage.setItem("user_email", email);
+  
+  // ADICIONE ESTA LINHA ABAIXO (O parâmetro 'nome' deve vir da função que chama esta)
+  if (typeof nome !== 'undefined') localStorage.setItem("user_name", nome);
 
   try {
     const res = await chamarGoogle("verificarAcesso");
@@ -665,8 +668,13 @@ async function iniciarTesteGratis() {
   document.getElementById('tela-trial').style.display = 'none';
   document.getElementById('tela-loading').style.display = 'flex';
   
+  // Busca o nome que salvamos no login. Se não achar, usa "Novo Usuário"
+  const nomeParaPlanilha = localStorage.getItem("user_name") || "Novo Usuário";
+  
   try {
-    const res = await chamarGoogle("ativarTesteGratis", { nome: userNome });
+    // Agora enviamos a variável correta 'nomeParaPlanilha'
+    const res = await chamarGoogle("ativarTesteGratis", { nome: nomeParaPlanilha });
+    
     if (res && res.liberado) {
       mostrarToast("🎉 Teste de 7 dias ativado com sucesso!", "sucesso");
       montarApp(res.dadosIniciais);
@@ -675,6 +683,7 @@ async function iniciarTesteGratis() {
       location.reload(); 
     }
   } catch (err) {
+    console.error("Erro ao iniciar trial:", err);
     mostrarToast("❌ Erro de conexão.", "erro");
   }
 }
