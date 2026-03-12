@@ -51,7 +51,7 @@
     
     <div class="container-app">
       
-        <div id="tela-login-google" class="card" style="text-align: center; padding: 40px 20px;">
+        <div id="tela-login-google" class="card" style="display: none; text-align: center; padding: 40px 20px;">
             <div style="margin-bottom: 20px; display: flex; justify-content: center; width: 100%;">
               <img src="logo.png" alt="Logo IntérpretePro" style="width: 180px; height: 180px; border-radius: 50%; object-fit: cover; box-shadow: 0 4px 8px rgba(0,0,0,0.1); background: #fff;">
             </div>
@@ -116,7 +116,7 @@
               <a href="https://wa.me/5527996962395?text=Olá, Danilo! Gostaria de liberar meu acesso ao App InterpretePro." target="_blank" class="btn-primario" style="background: #25D366; display: inline-block; margin-top: 15px; text-decoration: none;">📲 Falar no WhatsApp</a>
             </div>
 
-        <div id="tela-home" class="card" style="display: none; padding: 25px 20px;">
+<div id="tela-home" class="card" style="display: block; padding: 25px 20px;">
   <div style="text-align: center; margin-bottom: 20px;">
     <img src="logo.png" style="width: 80px; height: 80px; border-radius: 50%; margin-bottom: 10px;">
     <h2 style="color: #4a148c; margin: 0;">Bem-vindo ao IntérpretePro!🤟</h2>
@@ -131,12 +131,12 @@
       <strong>📄 Relatórios Rápidos:</strong> Gere resumos para agências ou faturamento de NF.
     </div>
     <div style="background: #e8f5e9; padding: 12px; border-radius: 8px; font-size: 14px; border-left: 4px solid #2e7d32;">
-      <strong>🎁 Período Grátis:</strong> Você está no seu período de teste de 7 dias!
+      <strong>🎁 Período Grátis:</strong> Teste o sistema completo por 7 dias grátis!
     </div>
   </div>
 
-  <button onclick="irParaDashboard()" class="btn-primario" style="width: 100%; background: #4a148c; padding: 15px; font-size: 16px; margin-bottom: 30px;">
-    🚀 Entrar no Sistema
+  <button onclick="mostrarTelaLogin()" class="btn-primario" style="width: 100%; background: #4a148c; padding: 15px; font-size: 16px; margin-bottom: 30px;">
+    🚀 Acessar / Testar Grátis
   </button>
 
   <hr style="border: 0; border-top: 1px dashed #ccc; margin-bottom: 25px;">
@@ -144,7 +144,6 @@
   <div id="area-feedback">
     <h3 style="color: #4a148c; text-align: center; margin-bottom: 15px;">Sua opinião vale muito! 💬</h3>
     <form id="formFeedback" onsubmit="enviarFeedback(event)">
-      
       <label style="font-size: 13px; font-weight: bold; color: #444;">O que achou da ideia do App?</label>
       <select id="fb-ideia" class="input-field" required style="margin-bottom: 15px; width: 100%;">
         <option value="" disabled selected>Escolha uma opção...</option>
@@ -171,7 +170,6 @@
     </form>
   </div>
 </div>
-
         <div id="tela-app" style="display: none;">
           
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #e0e0e0;">
