@@ -406,18 +406,46 @@ function solicitarAcessoSaaS() {
 }
 // Atualize a handleSaaSLogin
 async function handleSaaSLogin(email) {
-  // Se o login for automático (via window.onload), o checkbox não precisa estar visível
-  document.getElementById('tela-loading').style.display = 'block';
-  document.getElementById('tela-login-google').style.display = 'none';
+  const telaLogin = document.getElementById('tela-login-google');
   
+  // 1. Só verifica o checkbox se a tela de login estiver visível
+  if (telaLogin.style.display !== 'none' && telaLogin.style.display !== '') {
+    const aceito = document.getElementById('aceito-termos').checked;
+    if (!aceito) {
+      fecharModalTermos();
+      mostrarToast("⚠️ Você precisa aceitar os Termos de Uso para entrar.", "erro");
+      return; 
+    }
+  }
+
+  // 👇 INÍCIO DA CORREÇÃO DO NOME 👇
+  // Puxa o nome que o Google acabou de nos dar e coloca na tela
+  const nomeCompleto = localStorage.getItem("user_name");
+  if (nomeCompleto && nomeCompleto !== "Usuário") {
+    const primeiroNome = nomeCompleto.split(" ")[0];
+    const spanNome = document.getElementById('nome-usuario-loading');
+    if (spanNome) spanNome.innerText = primeiroNome;
+  }
+  // 👆 FIM DA CORREÇÃO 👆
+
+  // 2. ESCONDE TUDO E MOSTRA SÓ O LOADING VIP
+  document.querySelectorAll('.container-app > div').forEach(d => d.style.display = 'none');
+  document.getElementById('tela-loading').style.display = 'block';
+  
+  localStorage.setItem("user_email", email);
+
   try {
     const res = await chamarGoogle("verificarAcesso");
     validarPortaria(res);
   } catch (e) {
     console.error("Erro no Login:", e);
     mostrarToast("❌ Falha na comunicação.", "erro");
+    // Em caso de erro, volta para a tela inicial
+    document.getElementById('tela-loading').style.display = 'none';
+    document.getElementById('tela-home').style.display = 'block';
   }
 }
+        
 </script>
 
 <div id="modal-termos" class="modal-lgpd" style="display: none;">
