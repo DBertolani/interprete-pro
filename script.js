@@ -638,8 +638,20 @@ function confirmarLogout() {
 window.onload = () => {
   const token = localStorage.getItem("google_access_token");
   const email = localStorage.getItem("user_email");
-  // Se já existe e-mail salvo, entra direto pulando o checkbox
+  const nomeCompleto = localStorage.getItem("user_name");
+
+  // Se já existe e-mail salvo, entra direto pulando a vitrine
   if (token && email) {
+    // Esconde a Vitrine (Home) IMEDIATAMENTE para não piscar na tela
+    document.getElementById('tela-home').style.display = 'none';
+    
+    // Pega só o primeiro nome da pessoa para ficar amigável
+    if (nomeCompleto && nomeCompleto !== "Usuário") {
+      const primeiroNome = nomeCompleto.split(" ")[0];
+      const spanNome = document.getElementById('nome-usuario-loading');
+      if (spanNome) spanNome.innerText = primeiroNome;
+    }
+
     handleSaaSLogin(email);
   }
 };
@@ -656,11 +668,11 @@ function fecharModalTermos() {
 }
 
 // AJUSTE NA FUNÇÃO DE LOGIN EXISTENTE
-// AJUSTE FINAL: Compatível com o botão azul e login automático
 async function handleSaaSLogin(email) {
-  // 1. Só verifica o checkbox se a tela de login estiver visível (evita travar o login automático)
   const telaLogin = document.getElementById('tela-login-google');
-  if (telaLogin.style.display !== 'none') {
+  
+  // 1. Só verifica o checkbox se a tela de login estiver visível
+  if (telaLogin.style.display !== 'none' && telaLogin.style.display !== '') {
     const aceito = document.getElementById('aceito-termos').checked;
     if (!aceito) {
       fecharModalTermos();
@@ -669,14 +681,11 @@ async function handleSaaSLogin(email) {
     }
   }
 
-  // 2. Prossiga com o login
-  document.getElementById('tela-loading').style.display = 'flex';
-  telaLogin.style.display = 'none';
+  // 2. ESCONDE TUDO E MOSTRA SÓ O LOADING VIP
+  document.querySelectorAll('.container-app > div').forEach(d => d.style.display = 'none');
+  document.getElementById('tela-loading').style.display = 'block';
   
-  // O e-mail já vem como parâmetro, não precisa de 'response.credential'
   localStorage.setItem("user_email", email);
-  
-  // ADICIONE ESTA LINHA ABAIXO (O parâmetro 'nome' deve vir da função que chama esta)
   if (typeof nome !== 'undefined') localStorage.setItem("user_name", nome);
 
   try {
@@ -685,8 +694,9 @@ async function handleSaaSLogin(email) {
   } catch (e) {
     console.error("Erro no Login:", e);
     mostrarToast("❌ Falha na comunicação.", "erro");
-    telaLogin.style.display = 'block';
+    // Em caso de erro, volta para a tela inicial
     document.getElementById('tela-loading').style.display = 'none';
+    document.getElementById('tela-home').style.display = 'block';
   }
 }
 
