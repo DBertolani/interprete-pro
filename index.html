@@ -45,6 +45,47 @@
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <link rel="stylesheet" href="style.css">
 
+<style>
+  /* --- PACOTE DE ACESSIBILIDADE PARA CELULAR --- */
+  
+  /* 1. Aumenta e melhora o Botão de Voltar (Seta) */
+  .btn-voltar-topo {
+    font-size: 26px !important;
+    padding: 5px 20px !important;
+    margin-right: 10px;
+  }
+  
+  /* 2. Títulos do App maiores */
+  .header-app h2 {
+    font-size: 22px !important;
+  }
+  
+  /* 3. Transforma a Aba Ajustes num menu que você pode arrastar pro lado no celular (Scroll horizontal) e aumenta a letra */
+  .tabs-nav {
+    display: flex;
+    overflow-x: auto;
+    white-space: nowrap;
+    padding-bottom: 12px;
+    gap: 8px;
+    -webkit-overflow-scrolling: touch; /* Fica liso no iPhone */
+  }
+  .tab-btn {
+    font-size: 15px !important;
+    padding: 12px 20px !important;
+    flex-shrink: 0; /* Impede os botões de ficarem esmagados */
+  }
+  
+  /* 4. Evita que o celular precise dar zoom ao clicar em um campo */
+  input, select, textarea {
+    font-size: 16px !important; 
+  }
+  
+  /* 5. Aumenta a letra das labels dos formulários */
+  label {
+    font-size: 14px !important;
+  }
+</style>
+
 </head>
 <body>
     <div id="toast-container" class="toast-container"></div>
@@ -79,11 +120,13 @@
             </div>
         </div>
             
-<div id="tela-loading" class="card" style="display: none; text-align: center; padding: 50px 20px; border-radius: 15px; border-top: 5px solid #4a148c;">
-  <img src="logo.png" style="width: 80px; height: 80px; border-radius: 50%; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
-  <h2 style="color: #4a148c; margin-bottom: 10px; font-weight: 800;">Olá, <span id="nome-usuario-loading" style="color: #FF9800;">Intérprete</span>! 🤟</h2>
-  <p style="color: #666; font-size: 15px; margin-bottom: 25px;">Estamos organizando o seu escritório...</p>
-  <div class="loader" style="margin: 0 auto;"></div>
+<div id="tela-loading" class="card" style="display: none; border-radius: 15px; border-top: 5px solid #4a148c; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+  <div style="text-align: center; padding: 60px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 50vh;">
+    <img src="logo.png" style="width: 120px; height: 120px; border-radius: 50%; margin-bottom: 25px; box-shadow: 0 6px 15px rgba(0,0,0,0.15);">
+    <h2 style="color: #4a148c; margin-bottom: 15px; font-weight: 900; font-size: 28px; line-height: 1.2;">Olá,<br><span id="nome-usuario-loading" style="color: #FF9800;">Intérprete</span>! 🤟</h2>
+    <p style="color: #666; font-size: 16px; margin-bottom: 35px;">Estamos organizando o seu escritório...</p>
+    <div class="loader" style="transform: scale(1.5);"></div>
+  </div>
 </div>
 
         <div id="tela-trial" class="card" style="display: none; text-align: center; padding: 40px 20px;">
