@@ -782,3 +782,32 @@ function fecharConfirmacao(valor) {
   document.getElementById('modal-confirmacao').style.display = 'none';
   if (confirmacaoResolve) confirmacaoResolve(valor);
 }
+
+
+async function gerarPagamento() {
+  const btn = document.getElementById('btn-pagar');
+  const textoOriginal = btn.innerText;
+  
+  // Efeito de carregamento no botão
+  btn.disabled = true;
+  btn.innerText = "⏳ Gerando link seguro...";
+  btn.style.opacity = "0.7";
+
+  try {
+    const res = await chamarGoogle("gerarLinkPagamento");
+    
+    if (res && res.status === "Sucesso") {
+      mostrarToast("🚀 Redirecionando para o Mercado Pago...");
+      // Abre o link do Mercado Pago na mesma aba
+      window.location.href = res.url;
+    } else {
+      throw new Error(res.mensagem || "Erro desconhecido");
+    }
+  } catch (err) {
+    console.error("Erro ao gerar pagamento:", err);
+    mostrarToast("❌ Erro ao gerar pagamento. Tente novamente.", "erro");
+    btn.disabled = false;
+    btn.innerText = textoOriginal;
+    btn.style.opacity = "1";
+  }
+}
