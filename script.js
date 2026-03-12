@@ -65,16 +65,19 @@ function mudarAba(aba) {
 
 // --- 4. NAVEGAÇÃO E PORTARIA ---
 function validarPortaria(resposta) {
+  document.getElementById('tela-loading').style.display = 'none';
+
   if (resposta && resposta.liberado === true) {
-    // IMPORTANTE: Agora usamos 'resposta.dadosIniciais' que veio do doPost
     montarApp(resposta.dadosIniciais); 
+  } else if (resposta && resposta.isNovo === true) {
+    // É usuário novo? Mostra o presente!
+    document.getElementById('tela-login-google').style.display = 'none';
+    document.getElementById('tela-trial').style.display = 'block';
   } else {
-    document.getElementById('tela-loading').style.display = 'none';
+    // Está bloqueado ou vencido? Mostra a tela de erro normal.
     document.getElementById('email-bloqueado').innerText = (resposta && resposta.email) || "não identificado";
-    
     const msgErro = (resposta && resposta.motivo) ? resposta.motivo : "E-mail sem licença ativa.";
     document.getElementById('motivo-bloqueio').innerText = msgErro;
-    
     document.getElementById('tela-bloqueio').style.display = 'block';
   }
 }
@@ -655,5 +658,23 @@ async function handleSaaSLogin(email) {
     mostrarToast("❌ Falha na comunicação.", "erro");
     telaLogin.style.display = 'block';
     document.getElementById('tela-loading').style.display = 'none';
+  }
+}
+
+async function iniciarTesteGratis() {
+  document.getElementById('tela-trial').style.display = 'none';
+  document.getElementById('tela-loading').style.display = 'flex';
+  
+  try {
+    const res = await chamarGoogle("ativarTesteGratis");
+    if (res && res.liberado) {
+      mostrarToast("🎉 Teste de 7 dias ativado com sucesso!", "sucesso");
+      montarApp(res.dadosIniciais);
+    } else {
+      mostrarToast("❌ Erro ao ativar teste. Fale com o suporte.", "erro");
+      location.reload(); 
+    }
+  } catch (err) {
+    mostrarToast("❌ Erro de conexão.", "erro");
   }
 }
