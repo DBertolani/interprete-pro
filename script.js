@@ -666,7 +666,7 @@ async function iniciarTesteGratis() {
   document.getElementById('tela-loading').style.display = 'flex';
   
   try {
-    const res = await chamarGoogle("ativarTesteGratis");
+    const res = await chamarGoogle("ativarTesteGratis", { nome: userNome });
     if (res && res.liberado) {
       mostrarToast("🎉 Teste de 7 dias ativado com sucesso!", "sucesso");
       montarApp(res.dadosIniciais);
