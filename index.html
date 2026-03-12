@@ -110,10 +110,67 @@
             
               <p style="margin-top: 25px; font-size: 14px;">Para adquirir o sistema <strong>IntérpretePro</strong> ou renovar seu acesso, entre em contato:</p>
 
-              <button onclick="gerarPagamento()" id="btn-pagar" class="btn-primario" style="background: #4a148c; width: 100%; margin-top: 15px; font-weight: bold;">💳 Assinar Plano Profissional</button
-              
+              <button onclick="gerarPagamento()" id="btn-pagar" class="btn-primario" style="display: none;">
+                  💳 Assinar Plano Profissional
+                </button>             
               <a href="https://wa.me/5527996962395?text=Olá, Danilo! Gostaria de liberar meu acesso ao App InterpretePro." target="_blank" class="btn-primario" style="background: #25D366; display: inline-block; margin-top: 15px; text-decoration: none;">📲 Falar no WhatsApp</a>
             </div>
+
+        <div id="tela-home" class="card" style="display: none; padding: 25px 20px;">
+  <div style="text-align: center; margin-bottom: 20px;">
+    <img src="logo.png" style="width: 80px; height: 80px; border-radius: 50%; margin-bottom: 10px;">
+    <h2 style="color: #4a148c; margin: 0;">Bem-vindo ao IntérpretePro!🤟</h2>
+    <p style="color: #666; font-size: 14px;">Seu parceiro na gestão financeira de LIBRAS.</p>
+  </div>
+
+  <div class="infos-app" style="margin-bottom: 25px;">
+    <div style="background: #f3e5f5; padding: 12px; border-radius: 8px; margin-bottom: 10px; font-size: 14px; border-left: 4px solid #9c27b0;">
+      <strong>📈 Controle Total:</strong> Registre seus atendimentos e valores em segundos.
+    </div>
+    <div style="background: #f3e5f5; padding: 12px; border-radius: 8px; margin-bottom: 10px; font-size: 14px; border-left: 4px solid #9c27b0;">
+      <strong>📄 Relatórios Rápidos:</strong> Gere resumos para agências ou faturamento de NF.
+    </div>
+    <div style="background: #e8f5e9; padding: 12px; border-radius: 8px; font-size: 14px; border-left: 4px solid #2e7d32;">
+      <strong>🎁 Período Grátis:</strong> Você está no seu período de teste de 7 dias!
+    </div>
+  </div>
+
+  <button onclick="irParaDashboard()" class="btn-primario" style="width: 100%; background: #4a148c; padding: 15px; font-size: 16px; margin-bottom: 30px;">
+    🚀 Entrar no Sistema
+  </button>
+
+  <hr style="border: 0; border-top: 1px dashed #ccc; margin-bottom: 25px;">
+
+  <div id="area-feedback">
+    <h3 style="color: #4a148c; text-align: center; margin-bottom: 15px;">Sua opinião vale muito! 💬</h3>
+    <form id="formFeedback" onsubmit="enviarFeedback(event)">
+      
+      <label style="font-size: 13px; font-weight: bold; color: #444;">O que achou da ideia do App?</label>
+      <select id="fb-ideia" class="input-field" required style="margin-bottom: 15px; width: 100%;">
+        <option value="" disabled selected>Escolha uma opção...</option>
+        <option value="Excelente">Excelente, resolve meu problema!</option>
+        <option value="Boa">Boa, mas pode melhorar.</option>
+        <option value="Regular">Regular, não vi muita vantagem.</option>
+      </select>
+
+      <label style="font-size: 13px; font-weight: bold; color: #444;">Quanto você pagaria por mês?</label>
+      <select id="fb-preco" class="input-field" required style="margin-bottom: 15px; width: 100%;">
+        <option value="" disabled selected>Escolha um valor mensal...</option>
+        <option value="15-25">R$ 15,00 a R$ 25,00</option>
+        <option value="26-40">R$ 26,00 a R$ 40,00</option>
+        <option value="41-60">R$ 41,00 a R$ 60,00</option>
+        <option value="Nao_Pagaria">Não tenho interesse em pagar.</option>
+      </select>
+
+      <label style="font-size: 13px; font-weight: bold; color: #444;">O que faria você assinar o app hoje?</label>
+      <textarea id="fb-obs" class="input-field" rows="3" placeholder="Sugestões, críticas ou elogios..." style="margin-bottom: 15px; width: 100%;"></textarea>
+
+      <button type="submit" id="btn-feedback" class="btn-primario" style="background: #607d8b; border: none; font-size: 14px;">
+        Enviar Minha Opinião
+      </button>
+    </form>
+  </div>
+</div>
 
         <div id="tela-app" style="display: none;">
           
