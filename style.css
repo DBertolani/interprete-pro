@@ -1,23 +1,26 @@
 <style>
-  /* 1. Faz o fundo ser uniforme e centralizado sem cortes */
+  /* 1. Ajuste de Fundo e Centralização Real */
   body { 
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-    background-color: #f4f7f6; /* Cor de fundo da página */
+    background-color: #f4f7f6; 
     margin: 0; 
     display: flex; 
     justify-content: center; 
+    align-items: flex-start; /* Mantém o app no topo mas centralizado */
     min-height: 100vh; 
   }
   
   .container-app { 
     width: 100%; 
     max-width: 450px; 
-    background-color: white; /* Garante que o fundo do app seja branco total */
+    background-color: white; 
     min-height: 100vh; 
-    box-shadow: 0 0 20px rgba(0,0,0,0.05);
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
     display: flex;
     flex-direction: column;
+    margin: 0 auto; /* Centralização garantida no PC */
   }
+
   .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); margin-bottom: 15px; box-sizing: border-box; width:100%;}
   
   .dash-card { background: linear-gradient(135deg, #4CAF50, #2E7D32); color:white; text-align: center; padding: 25px 15px; border-radius: 16px;}
@@ -30,20 +33,29 @@
   .menu-icon { font-size: 28px; margin-bottom: 8px; }
   .menu-text { font-size: 13px; font-weight: 600; color: #455a64; }
 
-  #tela-loading { text-align: center; margin-top: 50px; }
-  .loader { border: 4px solid #f3f3f3; border-top: 4px solid #4CAF50; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; }
+  /* TELA DE LOADING PREMIUM - CENTRALIZADA E MAIOR */
+  #tela-loading { 
+    text-align: center; 
+    flex: 1; /* Ocupa o espaço todo disponível */
+    display: none; /* Ativado via JS como 'flex' */
+    flex-direction: column;
+    justify-content: center; /* Centraliza verticalmente */
+    align-items: center; 
+    padding: 20px;
+    background: white;
+  }
+  .loader { border: 6px solid #f3f3f3; border-top: 6px solid #FF9800; border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; margin: 20px auto; }
   @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
   
-  /* ACESSIBILIDADE: Fontes aumentadas para não forçar a vista e evitar zoom automático no celular */
   label { font-weight: 600; display: block; margin-top: 15px; color: #37474f; font-size: 14px;}
   input, select, textarea { 
     width: 100%; 
-    padding: 10px; /* Levemente maior para facilitar o toque */
+    padding: 10px; 
     margin-top: 5px; 
     border: 1px solid #cfd8dc; 
     border-radius: 8px; 
     box-sizing: border-box; 
-    font-size: 16px !important; /* Obriga o iOS a não dar zoom na tela */
+    font-size: 16px !important; 
     background-color: #f8fafc;
   }
   
@@ -52,89 +64,50 @@
   
   .header-app { display: flex; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px;}
   .header-app h2 { margin: 0; font-size: 20px; flex: 1; text-align: center; color: #333;}
-  
-  /* ACESSIBILIDADE: Seta de voltar bem maior */
   .btn-voltar-topo { background: none; border: none; font-size: 26px !important; color: #666; cursor: pointer; padding: 5px 15px 5px 0; }
 
-  .filtros-box { background: #f0f8ff; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #90caf9; }
-  .grid-filtros { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-
-  .item-pendente { 
-    background: #fff; 
-    border-left: 4px solid #ff9800; 
-    padding: 10px 12px; /* Devolvendo um pouco do respiro */
-    margin-bottom: 8px; 
-    border-radius: 8px; 
-    box-shadow: 0 2px 5px rgba(0,0,0,0.06); 
-  }
-
-  .acoes-card { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; border-top: 1px solid #eee; padding-top: 10px; }
-
-  .btn-acao { border: none; padding: 8px 12px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer;}
-  .btn-baixa { background-color: #4CAF50; color: white; }
-  .btn-editar { background-color: #ffb300; color: white; }
-  .btn-excluir { background-color: #e53935; color: white; }
-
-  /* ESTILO DAS ABAS (CARROSSEL TIPO IFOOD COM DICA VISUAL) */
+  /* CARROSSEL DE AJUSTES MAIOR */
   .tabs-wrapper {
     position: relative;
     margin-bottom: 20px;
+    width: 100%;
+    overflow: hidden;
   }
-  
-  /* A sombra na borda direita indica que tem mais conteúdo escondido */
-  .tabs-wrapper::after {
-    content: '';
-    position: absolute;
-    top: 0; right: 0; bottom: 0;
-    width: 30px;
-    background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%);
-    pointer-events: none;
-    border-radius: 0 12px 12px 0;
-  }
-
-  /* 2. Ajuste dos botões de Ajustes (Estilo iFood "Quadrado") */
   .tabs-nav {
     display: flex;
     overflow-x: auto;
     gap: 12px;
-    padding: 15px 5px;
-    scrollbar-width: none;
+    padding: 10px 5px;
+    scrollbar-width: none; /* Firefox */
   }
-  .tabs-nav::-webkit-scrollbar { display: none; }
-  .tabs-nav::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px;}
-  .tabs-nav::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px;}
+  .tabs-nav::-webkit-scrollbar { display: none; } /* Chrome/Safari */
 
-.tab-btn {
-  flex: 0 0 100px; /* Largura fixa para parecer um quadrado */
-  height: 100px;   /* Altura igual à largura */
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: #f8f9fa;
-  border: 2px solid #eee;
-  border-radius: 16px;
-  font-size: 14px;
-  font-weight: bold;
-  white-space: normal; /* Permite quebrar linha se o texto for grande */
-  text-align: center;
-}
-.tab-btn.active {
-  background: #f3e5f5;
-  border-color: #9c27b0;
-  color: #4a148c;
-}
+  .tab-btn {
+    flex: 0 0 110px; /* Mais largo */
+    height: 110px;   /* Mais alto (Quadrado) */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+    border: 2px solid #eee;
+    border-radius: 18px;
+    font-size: 15px; /* Fonte maior */
+    font-weight: bold;
+    text-align: center;
+    cursor: pointer;
+  }
+  .tab-btn.active {
+    background: #f3e5f5;
+    border-color: #9c27b0;
+    color: #4a148c;
+    box-shadow: 0 4px 10px rgba(156, 39, 176, 0.15);
+  }
+
   .tab-content { display: none; }
   .tab-content.active { display: block; }
 
-  .item-config-flex { display: flex !important; justify-content: space-between !important; align-items: center !important; gap: 10px; }
-  .item-config-flex div:last-child { display: flex; gap: 5px; flex-shrink: 0; }
-
-  .filtros-box label { margin-top: 5px; font-size: 12px; color: #1a237e; }
-  .filtros-box select, .filtros-box input { padding: 10px; font-size: 14px; margin-top: 2px; }
-  .grid-filtros { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-
-  /* Estilo do Toast */
+  /* Toast, Relatórios e Modais (Mantidos) */
   .toast-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; width: 90%; max-width: 400px; }
   .toast { background: #323232; color: white; padding: 12px 20px; border-radius: 8px; margin-top: 10px; font-size: 14px; font-weight: 500; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15); animation: slideUp 0.3s ease, fadeOut 0.5s ease 2.5s forwards; }
   .toast.sucesso { background: #2e7d32; border-left: 5px solid #1b5e20; }
@@ -144,12 +117,8 @@
 
   .relatorio-stats { display: flex; gap: 10px; margin-bottom: 20px; }
   .stat-card { flex: 1; background: white; padding: 15px; border-radius: 12px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #f3e5f5; transition: transform 0.2s; }
-  .stat-card:active { transform: scale(0.98); }
-  .stat-label { display: block; font-size: 11px; text-transform: uppercase; color: #7b1fa2; font-weight: bold; margin-bottom: 5px; }
   .stat-card strong { font-size: 18px; color: #4a148c; }
-  .item-relatorio { background: white; border-radius: 10px; padding: 12px; margin-bottom: 10px; border-left: 4px solid #9c27b0; box-shadow: 0 2px 4px rgba(0,0,0,0.03); }
 
   .modal-lgpd { position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; }
-  .modal-content { background-color: #fff; width: 90%; max-width: 450px; border-radius: 12px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); animation: subirModal 0.3s ease-out; }
-  @keyframes subirModal { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .modal-content { background-color: #fff; width: 90%; max-width: 450px; border-radius: 12px; padding: 20px; animation: subirModal 0.3s ease-out; }
 </style>
