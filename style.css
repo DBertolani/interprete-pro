@@ -676,4 +676,25 @@ textarea {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+/* ============================================================
+   ESTADO DE STANDBY: BOTÕES DE PAGAMENTO
+   (Para reativar, basta comentar ou apagar as regras abaixo)
+   ============================================================ */
+button[onclick="gerarPagamento()"] {
+  pointer-events: none !important;
+  /* Desativa o clique */
+  filter: grayscale(1) !important;
+  /* Deixa o botão cinza */
+  opacity: 0.6 !important;
+  /* Deixa meio transparente */
+  cursor: not-allowed !important;
+}
+
+/* Opcional: Adiciona um aviso visual de "Em breve" ou "Indisponível" */
+button[onclick="gerarPagamento()"]::after {
+  content: " (Temporariamente Indisponível)";
+  font-size: 10px;
+  display: block;
+}
+
 </style>
