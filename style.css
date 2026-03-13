@@ -1,293 +1,327 @@
 <style>
-/* 1. Ajuste de Fundo e Centralização Real */
-  body { 
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-    background-color: #f4f7f6; 
-    margin: 0; 
-    display: flex; 
-    justify-content: center; 
-    align-items: center; /* Centraliza o container no meio da tela no PC */
-    min-height: 100vh; 
-    padding: 20px 0;
-    width: 100vw;         /* ← ADICIONE ISTO */
-    overflow-x: hidden;   /* ← ADICIONE ISTO */
-  }
 
-/* LOGO + NOME NO TOPO (MAIS VISÍVEL) - AUMENTADO */
-.header-app-logo {
-    font-size: 26px !important; /* ✏️ MUDANÇA: 22px → 26px */
-    font-weight: 900 !important;
-    color: #4a148c;
-    text-shadow: 1px 1px 0px rgba(0,0,0,0.05);
-  }
-  
+/* =====================================================
+BASE / BODY
+===================================================== */
+
+body { 
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+  background-color: #f4f7f6; 
+  margin: 0; 
+  display: flex; 
+  justify-content: center; 
+  align-items: center;
+  min-height: 100vh; 
+  padding: 20px 0;
+  overflow-x: hidden;
+}
+
+/* =====================================================
+CONTAINER PRINCIPAL DO APP
+===================================================== */
+
 .container-app { 
-    width: 100%; 
-    max-width: 450px; 
-    background-color: white; 
-    min-height: 100vh; 
-    box-shadow: 0 0 15px rgba(0,0,0,0.08);
-    display: flex;
-    flex-direction: column;
-    margin: 0 auto;
-    padding: 0; 
-    box-sizing: border-box;
-  }
+  width: 100%; 
+  max-width: 450px; 
+  background-color: white; 
+  min-height: 100vh; 
+  box-shadow: 0 0 15px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+  margin: 0 auto;
+  padding: 0; 
+  box-sizing: border-box;
+}
 
 #tela-app {
-    padding: 0 15px;
+  padding: 0 15px;
 }
 
-#tela-configuracoes .card { padding: 12px; }
+/* =====================================================
+HEADER / LOGO
+===================================================== */
 
-/* ✏️ MUDANÇA: Ajuste para alinhar valores na lista de agências */
-    .valor-tag {
-    color: #2e7d32;
-    font-weight: bold;
-    background: #e8f5e9;
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-size: 14px;
-    margin: 0;
-    min-width: auto;
-    text-align: center;
-    white-space: nowrap;      /* ✏️ NOVO: impede quebra de linha */
-    flex-shrink: 0;           /* ✏️ NOVO: não encolhe */
-    display: inline-block;    /* ✏️ NOVO: alinha melhor */
-  }
-
-  /* 2. Ajuste para telas de Introdução (Home, Login, Loading) */
-  /* Isso faz com que elas ocupem a altura toda e centralizem o conteúdo verticalmente */
-#tela-home, #tela-login-google, #tela-loading, #tela-trial, #tela-bloqueio {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center !important;      /* !important só AQUI */
-    align-items: center !important;          /* !important só AQUI */
-    text-align: center !important;           /* !important só AQUI */
-    padding: 20px;
+.header-app-logo {
+  font-size: 26px !important;
+  font-weight: 900 !important;
+  color: #4a148c;
+  text-shadow: 1px 1px 0px rgba(0,0,0,0.05);
 }
 
-    #tela-login-google {
-        min-height: 100vh !important;
-        height: 100vh !important;
-    }
-    
-    #tela-home {
-        min-height: 100vh !important;
-        height: 100vh !important;
-    }
-    
-    #tela-loading {
-        min-height: 100vh !important;
-        height: 100vh !important;
-    }
-
-  .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); margin-bottom: 15px; box-sizing: border-box; width:100%;}
-  
-  .dash-card { background: linear-gradient(135deg, #4CAF50, #2E7D32); color:white; text-align: center; padding: 25px 15px; border-radius: 16px;}
-  .dash-title { margin: 0; font-size: 14px; text-transform: uppercase; font-weight: 600; opacity: 0.9;}
-  .dash-value { font-size: 36px; font-weight: bold; margin: 5px 0 0 0; }
-
-  .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
-  .menu-btn { background: white; border: none; border-radius: 12px; padding: 20px 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); text-align: center; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.2s;}
-  .menu-btn:active { background: #f0f0f0; transform: scale(0.98);}
-  .menu-icon { font-size: 32px; margin-bottom: 8px; } /* ✏️ MUDANÇA: 28px → 32px */
-  .menu-text { font-size: 14px; font-weight: 700; color: #455a64; }
-
-#tela-loading {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    
-    display: none;
-    flex-direction: column !important;
-    justify-content: center !important;
-    align-items: center !important;
-    text-align: center !important;
-    
-    z-index: 10000 !important;
-    background: white !important;
-    
-    margin: 0 !important;
-    padding: 20px !important;
-    box-sizing: border-box !important;
-}
-
-  .loader { border: 6px solid #f3f3f3; border-top: 6px solid #FF9800; border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; margin: 25px auto; }
-  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-  
-label { font-size: 15px; font-weight: 600; margin-top: 18px; }
-  input, select, textarea { 
-    width: 100%; 
-    padding: 12px; 
-    margin-top: 5px; 
-    border: 1px solid #cfd8dc; 
-    border-radius: 8px; 
-    box-sizing: border-box; 
-    font-size: 16px !important; 
-    background-color: #f8fafc;
-  }
-  
-  .btn-primario { background-color: #4CAF50; color: white; border: none; padding: 15px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 20px; }
-  .btn-voltar { background-color: transparent; color: #78909c; border: 1px solid #cfd8dc; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 15px; }
-  
-  .header-app { display: flex; align-items: center; margin-bottom: 20px; border-bottom: none solid #eee; padding-bottom: 10px;}
-  .header-app h2 { margin: 0; font-size: 20px; flex: 1; text-align: center; color: #333;}
-  .btn-voltar-topo { background: none; border: none; font-size: 26px !important; color: #666; cursor: pointer; padding: 5px 15px 5px 0; }
-
-  .filtros-box { background: #f0f8ff; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #90caf9; }
-  .grid-filtros { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-
-  .item-pendente { 
-    background: #fff; 
-    border-left: 4px solid #ff9800; 
-    padding: 10px 12px; 
-    margin-bottom: 8px; 
-    border-radius: 8px; 
-    box-shadow: 0 2px 5px rgba(0,0,0,0.06); 
-  }
-
-/* ALINHAMENTO DAS LISTAS (BOTÕES À DIREITA) */
-  .item-config-flex { 
-    display: flex !important; 
-    justify-content: space-between !important; 
-    align-items: center !important; 
-    gap: 15px; 
-  }
-  .item-config-flex strong { flex: 1; } /* Faz o texto ocupar o espaço e empurrar botões */
-
-  .acoes-card { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; border-top: 1px solid #eee; padding-top: 10px; }
-
-  .btn-acao { border: none; padding: 8px 12px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer;}
-  .btn-baixa { background-color: #4CAF50; color: white; }
-  .btn-editar { background-color: #ffb300; color: white; }
-  .btn-excluir { background-color: #e53935; color: white; }
-
-/* SETAS DE NAVEGAÇÃO NOS AJUSTES */
-  .tabs-wrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
-    background: #f8f9fa;
-    border-radius: 12px;
-    padding: 0 10px;
-  }
-
-.scroll-arrow {
-    background: none;
-    border: none;
-    font-size: 20px;
-    color: #9c27b0;
-    cursor: pointer;
-    padding: 10px;
-    display: flex;
-    align-items: center;
-    opacity: 0.6;
-    transition: 0.2s;
-  }
-  .scroll-arrow:hover { opacity: 1; transform: scale(1.2); }
-
-  .tabs-nav {
-    display: flex;
-    overflow-x: auto; /* Habilita o scroll horizontal */
-    gap: 12px;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-color: #ccc #f1f1f1;
-    scrollbar-width: none; 
-    -ms-overflow-style: none;
-    padding: 15px 0 !important;
-  }
-
-  /* Estilização da barra para o computador (Chrome/Edge/Safari) */
-  .tabs-nav::-webkit-scrollbar {
-    height: 6px; /* Barra fina e visível no PC */
-  }
-  .tabs-nav::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 10px;
-  }
-  .tabs-nav::-webkit-scrollbar-thumb {
-    background: #ccc;
-    border-radius: 10px;
-  }
-  .tabs-nav::-webkit-scrollbar-thumb:hover {
-    background: #9c27b0;
-  }
-
-  .tab-btn {
-    flex: 0 0 110px; /* Quadrados ligeiramente maiores */
-    height: 110px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: #f8f9fa;
-    border: 2px solid #eee;
-    border-radius: 18px;
-    font-size: 15px;
-    font-weight: bold;
-    white-space: normal;
-    text-align: center;
-    cursor: pointer;
-    transition: 0.2s;
-  }
-  
-  .tab-btn.active {
-    background: #f3e5f5;
-    border-color: #9c27b0;
-    color: #4a148c;
-    box-shadow: 0 4px 10px rgba(156, 39, 176, 0.15);
-  }
-
-  .tab-content { display: none; }
-  .tab-content.active { display: block; }
-
-  /* Outros estilos mantidos */
-  .toast-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; width: 90%; max-width: 400px; }
-  .toast { background: #323232; color: white; padding: 12px 20px; border-radius: 8px; margin-top: 10px; font-size: 14px; font-weight: 500; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15); animation: slideUp 0.3s ease, fadeOut 0.5s ease 2.5s forwards; }
-  .toast.sucesso { background: #2e7d32; border-left: 5px solid #1b5e20; }
-  .toast.erro { background: #c62828; border-left: 5px solid #8e0000; }
-  @keyframes slideUp { from { bottom: -50px; opacity: 0; } to { bottom: 20px; opacity: 1; } }
-  @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
-
-  .relatorio-stats { display: flex; gap: 10px; margin-bottom: 20px; }
-  .stat-card { flex: 1; background: white; padding: 15px; border-radius: 12px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #f3e5f5; transition: transform 0.2s; }
-  .stat-card strong { font-size: 18px; color: #4a148c; }
-  .item-relatorio { background: white; border-radius: 10px; padding: 12px; margin-bottom: 10px; border-left: 4px solid #9c27b0; box-shadow: 0 2px 4px rgba(0,0,0,0.03); }
-
-  .modal-lgpd { position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; }
-  .modal-content { background-color: #fff; width: 90%; max-width: 450px; border-radius: 12px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); animation: subirModal 0.3s ease-out; }
-
-/* --- AJUSTE EXCLUSIVO PARA CELULAR (Telas até 450px) --- */
-@media (max-width: 450px) {
-  body {
-    padding: 0 !important; /* Remove o espaço de 20px que mostra o fundo cinza */
-    background-color: white; /* Garante fundo limpo nas laterais */
-  }
-
-  .container-app {
-    box-shadow: none !important; /* Mata a sombra que vira "borda" no celular */
-    max-width: 100%;
-    border-radius: 0; /* Opcional: faz o app ocupar a quina do celular perfeitamente */
-  }
-  
-  /* Garante que o loading fixo não tenha margens fantasmas */
-  #tela-loading {
-    padding: 0 !important;
-  }
-}
-
-/* CORREÇÃO DE SINTAXE: Procure sua regra .header-app e corrija a linha do border */
 .header-app { 
   display: flex; 
   align-items: center; 
   margin-bottom: 20px; 
-  border-bottom: 1px solid #eee; /* Estava "none; solid #eee;", o que é erro de digitação */
+  border-bottom: 1px solid #eee;
   padding-bottom: 10px;
 }
+
+.header-app h2 { 
+  margin: 0; 
+  font-size: 20px; 
+  flex: 1; 
+  text-align: center; 
+  color: #333;
+}
+
+.btn-voltar-topo { 
+  background: none; 
+  border: none; 
+  font-size: 26px !important; 
+  color: #666; 
+  cursor: pointer; 
+  padding: 5px 15px 5px 0;
+}
+
+/* =====================================================
+CARDS
+===================================================== */
+
+.card { 
+  background: white; 
+  padding: 20px; 
+  border-radius: 12px; 
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08); 
+  margin-bottom: 15px; 
+  box-sizing: border-box; 
+  width:100%;
+}
+
+#tela-configuracoes .card { 
+  padding: 12px; 
+}
+
+.dash-card { 
+  background: linear-gradient(135deg, #4CAF50, #2E7D32); 
+  color:white; 
+  text-align: center; 
+  padding: 25px 15px; 
+  border-radius: 16px;
+}
+
+.dash-title { 
+  margin: 0; 
+  font-size: 14px; 
+  text-transform: uppercase; 
+  font-weight: 600; 
+  opacity: 0.9;
+}
+
+.dash-value { 
+  font-size: 36px; 
+  font-weight: bold; 
+  margin: 5px 0 0 0; 
+}
+
+/* =====================================================
+MENU
+===================================================== */
+
+.menu-grid { 
+  display: grid; 
+  grid-template-columns: 1fr 1fr; 
+  gap: 15px; 
+  margin-top: 15px; 
+}
+
+.menu-btn { 
+  background: white; 
+  border: none; 
+  border-radius: 12px; 
+  padding: 20px 10px; 
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05); 
+  text-align: center; 
+  cursor: pointer; 
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
+  justify-content: center; 
+  transition: 0.2s;
+}
+
+.menu-btn:active { 
+  background: #f0f0f0; 
+  transform: scale(0.98);
+}
+
+.menu-icon { 
+  font-size: 32px; 
+  margin-bottom: 8px; 
+}
+
+.menu-text { 
+  font-size: 14px; 
+  font-weight: 700; 
+  color: #455a64; 
+}
+
+/* =====================================================
+INPUTS
+===================================================== */
+
+label { 
+  font-size: 15px; 
+  font-weight: 600; 
+  margin-top: 18px; 
+}
+
+input, select, textarea { 
+  width: 100%; 
+  padding: 12px; 
+  margin-top: 5px; 
+  border: 1px solid #cfd8dc; 
+  border-radius: 8px; 
+  box-sizing: border-box; 
+  font-size: 16px !important; 
+  background-color: #f8fafc;
+}
+
+/* =====================================================
+BOTÕES
+===================================================== */
+
+.btn-primario { 
+  background-color: #4CAF50; 
+  color: white; 
+  border: none; 
+  padding: 15px; 
+  border-radius: 8px; 
+  font-size: 16px; 
+  font-weight: bold; 
+  cursor: pointer; 
+  width: 100%; 
+  margin-top: 20px; 
+}
+
+.btn-voltar { 
+  background-color: transparent; 
+  color: #78909c; 
+  border: 1px solid #cfd8dc; 
+  padding: 12px; 
+  border-radius: 8px; 
+  font-size: 14px; 
+  font-weight: bold; 
+  cursor: pointer; 
+  width: 100%; 
+  margin-top: 15px; 
+}
+
+/* =====================================================
+LISTAS
+===================================================== */
+
+.item-config-flex { 
+  display: flex !important; 
+  justify-content: space-between !important; 
+  align-items: center !important; 
+  gap: 15px; 
+}
+
+.item-config-flex strong { 
+  flex: 1; 
+}
+
+.valor-tag {
+  color: #2e7d32;
+  font-weight: bold;
+  background: #e8f5e9;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 14px;
+  margin: 0;
+  white-space: nowrap;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+/* =====================================================
+LOADING
+===================================================== */
+
+#tela-loading {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  display: none;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+  text-align: center !important;
+  z-index: 10000 !important;
+  background: white !important;
+  margin: 0 !important;
+  padding: 20px !important;
+  box-sizing: border-box !important;
+}
+
+.loader { 
+  border: 6px solid #f3f3f3; 
+  border-top: 6px solid #FF9800; 
+  border-radius: 50%; 
+  width: 60px; 
+  height: 60px; 
+  animation: spin 1s linear infinite; 
+  margin: 25px auto; 
+}
+
+@keyframes spin { 
+  0% { transform: rotate(0deg); } 
+  100% { transform: rotate(360deg); } 
+}
+
+/* =====================================================
+TOAST
+===================================================== */
+
+.toast-container { 
+  position: fixed; 
+  bottom: 20px; 
+  left: 50%; 
+  transform: translateX(-50%); 
+  z-index: 9999; 
+  width: 90%; 
+  max-width: 400px; 
+}
+
+.toast { 
+  background: #323232; 
+  color: white; 
+  padding: 12px 20px; 
+  border-radius: 8px; 
+  margin-top: 10px; 
+  font-size: 14px; 
+  font-weight: 500; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
+}
+
+/* =====================================================
+AJUSTE MOBILE (APP NATIVO)
+===================================================== */
+
+@media (max-width: 450px) {
+
+  body {
+    padding: 0 !important;
+    background-color: white;
+  }
+
+  .container-app {
+    box-shadow: none !important;
+    max-width: 100%;
+    border-radius: 0;
+  }
+
+  #tela-loading {
+    padding: 0 !important;
+  }
+
+}
+
 </style>
