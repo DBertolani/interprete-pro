@@ -11,9 +11,9 @@
     padding: 20px 0;
   }
 
-/* LOGO + NOME NO TOPO (MAIS VISÍVEL) */
+/* LOGO + NOME NO TOPO (MAIS VISÍVEL) - AUMENTADO */
 .header-app-logo {
-    font-size: 22px !important; /* Logo um pouco maior */
+    font-size: 26px !important; /* ✏️ MUDANÇA: 22px → 26px */
     font-weight: 900 !important;
     color: #4a148c;
     text-shadow: 1px 1px 0px rgba(0,0,0,0.05);
@@ -28,11 +28,11 @@
     display: flex;
     flex-direction: column;
     margin: 0 auto;
-    padding: 0 20px; /* 🚨 ADICIONADO: Margem interna para ícones não colarem na borda */
+    padding: 0 20px; 
     box-sizing: border-box;
   }
 
-/* Ajuste para alinhar valores na lista de agências */
+/* ✏️ MUDANÇA: Ajuste para alinhar valores na lista de agências */
   .valor-tag {
     color: #2e7d32;
     font-weight: bold;
@@ -40,8 +40,8 @@
     padding: 4px 10px;
     border-radius: 6px;
     font-size: 14px;
-    margin: 0 10px;
-    min-width: 80px;
+    margin: 0; /* ✏️ MUDANÇA: margin: 0 10px → 0 */
+    min-width: auto; /* ✏️ MUDANÇA: min-width: 80px → auto */
     text-align: center;
   }
 
@@ -66,7 +66,7 @@
   .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
   .menu-btn { background: white; border: none; border-radius: 12px; padding: 20px 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); text-align: center; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.2s;}
   .menu-btn:active { background: #f0f0f0; transform: scale(0.98);}
-  .menu-icon { font-size: 28px; margin-bottom: 8px; }
+  .menu-icon { font-size: 32px; margin-bottom: 8px; } /* ✏️ MUDANÇA: 28px → 32px */
   .menu-text { font-size: 14px; font-weight: 700; color: #455a64; }
 
 /* TELA DE BOAS-VINDAS REALMENTE CENTRALIZADA */
