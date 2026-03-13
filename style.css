@@ -24,7 +24,7 @@
     max-width: 450px; 
     background-color: white; 
     min-height: 100vh; 
-    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    box-shadow: 0 0 15px rgba(0,0,0,0.08);
     display: flex;
     flex-direction: column;
     margin: 0 auto;
@@ -33,16 +33,19 @@
   }
 
 /* ✏️ MUDANÇA: Ajuste para alinhar valores na lista de agências */
-  .valor-tag {
+    .valor-tag {
     color: #2e7d32;
     font-weight: bold;
     background: #e8f5e9;
     padding: 4px 10px;
     border-radius: 6px;
     font-size: 14px;
-    margin: 0; /* ✏️ MUDANÇA: margin: 0 10px → 0 */
-    min-width: auto; /* ✏️ MUDANÇA: min-width: 80px → auto */
+    margin: 0;
+    min-width: auto;
     text-align: center;
+    white-space: nowrap;      /* ✏️ NOVO: impede quebra de linha */
+    flex-shrink: 0;           /* ✏️ NOVO: não encolhe */
+    display: inline-block;    /* ✏️ NOVO: alinha melhor */
   }
 
   /* 2. Ajuste para telas de Introdução (Home, Login, Loading) */
