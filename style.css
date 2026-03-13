@@ -28,9 +28,15 @@
     display: flex;
     flex-direction: column;
     margin: 0 auto;
-    padding: 0 15px; 
+    padding: 0; 
     box-sizing: border-box;
   }
+
+#tela-app {
+    padding: 0 15px;
+}
+
+#tela-configuracoes .card { padding: 12px; }
 
 /* ✏️ MUDANÇA: Ajuste para alinhar valores na lista de agências */
     .valor-tag {
@@ -59,6 +65,21 @@
     text-align: center;
     padding: 20px;
 }
+
+    #tela-login-google {
+        min-height: 100vh !important;
+        height: 100vh !important;
+    }
+    
+    #tela-home {
+        min-height: 100vh !important;
+        height: 100vh !important;
+    }
+    
+    #tela-loading {
+        min-height: 100vh !important;
+        height: 100vh !important;
+    }
 
   .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); margin-bottom: 15px; box-sizing: border-box; width:100%;}
   
@@ -103,7 +124,7 @@ label { font-size: 15px; font-weight: 600; margin-top: 18px; }
   .btn-primario { background-color: #4CAF50; color: white; border: none; padding: 15px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 20px; }
   .btn-voltar { background-color: transparent; color: #78909c; border: 1px solid #cfd8dc; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 15px; }
   
-  .header-app { display: flex; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px;}
+  .header-app { display: flex; align-items: center; margin-bottom: 20px; border-bottom: none; solid #eee; padding-bottom: 10px;}
   .header-app h2 { margin: 0; font-size: 20px; flex: 1; text-align: center; color: #333;}
   .btn-voltar-topo { background: none; border: none; font-size: 26px !important; color: #666; cursor: pointer; padding: 5px 15px 5px 0; }
 
