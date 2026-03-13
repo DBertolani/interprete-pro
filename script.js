@@ -72,19 +72,19 @@ function validarPortaria(resposta) {
   } else if (resposta && resposta.isNovo === true) {
     // É usuário novo? Mostra o presente!
     document.getElementById('tela-login-google').style.display = 'none';
-    document.getElementById('tela-trial').style.display = 'block';
+    document.getElementById('tela-trial').style.display = 'flex';
   } else {
     // Está bloqueado ou vencido? Mostra a tela de erro normal.
     document.getElementById('email-bloqueado').innerText = (resposta && resposta.email) || "não identificado";
     const msgErro = (resposta && resposta.motivo) ? resposta.motivo : "E-mail sem licença ativa.";
     document.getElementById('motivo-bloqueio').innerText = msgErro;
-    document.getElementById('tela-bloqueio').style.display = 'block';
+    document.getElementById('tela-bloqueio').style.display = 'flex';
   }
 }
 
 async function voltarDashboard() {
   document.querySelectorAll('.container-app > div').forEach(d => d.style.display = 'none');
-  document.getElementById('tela-app').style.display = 'block';
+  document.getElementById('tela-app').style.display = 'block'; // ✅ Isso pode ficar block (não é tela de login)
   const res = await chamarGoogle("carregarDadosIniciais");
   document.getElementById('valor-pendente').innerText = "R$ " + res.dados.pendente;
 }
@@ -120,7 +120,7 @@ function irParaDashboard() {
 // Função para sair da Vitrine e ir para a tela de Login
 function mostrarTelaLogin() {
   document.getElementById('tela-home').style.display = 'none';
-  document.getElementById('tela-login-google').style.display = 'block';
+  document.getElementById('tela-login-google').style.display = 'flex';
 }
 
 function atualizarSelectsFormulario(d) {
