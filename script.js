@@ -1110,15 +1110,15 @@ async function enviarFeedback(e) {
   btn.disabled = true;
 
   const dados = {
-    ideia: document.getElementById('fb-ideia').value,
+    beneficio: document.getElementById('fb-beneficio').value, // Pegando o novo benefício
     preco: document.getElementById('fb-preco').value,
+    prioridade: document.getElementById('fb-prioridade').value, // Pegando a prioridade do roadmap
     obs: document.getElementById('fb-obs').value
   };
 
   try {
     const res = await chamarGoogle("salvarFeedback", dados);
 
-    // Verifica se deu certo
     if (res && res.status === "Sucesso") {
       mostrarToast("✅ Feedback recebido! Muito obrigado.", "sucesso");
       document.getElementById('formFeedback').reset();
@@ -1129,7 +1129,6 @@ async function enviarFeedback(e) {
   } catch (err) {
     mostrarToast("❌ Falha ao enviar. Tente novamente.", "erro");
   } finally {
-    // Isso é crucial: independentemente de dar certo ou errado, destrava o botão!
     btn.innerText = textoOriginal;
     btn.disabled = false;
   }
