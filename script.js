@@ -515,14 +515,13 @@ function renderizarListasConfig(d) {
   d.equipe.forEach(n => ce.innerHTML += `<div class="item-pendente item-config-flex" style="border-left-color:#9c27b0"><strong>${n}</strong><div><button class="btn-acao btn-editar" onclick="editarConfig('equipe','${n}')">✏️</button><button class="btn-acao btn-excluir" onclick="excluirConfig('Minha_Equipe','${n}')">🗑️</button></div></div>`);
   
   var ca = document.getElementById('lista-configuracoes'); ca.innerHTML = "";
-      d.agencias.forEach(i => {
+    // Procure este trecho dentro de renderizarListasConfig no script.js
+    d.agencias.forEach(i => {
       ca.innerHTML += `
-        <div class="item-pendente item-config-flex" style="border-left-color:#607d8b; align-items: center;">
-          <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
-            <strong style="font-size: 15px;">${i.nome}</strong>
-            <span class="valor-tag">R$ ${i.valor}</span>
-          </div>
-          <div style="display: flex; gap: 5px;">
+        <div class="item-pendente item-config-flex" style="border-left-color:#607d8b;">
+          <strong style="font-size: 15px; flex-shrink: 0;">${i.nome}</strong>
+          <span class="valor-tag">R$ ${parseFloat(i.valor).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span>
+          <div style="display: flex; flex-shrink: 0;">
             <button class="btn-acao btn-editar" onclick="editarConfig('agencia','${i.nome}','${i.valor}')">✏️</button>
             <button class="btn-acao btn-excluir" onclick="excluirConfig('Minhas_Empresas','${i.nome}')">🗑️</button>
           </div>
