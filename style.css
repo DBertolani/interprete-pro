@@ -290,4 +290,24 @@ label { font-size: 15px; font-weight: 600; margin-top: 18px; }
   border-bottom: 1px solid #eee; /* Estava "none; solid #eee;", o que é erro de digitação */
   padding-bottom: 10px;
 }
+
+/* ===============================
+   MOBILE FULLSCREEN FIX
+=============================== */
+@media (max-width: 600px) {
+
+  body {
+    padding: 0 !important;
+    background: white !important;
+  }
+
+  .container-app {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+}
 </style>
