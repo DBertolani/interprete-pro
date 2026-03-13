@@ -57,13 +57,13 @@
   /* 2. Ajuste para telas de Introdução (Home, Login, Loading) */
   /* Isso faz com que elas ocupem a altura toda e centralizem o conteúdo verticalmente */
 #tela-home, #tela-login-google, #tela-loading, #tela-trial, #tela-bloqueio {
-    flex: 1 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: center !important;
-    align-items: center !important;
-    text-align: center !important;
-    padding: 20px !important;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center !important;      /* !important só AQUI */
+    align-items: center !important;          /* !important só AQUI */
+    text-align: center !important;           /* !important só AQUI */
+    padding: 20px;
 }
 
     #tela-login-google {
