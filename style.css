@@ -1,26 +1,25 @@
 <style>
-  /* 1. Ajuste de Fundo e Centralização Real para PC e Mobile */
+/* 1. Ajuste de Fundo e Centralização Real */
   body { 
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
     background-color: #f4f7f6; 
     margin: 0; 
     display: flex; 
     justify-content: center; 
-    align-items: flex-start; 
+    align-items: center; /* Centraliza o container no meio da tela no PC */
     min-height: 100vh; 
-    align-items: center; /* Centraliza verticalmente no PC se a tela for alta */
-    padding: 20px 0;    /* Dá uma margem no topo e fundo para não colar no navegador */
+    padding: 20px 0;
   }
 
 /* LOGO + NOME NO TOPO (MAIS VISÍVEL) */
-  .header-app-logo {
-    font-size: 20px !important;
-    font-weight: 800 !important;
+.header-app-logo {
+    font-size: 22px !important; /* Logo um pouco maior */
+    font-weight: 900 !important;
     color: #4a148c;
-    letter-spacing: -0.5px;
+    text-shadow: 1px 1px 0px rgba(0,0,0,0.05);
   }
   
-  .container-app { 
+.container-app { 
     width: 100%; 
     max-width: 450px; 
     background-color: white; 
@@ -28,7 +27,34 @@
     box-shadow: 0 0 20px rgba(0,0,0,0.1);
     display: flex;
     flex-direction: column;
-    margin: 0 auto; /* Centraliza o bloco no computador */
+    margin: 0 auto;
+    padding: 0 20px; /* 🚨 ADICIONADO: Margem interna para ícones não colarem na borda */
+    box-sizing: border-box;
+  }
+
+/* Ajuste para alinhar valores na lista de agências */
+  .valor-tag {
+    color: #2e7d32;
+    font-weight: bold;
+    background: #e8f5e9;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 14px;
+    margin: 0 10px;
+    min-width: 80px;
+    text-align: center;
+  }
+
+  /* 2. Ajuste para telas de Introdução (Home, Login, Loading) */
+  /* Isso faz com que elas ocupem a altura toda e centralizem o conteúdo verticalmente */
+  #tela-home, #tela-login-google, #tela-loading, #tela-trial, #tela-bloqueio {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Centraliza no meio vertical */
+    align-items: center;
+    text-align: center;
+    padding: 40px 0;
   }
 
   .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); margin-bottom: 15px; box-sizing: border-box; width:100%;}
@@ -41,7 +67,7 @@
   .menu-btn { background: white; border: none; border-radius: 12px; padding: 20px 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); text-align: center; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.2s;}
   .menu-btn:active { background: #f0f0f0; transform: scale(0.98);}
   .menu-icon { font-size: 28px; margin-bottom: 8px; }
-  .menu-text { font-size: 13px; font-weight: 600; color: #455a64; }
+  .menu-text { font-size: 14px; font-weight: 700; color: #455a64; }
 
 /* TELA DE BOAS-VINDAS REALMENTE CENTRALIZADA */
   #tela-loading { 
@@ -59,10 +85,10 @@
   .loader { border: 6px solid #f3f3f3; border-top: 6px solid #FF9800; border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; margin: 25px auto; }
   @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
   
-  label { font-weight: 600; display: block; margin-top: 15px; color: #37474f; font-size: 14px;}
+label { font-size: 15px; font-weight: 600; margin-top: 18px; }
   input, select, textarea { 
     width: 100%; 
-    padding: 10px; 
+    padding: 12px; 
     margin-top: 5px; 
     border: 1px solid #cfd8dc; 
     border-radius: 8px; 
