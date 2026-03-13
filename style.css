@@ -136,7 +136,7 @@ label { font-size: 15px; font-weight: 600; margin-top: 18px; }
   .btn-primario { background-color: #4CAF50; color: white; border: none; padding: 15px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 20px; }
   .btn-voltar { background-color: transparent; color: #78909c; border: 1px solid #cfd8dc; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 15px; }
   
-  .header-app { display: flex; align-items: center; margin-bottom: 20px; border-bottom: none; solid #eee; padding-bottom: 10px;}
+  .header-app { display: flex; align-items: center; margin-bottom: 20px; border-bottom: none solid #eee; padding-bottom: 10px;}
   .header-app h2 { margin: 0; font-size: 20px; flex: 1; text-align: center; color: #333;}
   .btn-voltar-topo { background: none; border: none; font-size: 26px !important; color: #666; cursor: pointer; padding: 5px 15px 5px 0; }
 
@@ -262,4 +262,32 @@ label { font-size: 15px; font-weight: 600; margin-top: 18px; }
 
   .modal-lgpd { position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; }
   .modal-content { background-color: #fff; width: 90%; max-width: 450px; border-radius: 12px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); animation: subirModal 0.3s ease-out; }
+
+/* --- AJUSTE EXCLUSIVO PARA CELULAR (Telas até 450px) --- */
+@media (max-width: 450px) {
+  body {
+    padding: 0 !important; /* Remove o espaço de 20px que mostra o fundo cinza */
+    background-color: white; /* Garante fundo limpo nas laterais */
+  }
+
+  .container-app {
+    box-shadow: none !important; /* Mata a sombra que vira "borda" no celular */
+    max-width: 100%;
+    border-radius: 0; /* Opcional: faz o app ocupar a quina do celular perfeitamente */
+  }
+  
+  /* Garante que o loading fixo não tenha margens fantasmas */
+  #tela-loading {
+    padding: 0 !important;
+  }
+}
+
+/* CORREÇÃO DE SINTAXE: Procure sua regra .header-app e corrija a linha do border */
+.header-app { 
+  display: flex; 
+  align-items: center; 
+  margin-bottom: 20px; 
+  border-bottom: 1px solid #eee; /* Estava "none; solid #eee;", o que é erro de digitação */
+  padding-bottom: 10px;
+}
 </style>
