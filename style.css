@@ -1,709 +1,229 @@
 <style>
-/* ============================================
-   CORREÇÕES PRINCIPAIS
-   ============================================ */
-
-/* 1. BODY - Alinhamento Correto */
-body { 
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-  background-color: #f4f7f6; 
-  margin: 0; 
-  padding: 0;
-  display: flex; 
-  justify-content: center; 
-  align-items: flex-start;
-  min-height: 100vh;
-}
-
-/* 2. CONTAINER APP - Flexbox Padrão (Sem Padding) */
-.container-app { 
-  width: 100%; 
-  max-width: 450px; 
-  background-color: white; 
-  min-height: 100vh; 
-  
-  /* SEM padding lateral - cada seção gerencia seu próprio padding */
-  padding: 0;
-  margin: 0 auto;
-  box-sizing: border-box;
-  
-  /* Flexbox como contenedor pai */
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  
-  /* Sombra apenas em desktop */
-  box-shadow: none;
-}
-
-/* Sombra no desktop, sem bordas na lateral */
-@media (min-width: 451px) {
-  body {
+/* 1. Ajuste de Fundo e Centralização Real */
+  body { 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    background-color: #f4f7f6; 
+    margin: 0; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; /* Centraliza o container no meio da tela no PC */
+    min-height: 100vh; 
     padding: 20px 0;
   }
-  
-  .container-app {
-    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
-    margin-top: 10px;
-    margin-bottom: 10px;
-  }
-}
 
-/* ============================================
-   LOGO + NOME DESTACADO
-   ============================================ */
+/* LOGO + NOME NO TOPO (MAIS VISÍVEL) */
 .header-app-logo {
-  font-size: 26px !important;
-  font-weight: 900 !important;
-  color: #4a148c;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.08);
-  letter-spacing: -0.5px;
-}
-
-/* ============================================
-   TELAS DE INTRODUÇÃO - Centralização Vertical Correta
-   ============================================ */
-
-/* Telas que devem estar centralizadas */
-#tela-home, #tela-login-google, #tela-trial, #tela-bloqueio {
-  /* Ocupam todo espaço disponível */
-  flex: 1;
+    font-size: 22px !important; /* Logo um pouco maior */
+    font-weight: 900 !important;
+    color: #4a148c;
+    text-shadow: 1px 1px 0px rgba(0,0,0,0.05);
+  }
   
-  /* Flexbox para centralizar conteúdo */
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
+.container-app { 
+    width: 100%; 
+    max-width: 450px; 
+    background-color: white; 
+    min-height: 100vh; 
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    margin: 0 auto;
+    padding: 0 20px; /* 🚨 ADICIONADO: Margem interna para ícones não colarem na borda */
+    box-sizing: border-box;
+  }
+
+/* Ajuste para alinhar valores na lista de agências */
+  .valor-tag {
+    color: #2e7d32;
+    font-weight: bold;
+    background: #e8f5e9;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 14px;
+    margin: 0 10px;
+    min-width: 80px;
+    text-align: center;
+  }
+
+  /* 2. Ajuste para telas de Introdução (Home, Login, Loading) */
+  /* Isso faz com que elas ocupem a altura toda e centralizem o conteúdo verticalmente */
+  #tela-home, #tela-login-google, #tela-loading, #tela-trial, #tela-bloqueio {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Centraliza no meio vertical */
+    align-items: center;
+    text-align: center;
+    padding: 40px 0;
+  }
+
+  .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); margin-bottom: 15px; box-sizing: border-box; width:100%;}
   
-  /* Espaçamento interno */
-  padding: 40px 20px;
-  box-sizing: border-box;
+  .dash-card { background: linear-gradient(135deg, #4CAF50, #2E7D32); color:white; text-align: center; padding: 25px 15px; border-radius: 16px;}
+  .dash-title { margin: 0; font-size: 14px; text-transform: uppercase; font-weight: 600; opacity: 0.9;}
+  .dash-value { font-size: 36px; font-weight: bold; margin: 5px 0 0 0; }
+
+  .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
+  .menu-btn { background: white; border: none; border-radius: 12px; padding: 20px 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); text-align: center; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.2s;}
+  .menu-btn:active { background: #f0f0f0; transform: scale(0.98);}
+  .menu-icon { font-size: 28px; margin-bottom: 8px; }
+  .menu-text { font-size: 14px; font-weight: 700; color: #455a64; }
+
+/* TELA DE BOAS-VINDAS REALMENTE CENTRALIZADA */
+  #tela-loading { 
+    display: none; /* Ativado via JS como flex */
+    flex-direction: column;
+    justify-content: center; 
+    align-items: center; 
+    text-align: center;
+    position: fixed; /* Ocupa a tela toda de forma absoluta */
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 10000;
+    background: white;
+  }
+
+  .loader { border: 6px solid #f3f3f3; border-top: 6px solid #FF9800; border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; margin: 25px auto; }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
   
-  /* Garante que a altura mínima seja 100vh no mobile */
-  min-height: 100vh;
-}
-
-/* TELA LOADING - Sem position fixed! */
-#tela-loading {
-  /* Ocupar todo espaço, não position fixed */
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+label { font-size: 15px; font-weight: 600; margin-top: 18px; }
+  input, select, textarea { 
+    width: 100%; 
+    padding: 12px; 
+    margin-top: 5px; 
+    border: 1px solid #cfd8dc; 
+    border-radius: 8px; 
+    box-sizing: border-box; 
+    font-size: 16px !important; 
+    background-color: #f8fafc;
+  }
   
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
+  .btn-primario { background-color: #4CAF50; color: white; border: none; padding: 15px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 20px; }
+  .btn-voltar { background-color: transparent; color: #78909c; border: 1px solid #cfd8dc; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 15px; }
   
-  background: white;
-  z-index: 10000;
-  
-  padding: 40px 20px;
-  box-sizing: border-box;
-}
+  .header-app { display: flex; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px;}
+  .header-app h2 { margin: 0; font-size: 20px; flex: 1; text-align: center; color: #333;}
+  .btn-voltar-topo { background: none; border: none; font-size: 26px !important; color: #666; cursor: pointer; padding: 5px 15px 5px 0; }
 
-/* TELA APP - Sem padding, deixa as seções cuidarem */
-#tela-app {
-  flex: 1;
-  display: flex !important;
-  flex-direction: column;
-  
-  padding: 0;
-  margin: 0;
-  box-sizing: border-box;
-}
+  .filtros-box { background: #f0f8ff; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #90caf9; }
+  .grid-filtros { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
-/* Conteúdo interno do app recebe padding */
-#tela-app > div {
-  padding: 20px;
-  box-sizing: border-box;
-}
+  .item-pendente { 
+    background: #fff; 
+    border-left: 4px solid #ff9800; 
+    padding: 10px 12px; 
+    margin-bottom: 8px; 
+    border-radius: 8px; 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.06); 
+  }
 
-/* OUTRAS TELAS (Registro, Histórico, Relatórios, Configurações) */
-#tela-registro, #tela-historico, #tela-relatorios, #tela-configuracoes, #tela-admin {
-  flex: 1;
-  display: flex !important;
-  flex-direction: column;
-  
-  padding: 0;
-  margin: 0;
-  overflow-y: auto;
-}
+/* ALINHAMENTO DAS LISTAS (BOTÕES À DIREITA) */
+  .item-config-flex { 
+    display: flex !important; 
+    justify-content: space-between !important; 
+    align-items: center !important; 
+    gap: 15px; 
+  }
+  .item-config-flex strong { flex: 1; } /* Faz o texto ocupar o espaço e empurrar botões */
 
-/* ============================================
-   AJUSTE PARA CARDS
-   ============================================ */
-.card { 
-  background: white; 
-  padding: 20px; 
-  border-radius: 12px; 
-  box-shadow: 0 4px 10px rgba(0,0,0,0.08); 
-  margin-bottom: 15px; 
-  box-sizing: border-box; 
-  width: 100%;
-  
-  /* Garante que o card nunca herde padding do container */
-  flex-shrink: 0;
-}
+  .acoes-card { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; border-top: 1px solid #eee; padding-top: 10px; }
 
-#tela-app .card {
-  margin: 0;
-  border-radius: 0;
-  box-shadow: none;
-  padding: 20px;
-}
+  .btn-acao { border: none; padding: 8px 12px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer;}
+  .btn-baixa { background-color: #4CAF50; color: white; }
+  .btn-editar { background-color: #ffb300; color: white; }
+  .btn-excluir { background-color: #e53935; color: white; }
 
-/* ============================================
-   DASHBOARD (TELA APP)
-   ============================================ */
-.dash-card { 
-  background: linear-gradient(135deg, #4CAF50, #2E7D32); 
-  color: white; 
-  text-align: center; 
-  padding: 25px 15px; 
-  border-radius: 16px;
-  margin: 0 20px 15px 20px;
-}
-
-.dash-title { 
-  margin: 0; 
-  font-size: 14px; 
-  text-transform: uppercase; 
-  font-weight: 600; 
-  opacity: 0.9;
-}
-
-.dash-value { 
-  font-size: 36px; 
-  font-weight: bold; 
-  margin: 5px 0 0 0;
-}
-
-.menu-grid { 
-  display: grid; 
-  grid-template-columns: 1fr 1fr; 
-  gap: 15px; 
-  margin: 15px 20px 20px 20px;
-  flex-shrink: 0;
-}
-
-.menu-btn { 
-  background: white; 
-  border: none; 
-  border-radius: 12px; 
-  padding: 20px 10px; 
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05); 
-  text-align: center; 
-  cursor: pointer; 
-  display: flex; 
-  flex-direction: column; 
-  align-items: center; 
-  justify-content: center; 
-  transition: 0.2s;
-}
-
-.menu-btn:active { 
-  background: #f0f0f0; 
-  transform: scale(0.98);
-}
-
-.menu-icon { 
-  font-size: 32px; 
-  margin-bottom: 8px;
-}
-
-.menu-text { 
-  font-size: 14px; 
-  font-weight: 700; 
-  color: #455a64;
-}
-
-/* ============================================
-   LOADER ANIMATION
-   ============================================ */
-.loader { 
-  border: 6px solid #f3f3f3; 
-  border-top: 6px solid #FF9800; 
-  border-radius: 50%; 
-  width: 60px; 
-  height: 60px; 
-  animation: spin 1s linear infinite; 
-  margin: 25px auto;
-}
-
-@keyframes spin { 
-  0% { transform: rotate(0deg); } 
-  100% { transform: rotate(360deg); } 
-}
-
-/* ============================================
-   FORMULÁRIOS
-   ============================================ */
-label { 
-  font-size: 15px; 
-  font-weight: 600; 
-  margin-top: 18px; 
-  display: block;
-}
-
-input, select, textarea { 
-  width: 100%; 
-  padding: 12px; 
-  margin-top: 5px; 
-  margin-bottom: 0;
-  border: 1px solid #cfd8dc; 
-  border-radius: 8px; 
-  box-sizing: border-box; 
-  font-size: 16px !important; 
-  background-color: #f8fafc;
-  font-family: inherit;
-}
-
-input:focus, select:focus, textarea:focus {
-  outline: none;
-  border-color: #9c27b0;
-  box-shadow: 0 0 0 3px rgba(156, 39, 176, 0.1);
-}
-
-.btn-primario { 
-  background-color: #4CAF50; 
-  color: white; 
-  border: none; 
-  padding: 15px; 
-  border-radius: 8px; 
-  font-size: 16px; 
-  font-weight: bold; 
-  cursor: pointer; 
-  width: 100%; 
-  margin-top: 20px;
-  transition: 0.2s;
-}
-
-.btn-primario:active {
-  transform: scale(0.98);
-  opacity: 0.9;
-}
-
-.btn-voltar { 
-  background-color: transparent; 
-  color: #78909c; 
-  border: 1px solid #cfd8dc; 
-  padding: 12px; 
-  border-radius: 8px; 
-  font-size: 14px; 
-  font-weight: bold; 
-  cursor: pointer; 
-  width: 100%; 
-  margin-top: 15px;
-}
-
-/* ============================================
-   HEADER DO APP
-   ============================================ */
-.header-app { 
-  display: flex; 
-  align-items: center; 
-  margin-bottom: 20px; 
-  border-bottom: 2px solid #eee; 
-  padding: 0 20px 10px 20px;
-  gap: 15px;
-}
-
-.header-app h2 { 
-  margin: 0; 
-  font-size: 22px; 
-  flex: 1; 
-  text-align: center; 
-  color: #333;
-}
-
-.btn-voltar-topo { 
-  background: none; 
-  border: none; 
-  font-size: 26px; 
-  color: #666; 
-  cursor: pointer; 
-  padding: 5px 15px 5px 0;
-  flex-shrink: 0;
-}
-
-/* ============================================
-   VALOR TAG (AGÊNCIAS)
-   ============================================ */
-.valor-tag {
-  color: #2e7d32;
-  font-weight: bold;
-  background: #e8f5e9;
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 14px;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-/* ============================================
-   ITENS E FILTROS
-   ============================================ */
-.item-pendente { 
-  background: #fff; 
-  border-left: 4px solid #ff9800; 
-  padding: 12px 15px; 
-  margin: 8px 0; 
-  border-radius: 8px; 
-  box-shadow: 0 2px 5px rgba(0,0,0,0.06);
-}
-
-.item-config-flex { 
-  display: flex !important; 
-  justify-content: space-between !important; 
-  align-items: center !important; 
-  gap: 12px;
-}
-
-.item-config-flex strong { 
-  flex: 1;
-  min-width: 0;
-  word-break: break-word;
-}
-
-.acoes-card { 
-  display: flex; 
-  justify-content: flex-end; 
-  gap: 8px; 
-  margin-top: 12px; 
-  border-top: 1px solid #eee; 
-  padding-top: 10px;
-  flex-wrap: wrap;
-}
-
-.btn-acao { 
-  border: none; 
-  padding: 8px 12px; 
-  border-radius: 6px; 
-  font-size: 13px; 
-  font-weight: bold; 
-  cursor: pointer;
-}
-
-.btn-baixa { 
-  background-color: #4CAF50; 
-  color: white;
-}
-
-.btn-editar { 
-  background-color: #ffb300; 
-  color: white;
-}
-
-.btn-excluir { 
-  background-color: #e53935; 
-  color: white;
-}
-
-.filtros-box { 
-  background: #f0f8ff; 
-  padding: 15px; 
-  border-radius: 8px; 
-  margin: 0 20px 15px 20px; 
-  border: 1px solid #90caf9;
-}
-
-.grid-filtros { 
-  display: grid; 
-  grid-template-columns: 1fr 1fr; 
-  gap: 10px;
-}
-
-/* ============================================
-   ABAS (CONFIGURAÇÕES)
-   ============================================ */
-.tabs-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-  background: #f8f9fa;
-  border-radius: 12px;
-  padding: 0 10px;
-  margin: 0 20px 15px 20px;
-}
+/* SETAS DE NAVEGAÇÃO NOS AJUSTES */
+  .tabs-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 0 10px;
+  }
 
 .scroll-arrow {
-  background: none;
-  border: none;
-  font-size: 20px;
-  color: #9c27b0;
-  cursor: pointer;
-  padding: 10px;
-  display: flex;
-  align-items: center;
-  opacity: 0.6;
-  transition: 0.2s;
-}
-
-.scroll-arrow:hover { 
-  opacity: 1; 
-  transform: scale(1.2);
-}
-
-.tabs-nav {
-  display: flex;
-  overflow-x: auto;
-  gap: 12px;
-  -webkit-overflow-scrolling: touch;
-  padding: 15px 0 !important;
-  margin: 0;
-  scrollbar-color: #ccc #f1f1f1;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-.tabs-nav::-webkit-scrollbar {
-  height: 6px;
-}
-
-.tabs-nav::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 10px;
-}
-
-.tabs-nav::-webkit-scrollbar-thumb {
-  background: #ccc;
-  border-radius: 10px;
-}
-
-.tabs-nav::-webkit-scrollbar-thumb:hover {
-  background: #9c27b0;
-}
-
-.tab-btn {
-  flex: 0 0 110px;
-  height: 110px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: #f8f9fa;
-  border: 2px solid #eee;
-  border-radius: 18px;
-  font-size: 15px;
-  font-weight: bold;
-  white-space: normal;
-  text-align: center;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.tab-btn.active {
-  background: #f3e5f5;
-  border-color: #9c27b0;
-  color: #4a148c;
-  box-shadow: 0 4px 10px rgba(156, 39, 176, 0.15);
-}
-
-.tab-content { 
-  display: none;
-  padding: 0 20px 20px 20px;
-  flex: 1;
-  overflow-y: auto;
-}
-
-.tab-content.active { 
-  display: block;
-}
-
-#content-sobre {
-  text-align: center;
-  padding: 30px 20px;
-}
-
-/* ============================================
-   RELATÓRIOS
-   ============================================ */
-.relatorio-stats { 
-  display: flex; 
-  gap: 10px; 
-  margin: 0 20px 20px 20px;
-}
-
-.stat-card { 
-  flex: 1; 
-  background: white; 
-  padding: 15px; 
-  border-radius: 12px; 
-  text-align: center; 
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05); 
-  border: 1px solid #f3e5f5;
-}
-
-.stat-card strong { 
-  font-size: 18px; 
-  color: #4a148c;
-}
-
-.stat-label {
-  font-size: 12px;
-  color: #999;
-  display: block;
-  margin-bottom: 5px;
-}
-
-.item-relatorio { 
-  background: white; 
-  border-radius: 10px; 
-  padding: 12px; 
-  margin: 0 20px 10px 20px;
-  border-left: 4px solid #9c27b0; 
-  box-shadow: 0 2px 4px rgba(0,0,0,0.03);
-}
-
-/* ============================================
-   MODAIS
-   ============================================ */
-.modal-lgpd { 
-  position: fixed; 
-  z-index: 9999; 
-  left: 0; 
-  top: 0; 
-  width: 100%; 
-  height: 100%; 
-  background-color: rgba(0,0,0,0.6); 
-  display: flex; 
-  align-items: center; 
-  justify-content: center;
-}
-
-.modal-content { 
-  background-color: #fff; 
-  width: 90%; 
-  max-width: 450px; 
-  border-radius: 12px; 
-  padding: 20px; 
-  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-  animation: subirModal 0.3s ease-out;
-  max-height: 90vh;
-  overflow-y: auto;
-}
-
-@keyframes subirModal {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: #9c27b0;
+    cursor: pointer;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    opacity: 0.6;
+    transition: 0.2s;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  .scroll-arrow:hover { opacity: 1; transform: scale(1.2); }
+
+  .tabs-nav {
+    display: flex;
+    overflow-x: auto; /* Habilita o scroll horizontal */
+    gap: 12px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-color: #ccc #f1f1f1;
+    scrollbar-width: none; 
+    -ms-overflow-style: none;
+    padding: 15px 0 !important;
   }
-}
 
-.modal-body {
-  text-align: left;
-  max-height: 350px;
-  overflow-y: auto;
-  font-size: 14px;
-  line-height: 1.5;
-  color: #444;
-}
-
-/* ============================================
-   TOAST NOTIFICATIONS
-   ============================================ */
-.toast-container { 
-  position: fixed; 
-  bottom: 20px; 
-  left: 50%; 
-  transform: translateX(-50%); 
-  z-index: 10001;
-  width: 90%; 
-  max-width: 400px;
-}
-
-.toast { 
-  background: #323232; 
-  color: white; 
-  padding: 12px 20px; 
-  border-radius: 8px; 
-  margin-top: 10px; 
-  font-size: 14px; 
-  font-weight: 500; 
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
-  animation: slideUp 0.3s ease, fadeOut 0.5s ease 2.5s forwards;
-}
-
-.toast.sucesso { 
-  background: #2e7d32; 
-  border-left: 5px solid #1b5e20;
-}
-
-.toast.erro { 
-  background: #c62828; 
-  border-left: 5px solid #8e0000;
-}
-
-@keyframes slideUp { 
-  from { 
-    bottom: -50px; 
-    opacity: 0; 
-  } 
-  to { 
-    bottom: 0; 
-    opacity: 1; 
-  } 
-}
-
-@keyframes fadeOut { 
-  from { opacity: 1; } 
-  to { opacity: 0; } 
-}
-
-/* ============================================
-   BOX ESPECIAIS
-   ============================================ */
-.box-valor-live {
-  background: #f1f8e9;
-  padding: 15px;
-  border-radius: 8px;
-  border-left: 4px solid #2e7d32;
-  margin: 15px 0;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.destaque {
-  background-color: #fff3e0;
-  border-left: 4px solid #ff9800;
-  padding: 10px 15px;
-  border-radius: 4px;
-  font-size: 14px;
-  margin: 15px 0;
-}
-
-/* ============================================
-   RESPONSIVIDADE FINAL
-   ============================================ */
-@media (max-width: 480px) {
-  .container-app {
-    box-shadow: none;
+  /* Estilização da barra para o computador (Chrome/Edge/Safari) */
+  .tabs-nav::-webkit-scrollbar {
+    height: 6px; /* Barra fina e visível no PC */
   }
-  
-  body {
-    padding: 0;
+  .tabs-nav::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
   }
-  
-  .grid-filtros {
-    grid-template-columns: 1fr;
+  .tabs-nav::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 10px;
   }
-  
-  .relatorio-stats {
+  .tabs-nav::-webkit-scrollbar-thumb:hover {
+    background: #9c27b0;
+  }
+
+  .tab-btn {
+    flex: 0 0 110px; /* Quadrados ligeiramente maiores */
+    height: 110px;
+    display: flex;
     flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+    border: 2px solid #eee;
+    border-radius: 18px;
+    font-size: 15px;
+    font-weight: bold;
+    white-space: normal;
+    text-align: center;
+    cursor: pointer;
+    transition: 0.2s;
   }
-}
+  
+  .tab-btn.active {
+    background: #f3e5f5;
+    border-color: #9c27b0;
+    color: #4a148c;
+    box-shadow: 0 4px 10px rgba(156, 39, 176, 0.15);
+  }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* Outros estilos mantidos */
+  .toast-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; width: 90%; max-width: 400px; }
+  .toast { background: #323232; color: white; padding: 12px 20px; border-radius: 8px; margin-top: 10px; font-size: 14px; font-weight: 500; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15); animation: slideUp 0.3s ease, fadeOut 0.5s ease 2.5s forwards; }
+  .toast.sucesso { background: #2e7d32; border-left: 5px solid #1b5e20; }
+  .toast.erro { background: #c62828; border-left: 5px solid #8e0000; }
+  @keyframes slideUp { from { bottom: -50px; opacity: 0; } to { bottom: 20px; opacity: 1; } }
+  @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+
+  .relatorio-stats { display: flex; gap: 10px; margin-bottom: 20px; }
+  .stat-card { flex: 1; background: white; padding: 15px; border-radius: 12px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #f3e5f5; transition: transform 0.2s; }
+  .stat-card strong { font-size: 18px; color: #4a148c; }
+  .item-relatorio { background: white; border-radius: 10px; padding: 12px; margin-bottom: 10px; border-left: 4px solid #9c27b0; box-shadow: 0 2px 4px rgba(0,0,0,0.03); }
+
+  .modal-lgpd { position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; }
+  .modal-content { background-color: #fff; width: 90%; max-width: 450px; border-radius: 12px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); animation: subirModal 0.3s ease-out; }
 </style>
