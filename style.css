@@ -9,6 +9,8 @@
     align-items: center; /* Centraliza o container no meio da tela no PC */
     min-height: 100vh; 
     padding: 20px 0;
+    width: 100vw;         /* ← ADICIONE ISTO */
+    overflow-x: hidden;   /* ← ADICIONE ISTO */
   }
 
 /* LOGO + NOME NO TOPO (MAIS VISÍVEL) - AUMENTADO */
