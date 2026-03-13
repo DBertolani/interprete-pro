@@ -677,25 +677,37 @@
       </div>
 
       <form id="formFeedback" onsubmit="enviarFeedback(event)">
-        <label style="font-size: 13px; font-weight: bold; color: #444;">O que achou da ideia do App?</label>
-        <select id="fb-ideia" class="input-field" required style="margin-bottom: 15px;">
+        <label style="font-size: 13px; font-weight: bold; color: #444;">Qual o maior benefício do App para você?</label>
+        <select id="fb-beneficio" class="input-field" required style="margin-bottom: 15px;">
           <option value="" disabled selected>Escolha uma opção...</option>
-          <option value="Excelente">Excelente, resolve meu problema!</option>
-          <option value="Boa">Boa, mas pode melhorar.</option>
-          <option value="Regular">Regular, não vi muita vantagem.</option>
+          <option value="Organizacao">Organização (Saber onde estão os atendimentos)</option>
+          <option value="Financeiro">Controle Financeiro (Saber quanto tenho a receber)</option>
+          <option value="Relatorios">Agilidade (Gerar resumos para agências/membros)</option>
+          <option value="Profissionalismo">Profissionalismo (Passar mais confiança ao cliente)</option>
         </select>
 
-        <label style="font-size: 13px; font-weight: bold; color: #444;">Quanto você pagaria por mês?</label>
+        <label style="font-size: 13px; font-weight: bold; color: #444;">Quanto você investiria mensalmente nesta
+          gestão?</label>
         <select id="fb-preco" class="input-field" required style="margin-bottom: 15px;">
           <option value="" disabled selected>Escolha um valor mensal...</option>
           <option value="15-25">R$ 15,00 a R$ 25,00</option>
           <option value="26-40">R$ 26,00 a R$ 40,00</option>
           <option value="41-60">R$ 41,00 a R$ 60,00</option>
-          <option value="Nao_Pagaria">Não tenho interesse em pagar.</option>
+          <option value="Nao_Pagaria">Apenas se fosse gratuito.</option>
         </select>
 
-        <label style="font-size: 13px; font-weight: bold; color: #444;">O que faria você assinar hoje?</label>
-        <textarea id="fb-obs" class="input-field" rows="3" placeholder="Sugestões ou críticas..."
+        <label style="font-size: 13px; font-weight: bold; color: #444;">O que você mais gostaria de ver no
+          futuro?</label>
+        <select id="fb-prioridade" class="input-field" required style="margin-bottom: 15px;">
+          <option value="" disabled selected>O que faz falta?</option>
+          <option value="App_Mobile">App na Play Store / App Store</option>
+          <option value="Graficos">Gráficos de faturamento e produtividade</option>
+          <option value="Notificacoes">Lembretes de pagamento via WhatsApp</option>
+          <option value="Agenda">Agenda visual (Calendário de atendimentos)</option>
+        </select>
+
+        <label style="font-size: 13px; font-weight: bold; color: #444;">Algum elogio ou sugestão específica?</label>
+        <textarea id="fb-obs" class="input-field" rows="3" placeholder="Sua opinião sincera..."
           style="margin-bottom: 15px;"></textarea>
 
         <button type="submit" id="btn-feedback" class="btn-primario" style="background: #4a148c; width: 100%;">Enviar
