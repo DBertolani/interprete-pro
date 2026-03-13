@@ -908,3 +908,54 @@ async function enviarFeedback(e) {
     btn.disabled = false;
   }
 }
+
+    // ✅ ESTAS FUNÇÕES PRECISAM VOLTAR (não estão no script.js)
+    
+    window.onload = () => {
+      const token = localStorage.getItem("google_access_token");
+      const email = localStorage.getItem("user_email");
+      if (token && email) {
+        handleSaaSLogin(email);
+      }
+    };
+    
+    function abrirModalTermos(e) {
+      e.preventDefault();
+      document.getElementById('modal-termos').style.display = 'flex';
+    }
+    
+    function fecharModalTermos() {
+      document.getElementById('modal-termos').style.display = 'none';
+    }
+    
+    function solicitarAcessoSaaS() {
+      const aceito = document.getElementById('aceito-termos').checked;
+      if (!aceito) {
+        mostrarToast("⚠️ Você precisa aceitar os Termos para continuar.", "erro");
+        return;
+      }
+      const client = google.accounts.oauth2.initTokenClient({
+        client_id: '824713665703-lr9iacceof0mg41c0gb61lm3qia4bpr7.apps.googleusercontent.com',
+        scope: 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile',
+        callback: (tokenResponse) => {
+          if (tokenResponse && tokenResponse.access_token) {
+            localStorage.setItem("google_access_token", tokenResponse.access_token);
+            fetch('https://www.googleapis.com/oauth2/v3/userinfo?access_token=' + tokenResponse.access_token)
+              .then(res => res.json())
+              .then(data => {
+                const nomeCorreto = data.name || data.given_name || "Usuário";
+                localStorage.setItem("user_email", data.email);
+                localStorage.setItem("user_name", nomeCorreto); 
+                handleSaaSLogin(data.email);
+              })
+              .catch(err => {
+                console.error("Erro ao buscar dados do Google:", err);
+                localStorage.setItem("user_email", "Sem email");
+                localStorage.setItem("user_name", "Usuário");
+                handleSaaSLogin("Sem email");
+              });
+          }
+        },
+      });
+      client.requestAccessToken();
+    }
