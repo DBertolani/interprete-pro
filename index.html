@@ -688,37 +688,60 @@
       </div>
 
       <form id="formFeedback" onsubmit="enviarFeedback(event)">
-        <label style="font-size: 13px; font-weight: bold; color: #444;">Qual o maior benefício do App para você?</label>
-        <select id="fb-beneficio" class="input-field" required style="margin-bottom: 15px;">
-          <option value="" disabled selected>Escolha uma opção...</option>
-          <option value="Organizacao">Organização (Saber onde estão os atendimentos)</option>
-          <option value="Financeiro">Controle Financeiro (Saber quanto tenho a receber)</option>
-          <option value="Relatorios">Agilidade (Gerar resumos para agências/membros)</option>
-          <option value="Profissionalismo">Profissionalismo (Passar mais confiança ao cliente)</option>
+        <label style="font-size: 13px; font-weight: bold; color: #444;">Como você organiza seus atendimentos
+          hoje?</label>
+        <select id="fb-metodo" class="input-field" required style="margin-bottom: 15px;">
+          <option value="" disabled selected>Selecione...</option>
+          <option value="Papel/Agenda">Papel ou Agenda física</option>
+          <option value="WhatsApp/Cabeca">WhatsApp ou "de cabeça"</option>
+          <option value="Planilha">Planilha no Excel/Sheets</option>
+          <option value="Nao_Organizo">Não tenho uma organização fixa</option>
         </select>
 
-        <label style="font-size: 13px; font-weight: bold; color: #444;">Quanto você investiria mensalmente nesta
-          gestão?</label>
+        <label style="font-size: 13px; font-weight: bold; color: #444;">Já esqueceu de cobrar algum serviço ou perdeu
+          controle de pagamentos?</label>
+        <select id="fb-perda" class="input-field" required style="margin-bottom: 15px;">
+          <option value="" disabled selected>Selecione...</option>
+          <option value="Sim_Frequente">Sim, acontece com frequência</option>
+          <option value="Sim_Raro">Já aconteceu algumas vezes</option>
+          <option value="Nunca">Nunca, sou muito organizado(a)</option>
+        </select>
+
+        <label style="font-size: 13px; font-weight: bold; color: #444;">Quanto tempo você gasta por mês somando horas
+          para faturar?</label>
+        <select id="fb-tempo" class="input-field" required style="margin-bottom: 15px;">
+          <option value="" disabled selected>Selecione...</option>
+          <option value="Minutos">Apenas alguns minutos</option>
+          <option value="Horas">Algumas horas chatas</option>
+          <option value="Muito_Tempo">Muito tempo / Um dia inteiro</option>
+        </select>
+
+        <label style="font-size: 13px; font-weight: bold; color: #444;">Acha que relatórios automáticos te dariam um ar
+          mais profissional?</label>
+        <select id="fb-status" class="input-field" required style="margin-bottom: 15px;">
+          <option value="" disabled selected>Selecione...</option>
+          <option value="Sim">Sim, com certeza</option>
+          <option value="Talvez">Talvez, não tinha pensado nisso</option>
+          <option value="Nao">Não vejo diferença</option>
+        </select>
+
+        <label style="font-size: 13px; font-weight: bold; color: #444;">Quanto você investiria mensalmente para ter toda
+          essa gestão organizada?</label>
         <select id="fb-preco" class="input-field" required style="margin-bottom: 15px;">
           <option value="" disabled selected>Escolha um valor mensal...</option>
           <option value="15-25">R$ 15,00 a R$ 25,00</option>
           <option value="26-40">R$ 26,00 a R$ 40,00</option>
           <option value="41-60">R$ 41,00 a R$ 60,00</option>
-          <option value="Nao_Pagaria">Apenas se fosse gratuito.</option>
+          <option value="Nao_Pagaria">Apenas se fosse gratuito</option>
         </select>
 
-        <label style="font-size: 13px; font-weight: bold; color: #444;">O que você mais gostaria de ver no
-          futuro?</label>
-        <select id="fb-prioridade" class="input-field" required style="margin-bottom: 15px;">
-          <option value="" disabled selected>O que faz falta?</option>
-          <option value="App_Mobile">App na Play Store / App Store</option>
-          <option value="Graficos">Gráficos de faturamento e produtividade</option>
-          <option value="Notificacoes">Lembretes de pagamento via WhatsApp</option>
-          <option value="Agenda">Agenda visual (Calendário de atendimentos)</option>
-        </select>
+        <label style="font-size: 13px; font-weight: bold; color: #444;">O que falta no App para você assinar o plano
+          hoje?</label>
+        <textarea id="fb-vital" class="input-field" rows="2" placeholder="O que te faria pagar com prazer?"
+          style="margin-bottom: 15px;"></textarea>
 
         <label style="font-size: 13px; font-weight: bold; color: #444;">Algum elogio ou sugestão específica?</label>
-        <textarea id="fb-obs" class="input-field" rows="3" placeholder="Sua opinião sincera..."
+        <textarea id="fb-obs" class="input-field" rows="2" placeholder="Sua opinião geral..."
           style="margin-bottom: 15px;"></textarea>
 
         <button type="submit" id="btn-feedback" class="btn-primario" style="background: #4a148c; width: 100%;">Enviar
