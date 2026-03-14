@@ -73,7 +73,7 @@ function validarPortaria(resposta) {
     localStorage.setItem("user_validade", resposta.validade || "Sem data limite");
     // --------------------------------------------------
 
-    montarApp(resposta.dadosIniciais);
+    (resposta.dadosIniciais);
   } else if (resposta && resposta.isNovo === true) {
     document.getElementById('tela-login-google').style.display = 'none';
     document.getElementById('tela-trial').style.display = 'flex';
@@ -118,6 +118,8 @@ async function acessarModoLeitura() {
   } catch (err) {
     document.getElementById('tela-loading').style.display = 'none';
     document.getElementById('tela-bloqueio').style.display = 'flex';
+    // MOSTRA O FEEDBACK NO MODO LEITURA
+    document.getElementById('atalho-feedback-fixo').style.display = 'block';
   }
 }
 
@@ -160,6 +162,8 @@ function montarApp(dados) {
         btn.style.display = 'flex'; // O seu CSS original usa flex para os botões do menu
       }
     });
+    // ADICIONE ESTA LINHA NO FINAL DA FUNÇÃO:
+    document.getElementById('atalho-feedback-fixo').style.display = 'block';
   }
   // -------------------------------------------------------------
 
@@ -170,6 +174,7 @@ function montarApp(dados) {
     btnAdmin.style.display = (emailLogado === "danilobertolani@gmail.com") ? 'block' : 'none';
   }
 }
+
 
 // --- FUNÇÃO AUXILIAR PARA O BOTÃO "ENTRAR NO SISTEMA" ---
 function irParaDashboard() {
