@@ -4,7 +4,8 @@ var dadosGeraisRelatorio = [];
 
 
 // --- 1. CONFIGURAÇÃO DA PONTE (GITHUB -> GOOGLE) ---
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxbYi7t7TjEi0TX750IzWDwy5QGBXKIqcRAOZ8ZLEvMHwqvoyIT_4jfrE2vFSU2EU16/exec"; // <--- COLOQUE SEU LINK /exec AQUI
+// const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxLC1WJjrWUPQnUVyonMScINtlwj-VRiPU5aBIxc7kbAnVmI7o_bSR2peINpnPysY0/exec"; // <--- LINK TESTE
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxbYi7t7TjEi0TX750IzWDwy5QGBXKIqcRAOZ8ZLEvMHwqvoyIT_4jfrE2vFSU2EU16/exec"; // <--- LINK PROD
 
 async function chamarGoogle(acao, dadosExtras = {}) {
   const email = localStorage.getItem("user_email");
@@ -123,56 +124,36 @@ async function acessarModoLeitura() {
   }
 }
 
+// --- 2. Ajuste na voltarDashboard ---
 async function voltarDashboard() {
-  document.querySelectorAll('.container-app > div').forEach(d => d.style.display = 'none');
-  document.getElementById('tela-app').style.display = 'block'; // ✅ Isso pode ficar block (não é tela de login)
+  esconderTodasTelas(); // <--- Mudança aqui
+  document.getElementById('tela-app').style.display = 'block';
   const res = await chamarGoogle("carregarDadosIniciais");
   document.getElementById('valor-pendente').innerText = "R$ " + res.dados.pendente;
 }
 
+// --- 1. Ajuste na montarApp ---
 function montarApp(dados) {
-  // 1. Esconde o loading
   document.getElementById('tela-loading').style.display = 'none';
-
-  // 2. Esconde TUDO (Vitrine, Login, etc) para limpar a tela
-  document.querySelectorAll('.container-app > div:not(#tela-loading)').forEach(d => d.style.display = 'none');
-
-  // 3. MOSTRA O DASHBOARD (Tela do App) diretamente
+  esconderTodasTelas(); // <--- Mudança aqui
   document.getElementById('tela-app').style.display = 'block';
-
-  // 4. Preenche os dados do usuário
   document.getElementById('valor-pendente').innerText = "R$ " + dados.pendente;
   atualizarSelectsFormulario(dados);
 
-  // --- TRAVA FASE 2: MODO SOMENTE LEITURA VISUAL NO DASHBOARD ---
   const planoAtual = localStorage.getItem("user_plano");
   const botoesMenu = document.querySelectorAll('.menu-grid .menu-btn');
-  // Se o plano não for Ativo nem Trial, esconde o botão "Novo Serviço" (que é o segundo botão, índice 1)
+
   if (planoAtual !== "Ativo" && planoAtual !== "Trial") {
-    // Como o Admin pode estar invisível, vamos procurar pelo texto para ser seguro
     botoesMenu.forEach(btn => {
-      if (btn.innerText.includes("Novo Serviço")) {
-        btn.style.display = 'none';
-      }
+      if (btn.innerText.includes("Novo Serviço")) btn.style.display = 'none';
     });
   } else {
-    // Garante que reapareça se a pessoa renovar
     botoesMenu.forEach(btn => {
-      if (btn.innerText.includes("Novo Serviço")) {
-        btn.style.display = 'flex'; // O seu CSS original usa flex para os botões do menu
-      }
+      if (btn.innerText.includes("Novo Serviço")) btn.style.display = 'flex';
     });
-    // ADICIONE ESTA LINHA NO FINAL DA FUNÇÃO:
-    document.getElementById('atalho-feedback-fixo').style.display = 'block';
   }
-  // -------------------------------------------------------------
-
-  // 5. Trava do Admin
-  const emailLogado = localStorage.getItem("user_email");
-  const btnAdmin = document.getElementById('btn-tab-admin');
-  if (btnAdmin) {
-    btnAdmin.style.display = (emailLogado === "danilobertolani@gmail.com") ? 'block' : 'none';
-  }
+  // Garante que o feedback apareça para todos após logar
+  document.getElementById('atalho-feedback-fixo').style.display = 'block';
 }
 
 // --- FUNÇÃO AUXILIAR PARA O BOTÃO "ENTRAR NO SISTEMA" ---
@@ -219,24 +200,19 @@ function atualizarSelectsFormulario(d) {
 // --- 5. REGISTROS ---
 // --- 1. ABRIR REGISTRO (Agora com navegação limpa) ---
 function abrirRegistro(linha = "", dados = null) {
-  document.querySelectorAll('.container-app > div').forEach(d => d.style.display = 'none');
+  esconderTodasTelas(); // <--- Mudança aqui
   document.getElementById('tela-registro').style.display = 'block';
-
   document.getElementById('linha-edicao').value = linha;
   const secaoFinanceira = document.getElementById('secao-edicao-financeira');
 
   if (linha === "") {
-    // --- NOVO REGISTRO ---
     document.getElementById('titulo-form').innerText = "Novo Atendimento";
     document.getElementById('formRegistro').reset();
     document.getElementById('data').valueAsDate = new Date();
     document.getElementById('valor-live-preview').innerText = "R$ 0,00";
     secaoFinanceira.style.display = "none";
-
-    // RESET DO SELETOR: Começa em Particular
     document.getElementById('origem-p').checked = true;
     toggleCamposAgencia();
-
   } else {
     // --- EDIÇÃO ---
     document.getElementById('titulo-form').innerText = "Editar Atendimento";
@@ -372,13 +348,12 @@ async function enviarDados(e) {
 // --- 6. HISTÓRICO ---
 // 1. Limpando a abertura do histórico (removemos a data global)
 async function abrirHistorico() {
-  document.querySelectorAll('.container-app > div').forEach(d => d.style.display = 'none');
+  esconderTodasTelas(); // <--- Mudança aqui
   document.getElementById('tela-historico').style.display = 'block';
   document.getElementById('lista-html').innerHTML = '<div class="loader"></div>';
   const res = await chamarGoogle("buscarTodosServicos");
   renderizarHistorico(res.dados);
 }
-
 // --- ATUALIZAÇÃO DA RENDERIZAÇÃO ---
 function renderizarHistorico(l) {
   historicoGlobal = l;
@@ -516,16 +491,19 @@ function chamarEditar(l) { var i = historicoGlobal.find(x => x.linha === l); abr
 
 // --- 7. RELATÓRIOS ---
 async function abrirRelatorios() {
-  document.querySelectorAll('.container-app > div').forEach(d => d.style.display = 'none');
+  esconderTodasTelas(); // <--- Esta função já é segura, mantenha apenas ela
   document.getElementById('tela-relatorios').style.display = 'block';
   document.getElementById('lista-relatorio').innerHTML = '<div class="loader"></div>';
+
   const res = await chamarGoogle("buscarTodosServicos");
   dadosGeraisRelatorio = res.dados;
+
   var hj = new Date();
   document.getElementById('filtroMesRelatorio').value = hj.getFullYear() + "-" + ("0" + (hj.getMonth() + 1)).slice(-2);
   var sa = document.getElementById('filtroAgenciaRelatorio'); sa.innerHTML = '<option value="todas">Todas as Agências</option>';
   var sm = document.getElementById('filtroMembroRelatorio'); sm.innerHTML = '<option value="todos">Todos os Membros</option>';
   var lAg = [], lMem = [];
+
   res.dados.forEach(i => {
     if (!lAg.includes(i.agencia)) { lAg.push(i.agencia); sa.innerHTML += `<option value="${i.agencia}">${i.agencia}</option>`; }
     if (!lMem.includes(i.interprete)) { lMem.push(i.interprete); sm.innerHTML += `<option value="${i.interprete}">${i.interprete}</option>`; }
@@ -678,15 +656,14 @@ function baixarImagemRelatorio() {
 
 // --- 8. CONFIGURAÇÕES ---
 function abrirConfiguracoes() {
-  // --- CHAMA A FUNÇÃO DE CARREGAR OS DADOS DO USUÁRIO ---
+  // 1. Carrega os dados da conta (Nome, Email, Plano)
   carregarDadosConta();
-  // ------------------------------------------------------
 
-  // 1. Abre a tela na hora (sem chamar o Google!)
-  document.getElementById('tela-app').style.display = 'none';
+  // 2. NAVEGAÇÃO SEGURA: Esconde as outras telas sem sumir com o Feedback
+  esconderTodasTelas();
   document.getElementById('tela-configuracoes').style.display = 'block';
 
-  // 2. Usa o que já está guardado nas variáveis globais
+  // 3. Pega os dados que já estão na memória
   const d = {
     tiposServico: tiposServicoGlobal,
     equipe: equipeGlobal,
@@ -694,24 +671,27 @@ function abrirConfiguracoes() {
     clientes: clientesGlobais
   };
 
-  // --- TRAVA FASE 2: VERIFICA PLANO PARA OCULTAR EDIÇÃO ---
+  // 4. VERIFICAÇÃO DE PLANO (Modo Leitura)
   const planoAtual = localStorage.getItem("user_plano");
   const bloqueadoLeitura = (planoAtual !== "Ativo" && planoAtual !== "Trial");
 
-  // Esconde os formulários de adicionar novos itens se estiver bloqueado
+  // Esconde formulários de cadastro se o plano estiver vencido
   document.getElementById('formServicos').style.display = bloqueadoLeitura ? 'none' : 'block';
   document.getElementById('formEquipe').style.display = bloqueadoLeitura ? 'none' : 'block';
   document.getElementById('formConfig').style.display = bloqueadoLeitura ? 'none' : 'block';
   document.getElementById('formClientes').style.display = bloqueadoLeitura ? 'none' : 'block';
-  // --------------------------------------------------------
 
-  // 3. Renderiza as listas (Usando if/else curto para esconder os botões ✏️ e 🗑️)
+  // 5. RENDERIZAÇÃO DAS LISTAS (Serviços, Equipe, Agências e Clientes)
+
+  // Lista de Serviços
   var cs = document.getElementById('lista-servicos-ui'); cs.innerHTML = "";
   d.tiposServico.forEach(s => cs.innerHTML += `<div class="item-pendente item-config-flex" style="border-left-color:#546e7a"><strong>${s}</strong>${bloqueadoLeitura ? '' : `<div><button class="btn-acao btn-editar" onclick="editarConfig('servico','${s}')">✏️</button><button class="btn-acao btn-excluir" onclick="excluirConfig('Tipos_Servico','${s}')">🗑️</button></div>`}</div>`);
 
+  // Lista de Equipe
   var ce = document.getElementById('lista-equipe-ui'); ce.innerHTML = "";
   d.equipe.forEach(n => ce.innerHTML += `<div class="item-pendente item-config-flex" style="border-left-color:#9c27b0"><strong>${n}</strong>${bloqueadoLeitura ? '' : `<div><button class="btn-acao btn-editar" onclick="editarConfig('equipe','${n}')">✏️</button><button class="btn-acao btn-excluir" onclick="excluirConfig('Minha_Equipe','${n}')">🗑️</button></div>`}</div>`);
 
+  // Lista de Agências
   var ca = document.getElementById('lista-configuracoes'); ca.innerHTML = "";
   d.agencias.forEach(i => {
     const valorFormatado = parseFloat(i.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -725,8 +705,12 @@ function abrirConfiguracoes() {
       </div>`;
   });
 
+  // Lista de Clientes Finais
   var cl = document.getElementById('lista-clientes-ui'); cl.innerHTML = "";
   d.clientes.forEach(n => cl.innerHTML += `<div class="item-pendente item-config-flex" style="border-left-color:#FF9800"><strong>${n}</strong>${bloqueadoLeitura ? '' : `<div><button class="btn-acao btn-editar" onclick="editarConfig('cliente','${n}')">✏️</button><button class="btn-acao btn-excluir" onclick="excluirConfig('Minhas_Empresas_Finais','${n}')">🗑️</button></div>`}</div>`);
+
+  // Garante que o atalho de feedback continue visível
+  document.getElementById('atalho-feedback-fixo').style.display = 'block';
 }
 
 // Nova função auxiliar para organizar o código
@@ -985,6 +969,7 @@ async function iniciarTesteGratis() {
 
 
 async function abrirAdmin() {
+  esconderTodasTelas(); //
   document.getElementById('tela-app').style.display = 'none';
   document.getElementById('tela-admin').style.display = 'block';
   const container = document.getElementById('lista-clientes-master');
@@ -1110,10 +1095,10 @@ async function enviarFeedback(e) {
   e.preventDefault();
   const btn = document.getElementById('btn-feedback');
   const textoOriginal = btn.innerText;
+
   btn.innerText = "⏳ Enviando...";
   btn.disabled = true;
 
-  // ATENÇÃO: O nome do lado esquerdo (a chave) deve ser IGUAL ao topo da coluna na planilha
   const dados = {
     "Organização": document.getElementById('fb-metodo').value,
     "Esqueceu Cobrança?": document.getElementById('fb-perda').value,
@@ -1126,13 +1111,19 @@ async function enviarFeedback(e) {
 
   try {
     const res = await chamarGoogle("salvarFeedback", dados);
-    if (res && res.status === "Sucesso") {
-      mostrarToast("✅ Feedback recebido!", "sucesso");
-      document.getElementById('formFeedback').reset();
-      fecharModalFeedback();
-    }
+
+    // 1. Mostra a mensagem de sucesso
+    mostrarToast("✅ Feedback recebido! Obrigado.", "sucesso");
+
+    // 2. LIMPA O FORMULÁRIO (O pulo do gato está aqui, fora de IFs complicados)
+    document.getElementById('formFeedback').reset();
+
+    // 3. Fecha a janela
+    fecharModalFeedback();
+
   } catch (err) {
-    mostrarToast("❌ Erro ao enviar.", "erro");
+    console.error("Erro ao enviar feedback:", err);
+    mostrarToast("❌ Erro ao enviar. Tente novamente.", "erro");
   } finally {
     btn.innerText = textoOriginal;
     btn.disabled = false;
@@ -1215,6 +1206,13 @@ function toggleCamposAgencia() {
 
 // Função para trocar de tela sem esconder o botão de feedback e o toast
 function esconderTodasTelas() {
+  // Esconde as telas principais
   document.querySelectorAll('.container-app > div:not(.feedback-atalho):not(#toast-container):not(#tela-loading)')
     .forEach(div => div.style.display = 'none');
+
+  // GARANTE que o atalho de feedback apareça (caso tenha sido escondido por erro)
+  const feedback = document.getElementById('atalho-feedback-fixo');
+  if (feedback && localStorage.getItem("user_email")) {
+    feedback.style.display = 'block';
+  }
 }
