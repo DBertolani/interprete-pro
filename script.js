@@ -1105,29 +1105,29 @@ async function enviarFeedback(e) {
   e.preventDefault();
   const btn = document.getElementById('btn-feedback');
   const textoOriginal = btn.innerText;
-
   btn.innerText = "⏳ Enviando...";
   btn.disabled = true;
 
+  // ATENÇÃO: O nome do lado esquerdo (a chave) deve ser IGUAL ao topo da coluna na planilha
   const dados = {
-    beneficio: document.getElementById('fb-beneficio').value, // Pegando o novo benefício
-    preco: document.getElementById('fb-preco').value,
-    prioridade: document.getElementById('fb-prioridade').value, // Pegando a prioridade do roadmap
-    obs: document.getElementById('fb-obs').value
+    "Organização": document.getElementById('fb-metodo').value,
+    "Esqueceu Cobrança?": document.getElementById('fb-perda').value,
+    "Tempo Gasto": document.getElementById('fb-tempo').value,
+    "Profissionalismo": document.getElementById('fb-status').value,
+    "Valor sugerido": document.getElementById('fb-preco').value,
+    "O que falta?": document.getElementById('fb-vital').value,
+    "Elogios/Sugestões": document.getElementById('fb-obs').value
   };
 
   try {
     const res = await chamarGoogle("salvarFeedback", dados);
-
     if (res && res.status === "Sucesso") {
-      mostrarToast("✅ Feedback recebido! Muito obrigado.", "sucesso");
+      mostrarToast("✅ Feedback recebido!", "sucesso");
       document.getElementById('formFeedback').reset();
       fecharModalFeedback();
-    } else {
-      throw new Error("Erro no retorno do servidor");
     }
   } catch (err) {
-    mostrarToast("❌ Falha ao enviar. Tente novamente.", "erro");
+    mostrarToast("❌ Erro ao enviar.", "erro");
   } finally {
     btn.innerText = textoOriginal;
     btn.disabled = false;
