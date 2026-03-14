@@ -73,7 +73,7 @@ function validarPortaria(resposta) {
     localStorage.setItem("user_validade", resposta.validade || "Sem data limite");
     // --------------------------------------------------
 
-    (resposta.dadosIniciais);
+    montarApp(resposta.dadosIniciais);
   } else if (resposta && resposta.isNovo === true) {
     document.getElementById('tela-login-google').style.display = 'none';
     document.getElementById('tela-trial').style.display = 'flex';
@@ -174,7 +174,6 @@ function montarApp(dados) {
     btnAdmin.style.display = (emailLogado === "danilobertolani@gmail.com") ? 'block' : 'none';
   }
 }
-
 
 // --- FUNÇÃO AUXILIAR PARA O BOTÃO "ENTRAR NO SISTEMA" ---
 function irParaDashboard() {
@@ -883,6 +882,7 @@ function fecharModalLogout() {
 
 function confirmarLogout() {
   localStorage.clear();
+  document.getElementById('atalho-feedback-fixo').style.display = 'none'; // Esconde o feedback
   location.reload();
 }
 
@@ -1211,4 +1211,10 @@ function toggleCamposAgencia() {
     selectAgencia.removeAttribute('required');
     selectAgencia.value = ""; // Limpa a seleção
   }
+}
+
+// Função para trocar de tela sem esconder o botão de feedback e o toast
+function esconderTodasTelas() {
+  document.querySelectorAll('.container-app > div:not(.feedback-atalho):not(#toast-container):not(#tela-loading)')
+    .forEach(div => div.style.display = 'none');
 }
