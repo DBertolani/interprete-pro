@@ -135,11 +135,12 @@ async function voltarDashboard() {
 // --- 1. Ajuste na montarApp ---
 function montarApp(dados) {
   document.getElementById('tela-loading').style.display = 'none';
-  esconderTodasTelas(); // <--- Mudança aqui
+  esconderTodasTelas(); 
   document.getElementById('tela-app').style.display = 'block';
   document.getElementById('valor-pendente').innerText = "R$ " + dados.pendente;
   atualizarSelectsFormulario(dados);
 
+  // --- TRAVA DE MODO LEITURA ---
   const planoAtual = localStorage.getItem("user_plano");
   const botoesMenu = document.querySelectorAll('.menu-grid .menu-btn');
 
@@ -152,7 +153,15 @@ function montarApp(dados) {
       if (btn.innerText.includes("Novo Serviço")) btn.style.display = 'flex';
     });
   }
-  // Garante que o feedback apareça para todos após logar
+
+  // --- TRAVA DO ADMIN (Essa parte havia sumido!) ---
+  const emailLogado = localStorage.getItem("user_email");
+  const btnAdmin = document.getElementById('btn-tab-admin');
+  if (btnAdmin) {
+    btnAdmin.style.display = (emailLogado === "danilobertolani@gmail.com") ? 'block' : 'none';
+  }
+
+  // Garante que o atalho de feedback apareça
   document.getElementById('atalho-feedback-fixo').style.display = 'block';
 }
 
