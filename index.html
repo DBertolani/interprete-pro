@@ -274,7 +274,7 @@
           <div class="menu-icon">🔑</div>
           <div class="menu-text" style="color:#4a148c; font-weight:bold;">Master Admin</div>
         </button>
-        
+
       </div>
 
     </div>
@@ -283,7 +283,9 @@
 
     <div id="tela-registro" style="display: none;">
       <div class="card">
-        <div class="header-app"><button class="btn-voltar-topo" onclick="voltarDashboard()">⬅</button>
+
+        <div class="header-app">
+          <button class="btn-voltar-topo" onclick="fecharRegistroManual()">⬅</button>
           <h2 id="titulo-form">Atendimento</h2>
         </div>
 
@@ -358,7 +360,8 @@
           </div>
 
           <button type="submit" id="btnSalvar" class="btn-primario">Salvar</button>
-          <button type="button" class="btn-voltar" onclick="voltarDashboard()">Cancelar</button>
+          <button type="button" class="btn-voltar" onclick="fecharRegistroManual()">Cancelar</button>
+
         </form>
       </div>
     </div>
@@ -389,10 +392,23 @@
                 placeholder="Buscar..."></div>
           </div>
 
-          <div style="margin-top:8px;">
-            <label>Filtrar Data Atendimento:</label>
-            <input type="text" id="filtroDataHist" onkeyup="filtrarListaHistorico()" placeholder="Ex: 09/03">
+          <div style="margin-top: 15px; border-top: 1px dashed #90caf9; padding-top: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+              <label style="margin: 0; font-size: 13px; color: #1976d2;">Período do Atendimento:</label>
+              <button id="btnOrdenacaoData" onclick="alternarOrdemData()"
+                style="background: #e3f2fd; border: none; border-radius: 6px; padding: 5px 10px; font-size: 11px; cursor: pointer; color: #1565c0; font-weight: bold; transition: 0.2s;">
+                ⬇️ Mais Recentes
+              </button>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <input type="date" id="filtroDataInicio" onchange="filtrarListaHistorico()"
+                style="margin: 0; padding: 10px; font-size: 13px !important; color: #444;">
+              <span style="font-size: 12px; color: #666; font-weight: bold;">até</span>
+              <input type="date" id="filtroDataFim" onchange="filtrarListaHistorico()"
+                style="margin: 0; padding: 10px; font-size: 13px !important; color: #444;">
+            </div>
           </div>
+
         </div>
 
         <div id="lista-html"></div>
@@ -538,42 +554,121 @@
         </div>
 
         <div id="content-perfil" class="tab-content">
-          <div style="text-align: left; padding: 10px;">
-            <div style="display: flex; justify-content: center; margin-bottom: 15px;">
-              <div
-                style="font-size: 40px; background: #f3e5f5; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #9c27b0;">
-                👤</div>
+          <div style="padding: 10px 0;">
+
+            <!-- Avatar com edição -->
+            <div style="text-align: center; margin-bottom: 20px;">
+              <div style="position: relative; width: 90px; margin: 0 auto 10px auto;">
+                <div id="avatar-display" onclick="document.getElementById('input-foto-perfil').click()"
+                  style="width: 90px; height: 90px; border-radius: 50%; background: #f3e5f5; border: 3px solid #9c27b0; display: flex; align-items: center; justify-content: center; font-size: 48px; cursor: pointer; overflow: hidden;">
+                  👤
+                </div>
+                <button onclick="removerFotoPerfil()" id="btn-remover-foto"
+                  style="display:none; position: absolute; top: 0; right: 0; background: #e53935; border: none; border-radius: 50%; width: 24px; height: 24px; color: white; font-size: 14px; cursor: pointer; line-height: 1;">✕</button>
+                <div onclick="document.getElementById('input-foto-perfil').click()"
+                  style="position: absolute; bottom: 0; right: 0; background: #4a148c; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px;">
+                  ✏️</div>
+              </div>
+              <input type="file" id="input-foto-perfil" accept="image/*" style="display:none"
+                onchange="salvarFotoPerfil(this)">
+
+              <!-- Nome editável -->
+              <div id="nome-display-perfil"
+                style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 4px;">
+                <h3 style="color: #4a148c; margin: 0; font-size: 18px;" id="conta-nome">---</h3>
+                <button onclick="ativarEdicaoNome()"
+                  style="background: none; border: none; cursor: pointer; font-size: 14px; padding: 2px;">✏️</button>
+              </div>
+              <div id="nome-edit-perfil"
+                style="display: none; gap: 6px; align-items: center; justify-content: center; flex-wrap: wrap; margin-bottom: 4px;">
+                <input type="text" id="input-nome-perfil" placeholder="Nome"
+                  style="width: 130px; padding: 6px 10px; font-size: 14px; margin: 0;">
+                <input type="text" id="input-sobrenome-perfil" placeholder="Sobrenome"
+                  style="width: 130px; padding: 6px 10px; font-size: 14px; margin: 0;">
+                <button onclick="salvarNomePerfil()"
+                  style="background: #4a148c; color: white; border: none; border-radius: 6px; padding: 7px 14px; font-size: 13px; cursor: pointer; font-weight: bold;">Salvar</button>
+                <button onclick="cancelarEdicaoNome()"
+                  style="background: #eee; color: #666; border: none; border-radius: 6px; padding: 7px 10px; font-size: 13px; cursor: pointer;">✕</button>
+              </div>
+
+              <p style="color: #888; font-size: 13px; margin: 4px 0 0 0;" id="conta-email">---</p>
             </div>
 
-            <h3 style="color: #4a148c; margin-top: 0; text-align: center; font-size: 18px;">Meu Perfil</h3>
-
+            <!-- Card Plano -->
             <div
-              style="background: #f4f7f6; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; color: #444; border: 1px solid #e0e0e0;">
-              <p style="margin: 8px 0; display: flex; justify-content: space-between;">
-                <strong>Nome:</strong> <span id="conta-nome" style="color: #333;">---</span>
-              </p>
-              <p style="margin: 8px 0; display: flex; justify-content: space-between;">
-                <strong>E-mail:</strong> <span id="conta-email" style="color: #333;">---</span>
-              </p>
-              <div style="height: 1px; background: #dcdcdc; margin: 12px 0;"></div>
-              <p style="margin: 8px 0; display: flex; justify-content: space-between;">
-                <strong>Plano:</strong> <span id="conta-plano"
-                  style="color: #4a148c; font-weight: bold; background: #f3e5f5; padding: 2px 8px; border-radius: 10px;">---</span>
-              </p>
-              <p style="margin: 8px 0; display: flex; justify-content: space-between;">
-                <strong>Validade:</strong> <span id="conta-validade"
-                  style="color: #e65100; font-weight: bold;">---</span>
-              </p>
+              style="background: #f3e5f5; border-radius: 12px; padding: 15px; margin-bottom: 15px; border: 1px solid #ce93d8;">
+              <p
+                style="margin: 0 0 4px 0; font-size: 11px; color: #7b1fa2; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">
+                Assinatura</p>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 20px; font-weight: bold; color: #4a148c;" id="conta-plano">---</span>
+                <span style="font-size: 13px; color: #e65100; font-weight: bold;" id="conta-validade">---</span>
+              </div>
             </div>
 
-            <button type="button" class="btn-primario" onclick="gerarPagamento()" style="width: 100%;">💳 Fazer
-              Upgrade / Renovar Plano</button>
+            <!-- Botão Renovar -->
+            <button type="button" class="btn-primario" onclick="gerarPagamento()"
+              style="margin-top: 0; margin-bottom: 20px;">
+              💳 Fazer Upgrade / Renovar Plano
+            </button>
+
+            <!-- Importar Planilha -->
+            <div style="background: #f9f9f9; padding: 15px; border-radius: 10px; border: 1px dashed #9c27b0;">
+              <h4 style="color: #4a148c; margin: 0 0 10px 0; font-size: 15px;">📦 Importar Planilha</h4>
+
+              <div
+                style="background: #fff3e0; border-left: 4px solid #FF9800; border-radius: 6px; padding: 10px 12px; margin-bottom: 12px; font-size: 13px; color: #555; line-height: 1.6;">
+                ⚠️ Certifique-se de que sua planilha segue o modelo padrão. Colunas fora do padrão podem causar erros.
+                <br><br>
+
+                <span style="color: #9e9e9e; font-weight: bold; cursor: not-allowed;">
+                  📥 Planilha modelo — <em>em breve</em>
+                </span>
+
+              </div>
+
+              <label style="font-size: 13px; font-weight: bold; color: #555; margin-top: 0;">🔗 Link do Google
+                Sheets:</label>
+              <input type="url" id="input-link-planilha"
+                placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?output=csv"
+                style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; margin-bottom: 12px; font-size: 12px; box-sizing: border-box;">
+
+              <label style="font-size: 13px; font-weight: bold; color: #555; margin-top: 0;">📂 Ou upload do arquivo
+                (.csv / .xlsx):</label>
+              <input type="file" id="input-arquivo-planilha" accept=".csv,.xlsx,.xls"
+                style="margin-bottom: 12px; background: white; border: 1px solid #ccc; font-size: 13px; border-radius: 6px;">
+
+              <button type="button" onclick="prepararImportacaoLink()" class="btn-primario"
+                style="margin: 0; background: #9c27b0; padding: 12px; font-weight: bold;">
+                🔍 Analisar e Importar
+              </button>
+            </div>
+
+            <!-- Modal confirmação importação -->
+            <div id="modal-confirmacao-import"
+              style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;">
+              <div
+                style="background: white; width: 100%; max-width: 350px; border-radius: 12px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+                <h3 style="color: #4a148c; margin-top: 0; text-align: center; font-size: 18px;">Planilha Encontrada! 📊
+                </h3>
+                <p style="font-size: 13px; color: #666; text-align: center;">Verifique se os dados estão corretos antes
+                  de importar.</p>
+                <div id="msg-preview-import"
+                  style="font-size: 13px; color: #333; margin-bottom: 20px; background: #f3e5f5; padding: 12px; border-radius: 8px; border-left: 4px solid #9c27b0; line-height: 1.6;">
+                </div>
+                <div style="display: flex; gap: 10px;">
+                  <button type="button" onclick="fecharModalImport()" class="btn-voltar"
+                    style="flex: 1; margin: 0; padding: 12px;">Cancelar</button>
+                  <button type="button" onclick="executarImportacaoLote()" class="btn-primario"
+                    style="flex: 1; margin: 0; padding: 12px; background: #4caf50; border: none;">✅ Importar</button>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
-
       </div>
     </div>
-
     <div id="atalho-feedback-fixo" class="feedback-atalho" style="display: none;">
       <a href="#" onclick="abrirModalFeedback(event)">
         <span>💡</span> Sugerir uma melhoria para o App
@@ -582,8 +677,6 @@
 
   </div>
   <script src="script.js"></script>
-
-
 
   <div id="modal-termos" class="modal-lgpd" style="display: none;">
     <div class="modal-content">
@@ -711,7 +804,8 @@
           <option value="Nao_Organizo">Não tenho uma organização fixa</option>
         </select>
 
-        <label style="font-size: 13px; font-weight: bold; color: #444;">Já esqueceu de cobrar algum serviço ou perdeu
+        <label style="font-size: 13px; font-weight: bold; color: #444;">Já esqueceu de cobrar algum serviço ou
+          perdeu
           controle de pagamentos?</label>
         <select id="fb-perda" class="input-field" required style="margin-bottom: 15px;">
           <option value="" disabled selected>Selecione...</option>
@@ -720,7 +814,8 @@
           <option value="Nunca">Nunca, sou muito organizado(a)</option>
         </select>
 
-        <label style="font-size: 13px; font-weight: bold; color: #444;">Quanto tempo você gasta por mês somando horas
+        <label style="font-size: 13px; font-weight: bold; color: #444;">Quanto tempo você gasta por mês somando
+          horas
           para faturar?</label>
         <select id="fb-tempo" class="input-field" required style="margin-bottom: 15px;">
           <option value="" disabled selected>Selecione...</option>
@@ -729,7 +824,8 @@
           <option value="Muito_Tempo">Muito tempo / Um dia inteiro</option>
         </select>
 
-        <label style="font-size: 13px; font-weight: bold; color: #444;">Acha que relatórios automáticos te dariam um ar
+        <label style="font-size: 13px; font-weight: bold; color: #444;">Acha que relatórios automáticos te dariam um
+          ar
           mais profissional?</label>
         <select id="fb-status" class="input-field" required style="margin-bottom: 15px;">
           <option value="" disabled selected>Selecione...</option>
@@ -738,7 +834,8 @@
           <option value="Nao">Não vejo diferença</option>
         </select>
 
-        <label style="font-size: 13px; font-weight: bold; color: #444;">Quanto você investiria mensalmente para ter toda
+        <label style="font-size: 13px; font-weight: bold; color: #444;">Quanto você investiria mensalmente para ter
+          toda
           essa gestão organizada?</label>
         <select id="fb-preco" class="input-field" required style="margin-bottom: 15px;">
           <option value="" disabled selected>Escolha um valor mensal...</option>
