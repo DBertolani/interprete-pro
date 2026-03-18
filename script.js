@@ -1,10 +1,15 @@
 var dadosFiltradosAtuais = [];
 var agenciasGlobais = [], dadosPagosGlobais = [], historicoGlobal = [], equipeGlobal = [], clientesGlobais = [], tiposServicoGlobal = [];
 var dadosGeraisRelatorio = [];
+let ordemDataHistorico = 'desc';
+let origemNavegacao = 'dash';
+
+// NOVO: cache indexado por ID numérico — atualizado por todas as fontes de dados
+const servicoCache = new Map();
 
 
 // --- 1. CONFIGURAÇÃO DA PONTE (GITHUB -> GOOGLE) ---
-// const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxLC1WJjrWUPQnUVyonMScINtlwj-VRiPU5aBIxc7kbAnVmI7o_bSR2peINpnPysY0/exec"; // <--- LINK TESTE
+//const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxLC1WJjrWUPQnUVyonMScINtlwj-VRiPU5aBIxc7kbAnVmI7o_bSR2peINpnPysY0/exec"; // <--- LINK TESTE
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxbYi7t7TjEi0TX750IzWDwy5QGBXKIqcRAOZ8ZLEvMHwqvoyIT_4jfrE2vFSU2EU16/exec"; // <--- LINK PROD
 
 async function chamarGoogle(acao, dadosExtras = {}) {
@@ -132,10 +137,12 @@ async function voltarDashboard() {
   document.getElementById('valor-pendente').innerText = "R$ " + res.dados.pendente;
 }
 
+
+
 // --- 1. Ajuste na montarApp ---
 function montarApp(dados) {
   document.getElementById('tela-loading').style.display = 'none';
-  esconderTodasTelas(); 
+  esconderTodasTelas();
   document.getElementById('tela-app').style.display = 'block';
   document.getElementById('valor-pendente').innerText = "R$ " + dados.pendente;
   atualizarSelectsFormulario(dados);
@@ -207,44 +214,55 @@ function atualizarSelectsFormulario(d) {
 }
 
 // --- 5. REGISTROS ---
-// --- 1. ABRIR REGISTRO (Agora com navegação limpa) ---
+// --- 1. ABRE O REGISTRO E DEFINE A ORIGEM ---
 function abrirRegistro(linha = "", dados = null) {
-  esconderTodasTelas(); // <--- Mudança aqui
+  esconderTodasTelas();
   document.getElementById('tela-registro').style.display = 'block';
   document.getElementById('linha-edicao').value = linha;
-  const secaoFinanceira = document.getElementById('secao-edicao-financeira');
+
+  const btn = document.getElementById('btnSalvar');
+  btn.disabled = false;
+  btn.innerText = "Salvar";
+
+  origemNavegacao = (linha === "") ? 'dash' : 'historico';
 
   if (linha === "") {
+    // ... (bloco do Novo Atendimento continua igual)
     document.getElementById('titulo-form').innerText = "Novo Atendimento";
     document.getElementById('formRegistro').reset();
     document.getElementById('data').valueAsDate = new Date();
     document.getElementById('valor-live-preview').innerText = "R$ 0,00";
-    secaoFinanceira.style.display = "none";
+    document.getElementById('secao-edicao-financeira').style.display = "none";
     document.getElementById('origem-p').checked = true;
     toggleCamposAgencia();
   } else {
-    // --- EDIÇÃO ---
+    // PROTEÇÃO: Se os dados não chegarem, não tenta preencher
+    if (!dados) {
+      mostrarToast("❌ Erro ao carregar dados do serviço.", "erro");
+      fecharRegistroManual();
+      return;
+    }
+
     document.getElementById('titulo-form').innerText = "Editar Atendimento";
-    secaoFinanceira.style.display = "block";
+    document.getElementById('secao-edicao-financeira').style.display = "block";
 
-    document.getElementById('data').value = dados.dataOriginal;
-    document.getElementById('empresa').value = dados.empresa;
-    document.getElementById('inicio').value = dados.inicio;
-    document.getElementById('fim').value = dados.fim;
-    document.getElementById('interprete').value = dados.interprete;
+    // Agora o preenchimento fica seguro
+    document.getElementById('data').value = dados.dataOriginal || "";
+    document.getElementById('empresa').value = dados.empresa || "";
+    document.getElementById('inicio').value = dados.inicio || "";
+    document.getElementById('fim').value = dados.fim || "";
+    document.getElementById('interprete').value = dados.interprete || "";
     document.getElementById('tipoServico').value = dados.tipoServico || "";
-    document.getElementById('valor-base').value = dados.valor.replace("R$ ", "").trim();
-    document.getElementById('obs').value = dados.obs;
+    document.getElementById('valor-base').value = (dados.valor || "").replace("R$ ", "").trim();
+    document.getElementById('obs').value = dados.obs || "";
 
-    // LÓGICA DO SELETOR NA EDIÇÃO:
     if (dados.agencia === "Particular") {
       document.getElementById('origem-p').checked = true;
     } else {
       document.getElementById('origem-a').checked = true;
       document.getElementById('agencia').value = dados.agencia;
     }
-    toggleCamposAgencia(); // Atualiza a visibilidade do campo Agência
-
+    toggleCamposAgencia();
     document.getElementById('edit-status').value = dados.status;
     document.getElementById('edit-data-pgto').value = dados.dataPgtoOriginal || "";
     toggleDataEdicao();
@@ -309,44 +327,87 @@ function verificarBloqueioLeitura() {
   return false; // Retorna false se estiver tudo OK
 }
 
-// --- 2. ENVIAR DADOS (Atualizado para ler o status da edição) ---
+// --- 2. SALVA E FORÇA ATUALIZAÇÃO DA MEMÓRIA ---
 async function enviarDados(e) {
   e.preventDefault();
   if (verificarBloqueioLeitura()) return;
 
-  var btn = document.getElementById('btnSalvar');
-  var l = document.getElementById('linha-edicao').value;
+  const btn = document.getElementById('btnSalvar');
+  const linhaId = document.getElementById('linha-edicao').value;
+  const valorAgencia = document.getElementById('origem-p').checked ? "Particular" : document.getElementById('agencia').value;
 
-  // LÓGICA PARA PEGAR O VALOR CERTO DA AGÊNCIA:
-  const valorAgencia = document.getElementById('origem-p').checked
-    ? "Particular"
-    : document.getElementById('agencia').value;
-
-  var d = {
+  const d = {
     tipoServico: document.getElementById('tipoServico').value,
     data: document.getElementById('data').value,
-    agencia: valorAgencia, // <--- VALOR DINÂMICO AQUI
+    agencia: valorAgencia,
     empresa: document.getElementById('empresa').value,
     inicio: document.getElementById('inicio').value,
     fim: document.getElementById('fim').value,
     interprete: document.getElementById('interprete').value,
     valorFinal: document.getElementById('valor-live-preview').innerText.replace("R$ ", ""),
     obs: document.getElementById('obs').value,
-    status: (l !== "") ? document.getElementById('edit-status').value : "Pendente",
-    dataPgto: (l !== "") ? document.getElementById('edit-data-pgto').value : ""
+    // CORREÇÃO: nomes que o GAS espera receber
+    statusAntigo: (linhaId !== "") ? document.getElementById('edit-status').value : "Pendente",
+    dataPgtoAntiga: (linhaId !== "") ? document.getElementById('edit-data-pgto').value : ""
   };
 
   btn.disabled = true;
   btn.innerText = "⏳ Salvando...";
 
   try {
-    if (l === "") {
+    if (linhaId === "") {
       await chamarGoogle("salvarRegistro", d);
+
+      const hI = d.inicio, hF = d.fim;
+      const dI = new Date(0, 0, 0, hI.split(":")[0], hI.split(":")[1]);
+      let dF = new Date(0, 0, 0, hF.split(":")[0], hF.split(":")[1]);
+      if (dF < dI) dF.setDate(dF.getDate() + 1);
+      const horas = (dF - dI) / 3600000;
+
+      if (horas > 1.0) {
+        mostrarToast("✅ Registro salvo!");
+        await perguntarDuplicacao(d);
+        return;
+      }
+      mostrarToast("✅ Salvo com sucesso!");
+      voltarDashboard();
+
     } else {
-      await chamarGoogle("atualizarRegistro", { linha: l, dados: d });
+      await chamarGoogle("atualizarRegistro", { linha: linhaId, dados: d });
+
+      // OPTIMISTIC UPDATE: atualiza o cache local imediatamente
+      const idNumerico = Number(linhaId);
+      const entradaExistente = servicoCache.get(idNumerico) ?? {};
+
+      const entradaAtualizada = {
+        ...entradaExistente,
+        linha: idNumerico,
+        empresa: d.empresa,
+        agencia: d.agencia,
+        interprete: d.interprete,
+        tipoServico: d.tipoServico,
+        inicio: d.inicio,
+        fim: d.fim,
+        obs: d.obs,
+        // CORREÇÃO: usa os mesmos nomes corrigidos acima
+        status: d.statusAntigo,
+        dataPgto: d.dataPgtoAntiga || entradaExistente.dataPgto || "",
+        valor: "R$ " + d.valorFinal,
+        valorNum: converterParaFloat(d.valorFinal),
+        dataOriginal: d.data,
+        data: d.data.split('-').reverse().join('/'),
+      };
+
+      // Atualiza o cache (imediato, sem esperar nenhuma busca)
+      servicoCache.set(idNumerico, entradaAtualizada);
+
+      // Mantém o array legado sincronizado
+      const idx = historicoGlobal.findIndex(s => Number(s.linha) === idNumerico);
+      if (idx !== -1) historicoGlobal[idx] = entradaAtualizada;
+
+      mostrarToast("✅ Alteração salva!");
+      abrirHistorico();
     }
-    mostrarToast("✅ Sucesso!");
-    voltarDashboard();
   } catch (err) {
     btn.disabled = false;
     btn.innerText = "Salvar";
@@ -354,61 +415,171 @@ async function enviarDados(e) {
   }
 }
 
-// --- 6. HISTÓRICO ---
-// 1. Limpando a abertura do histórico (removemos a data global)
 async function abrirHistorico() {
-  esconderTodasTelas(); // <--- Mudança aqui
+  esconderTodasTelas();
   document.getElementById('tela-historico').style.display = 'block';
   document.getElementById('lista-html').innerHTML = '<div class="loader"></div>';
-  const res = await chamarGoogle("buscarTodosServicos");
-  renderizarHistorico(res.dados);
+
+  const hoje = new Date();
+  const seisMesesAtras = new Date();
+  seisMesesAtras.setMonth(hoje.getMonth() - 6);
+  document.getElementById('filtroDataInicio').value = seisMesesAtras.toISOString().split('T')[0];
+  document.getElementById('filtroDataFim').value = hoje.toISOString().split('T')[0];
+
+  const resRecentes = await chamarGoogle("buscarServicosRecentes");
+
+  historicoGlobal = resRecentes.dados;
+  // NOVO: alimenta o cache com os dados recentes
+  resRecentes.dados.forEach(s => servicoCache.set(Number(s.linha), s));
+  renderizarHistorico(historicoGlobal);
+
+  chamarGoogle("buscarTodosServicos").then(resCompleto => {
+    if (resCompleto?.dados) {
+      historicoGlobal = resCompleto.dados;
+      // NOVO: enriquece o cache com os dados históricos completos
+      resCompleto.dados.forEach(s => servicoCache.set(Number(s.linha), s));
+      console.log("Histórico completo sincronizado.");
+    }
+  });
 }
-// --- ATUALIZAÇÃO DA RENDERIZAÇÃO ---
+
+// --- ATUALIZAÇÃO DA RENDERIZAÇÃO (VERSÃO FINAL COMPLETA) ---
 function renderizarHistorico(l) {
+  // NOVO: garante que tudo que foi renderizado também está no cache
+  l.forEach(s => servicoCache.set(Number(s.linha), s));
+
+  l.sort((a, b) => {
+    let dA = a.dataOriginal || "";
+    let dB = b.dataOriginal || "";
+    if (ordemDataHistorico === 'desc') {
+      return dB.localeCompare(dA) || b.linha - a.linha;
+    } else {
+      return dA.localeCompare(dB) || a.linha - b.linha;
+    }
+  });
+
+  var selAgEl = document.getElementById('filtroAgenciaHist');
+  var selMemEl = document.getElementById('filtroInterpreteHist');
+  var valAg = (selAgEl && selAgEl.value) ? selAgEl.value : 'todas';
+  var valMem = (selMemEl && selMemEl.value) ? selMemEl.value : 'todos';
+
   historicoGlobal = l;
-  var c = document.getElementById('lista-html'); c.innerHTML = "";
-  var fA = document.getElementById('filtroAgenciaHist'); fA.innerHTML = '<option value="todas">Todas</option>';
-  var fI = document.getElementById('filtroInterpreteHist'); fI.innerHTML = '<option value="todos">Todos</option>';
-  var agLidas = [], memLidos = [];
+  var c = document.getElementById('lista-html');
+  c.innerHTML = "";
+
+  if (selAgEl) {
+    selAgEl.innerHTML = '<option value="todas">Todas</option>';
+    agenciasGlobais.forEach(a => selAgEl.innerHTML += `<option value="${a.nome.toLowerCase()}">${a.nome}</option>`);
+  }
+  if (selMemEl) {
+    selMemEl.innerHTML = '<option value="todos">Todos</option>';
+    equipeGlobal.forEach(m => selMemEl.innerHTML += `<option value="${m.toLowerCase()}">${m}</option>`);
+  }
 
   l.forEach(i => {
-    if (!agLidas.includes(i.agencia)) { agLidas.push(i.agencia); fA.innerHTML += `<option value="${i.agencia.toLowerCase()}">${i.agencia}</option>`; }
-    if (!memLidos.includes(i.interprete)) { memLidos.push(i.interprete); fI.innerHTML += `<option value="${i.interprete.toLowerCase()}">${i.interprete}</option>`; }
+    var p = (i.status === "Pago");
 
-    var p = i.status === "Pago";
+    // Formata data de pagamento se existir
+    let dataPgtoFormatada = "";
+    if (p && i.dataPgto) {
+      if (i.dataPgto.includes("-")) {
+        dataPgtoFormatada = i.dataPgto.split("-").reverse().join("/");
+      } else {
+        dataPgtoFormatada = i.dataPgto;
+      }
+    }
 
-    // O CARD AGORA É INTEIRO CLICÁVEL (onclick="abrirDetalhesServico")
+    i.dataExibicaoCompleta = i.data;
     c.innerHTML += `
       <div class="item-pendente item-historico" 
            onclick="abrirDetalhesServico(${i.linha})"
-           style="border-left-color:${p ? '#4CAF50' : '#ff9800'}; position: relative; cursor: pointer;" 
-           data-status="${p ? 'pago' : 'pendente'}" data-agencia="${i.agencia.toLowerCase()}" 
-           data-empresa="${i.empresa.toLowerCase()}" data-interprete="${i.interprete.toLowerCase()}" data-data="${i.data}">
-        
-        <div style="display:flex; justify-content:space-between; align-items: center;">
+           style="border-left-color:${p ? '#4CAF50' : '#ff9800'}; cursor: pointer;" 
+           data-status="${p ? 'pago' : 'pendente'}" 
+           data-agencia="${String(i.agencia).toLowerCase()}" 
+           data-empresa="${String(i.empresa).toLowerCase()}" 
+           data-interprete="${String(i.interprete).toLowerCase()}" 
+           data-data-iso="${i.dataOriginal}">
+
+        <div style="display:flex; justify-content:space-between; align-items:center;">
           <strong>${i.agencia}</strong>
           <span style="font-size:10px; font-weight:bold; padding:2px 8px; border-radius:10px; background:${p ? '#e8f5e9' : '#fff3e0'}; color:${p ? '#2e7d32' : '#e65100'}">
             ${p ? 'PAGO' : 'PENDENTE'}
           </span>
         </div>
-        <span style="font-size:12px; color: #666;">📅 ${i.data} - ${i.empresa}</span><br>
-        <div style="display:flex; justify-content:space-between; align-items: baseline; margin-top:5px;">
-           <strong style="color: #4a148c;">${i.valor}</strong>
-           <span style="font-size:11px; color:#9c27b0;">👤 ${i.interprete}</span>
+
+        <span style="font-size:12px; color:#666;">📅 ${i.data} - ${i.empresa}</span><br>
+
+        <span style="font-size:12px; color:#888;">⏱️ ${i.inicio} às ${i.fim}</span>
+
+        ${p && dataPgtoFormatada ? `
+        <div style="font-size:11px; color:#2e7d32; margin-top:3px;">
+          💰 Recebido em: <strong>${dataPgtoFormatada}</strong>
+        </div>` : ''}
+
+        <div style="display:flex; justify-content:space-between; margin-top:5px;">
+          <strong style="color:#4a148c;">${i.valor}</strong>
+          <span style="font-size:11px;">👤 ${i.interprete}</span>
         </div>
+
       </div>`;
   });
+
+  if (selAgEl) selAgEl.value = valAg;
+  if (selMemEl) selMemEl.value = valMem;
+
   filtrarListaHistorico();
 }
 
-function abrirDetalhesServico(linha) {
-  const servico = historicoGlobal.find(s => s.linha == linha);
-  if (!servico) return;
+function alternarOrdemData() {
+  // Inverte a ordem
+  ordemDataHistorico = (ordemDataHistorico === 'desc') ? 'asc' : 'desc';
+
+  // Atualiza o texto do botão no visual
+  const btn = document.getElementById('btnOrdenacaoData');
+  if (btn) {
+    btn.innerHTML = (ordemDataHistorico === 'desc') ? '⬇️ Mais Recentes' : '⬆️ Mais Antigos';
+  }
+
+  // Manda renderizar a lista de novo com a nova ordem
+  renderizarHistorico(historicoGlobal);
+}
+
+
+async function abrirDetalhesServico(linha) {
+  const idBusca = Number(linha);
+
+  // 1. Tenta o cache primeiro (O(1), sempre atualizado)
+  let servico = servicoCache.get(idBusca);
+
+  // 2. Fallback para o array legado
+  if (!servico) {
+    servico = historicoGlobal.find(s => Number(s.linha) === idBusca);
+  }
+
+  // 3. Último recurso: busca no servidor para este ID específico
+  if (!servico) {
+    mostrarToast("⏳ Carregando dados...");
+    try {
+      const res = await chamarGoogle("buscarServicoPorLinha", { linha: idBusca });
+      if (res?.dados) {
+        servico = res.dados;
+        servicoCache.set(idBusca, servico);
+      }
+    } catch (e) {
+      mostrarToast("❌ Não foi possível carregar o registro.", "erro");
+      return;
+    }
+  }
+
+  if (!servico) {
+    mostrarToast("❌ Registro não encontrado.", "erro");
+    return;
+  }
 
   const isPago = servico.status === "Pago";
   const modal = document.getElementById('modal-detalhes-servico');
+  const éParticular = servico.agencia.toLowerCase() === "particular";
 
-  // Preenche dados
   document.getElementById('detalhe-agencia').innerText = servico.agencia;
   document.getElementById('detalhe-cliente').innerText = servico.empresa;
   document.getElementById('detalhe-data').innerText = servico.data;
@@ -419,23 +590,27 @@ function abrirDetalhesServico(linha) {
   document.getElementById('detalhe-obs').innerText = servico.obs || "Sem observações.";
   document.getElementById('box-obs-detalhe').style.display = servico.obs ? "block" : "none";
 
-  // Visual e Status
   const badge = document.getElementById('detalhe-status-badge');
   const header = document.getElementById('detalhe-header');
   const secaoBaixa = document.getElementById('secao-baixa-pagamento');
 
   header.style.background = isPago ? "#2e7d32" : "#4a148c";
-  badge.innerText = isPago ? "PAGO EM " + servico.dataPgto : "AGUARDANDO RECEBIMENTO";
 
   if (isPago) {
+    let dataFormatada = "Data não informada";
+    if (servico.dataPgto && servico.dataPgto.includes("-")) {
+      dataFormatada = servico.dataPgto.split("-").reverse().join("/");
+    } else if (servico.dataPgto) {
+      dataFormatada = servico.dataPgto;
+    }
+    badge.innerText = `✅ RECEBIDO EM ${dataFormatada}`;
     secaoBaixa.style.display = "none";
   } else {
+    badge.innerText = éParticular ? "⏳ AGUARDANDO PAGAMENTO DO CLIENTE" : "⏳ AGUARDANDO REPASSE DA AGÊNCIA";
     secaoBaixa.style.display = "block";
-    // COLOCA DATA DE HOJE AUTOMATICAMENTE
     document.getElementById('data-pagamento-modal').valueAsDate = new Date();
   }
 
-  // Cliques dos botões
   document.getElementById('btn-confirmar-pgto').onclick = () => confirmarBaixaComData(linha);
   document.getElementById('btn-editar-detalhe').onclick = () => { fecharModalDetalhes(); chamarEditar(linha); };
   document.getElementById('btn-excluir-detalhe').onclick = () => { fecharModalDetalhes(); chamarExcluir(linha); };
@@ -474,14 +649,33 @@ function fecharModalDetalhes() {
 }
 
 function filtrarListaHistorico() {
-  var st = document.getElementById('filtroStatus').value, ag = document.getElementById('filtroAgenciaHist').value,
-    mem = document.getElementById('filtroInterpreteHist').value, cl = document.getElementById('filtroClienteHist').value.toLowerCase(),
-    dt = document.getElementById('filtroDataHist').value.toLowerCase();
-  Array.from(document.getElementsByClassName('item-historico')).forEach(i => {
-    var ok = (st === 'todos' || i.dataset.status === st) && (ag === 'todas' || i.dataset.agencia === ag) &&
-      (mem === 'todos' || i.dataset.interprete === mem) && (!cl || i.dataset.empresa.includes(cl)) && (!dt || i.dataset.data.includes(dt));
-    i.style.display = ok ? 'block' : 'none';
-  });
+  const dIni = document.getElementById('filtroDataInicio').value;
+  const dFim = document.getElementById('filtroDataFim').value;
+  const st = document.getElementById('filtroStatus').value;
+  const ag = document.getElementById('filtroAgenciaHist').value;
+  const mem = document.getElementById('filtroInterpreteHist').value;
+  const cl = document.getElementById('filtroClienteHist').value.toLowerCase();
+
+  const cards = document.getElementsByClassName('item-historico');
+
+  for (let i = 0; i < cards.length; i++) {
+    let card = cards[i];
+    let dataISO = card.getAttribute('data-data-iso'); // Ex: 2026-03-16
+
+    // Filtro de Data (Matemática pura: texto YYYY-MM-DD permite comparar < e >)
+    let okData = true;
+    if (dIni && dataISO < dIni) okData = false;
+    if (dFim && dataISO > dFim) okData = false;
+
+    // Outros filtros
+    let okStatus = (st === 'todos' || card.getAttribute('data-status') === st);
+    let okAgencia = (ag === 'todas' || card.getAttribute('data-agencia') === ag);
+    let okMembro = (mem === 'todos' || card.getAttribute('data-interprete') === mem);
+    let okCliente = (!cl || card.getAttribute('data-empresa').includes(cl));
+
+    // Exibe apenas se passar em TODOS os critérios
+    card.style.display = (okData && okStatus && okAgencia && okMembro && okCliente) ? 'block' : 'none';
+  }
 }
 
 async function confirmarBaixa(l) {
@@ -493,10 +687,47 @@ async function confirmarBaixa(l) {
 }
 
 async function chamarExcluir(l) {
-  if (verificarBloqueioLeitura()) return; // IMPEDE A EXCLUSÃO SE O PLANO ESTIVER BLOQUEADO
-  if (confirm("Excluir registro?")) { await chamarGoogle("excluirRegistro", l); abrirHistorico(); }
+  if (verificarBloqueioLeitura()) return;
+
+  document.getElementById('confirm-titulo').innerText = "Excluir Atendimento";
+  document.getElementById('confirm-mensagem').innerHTML = "Tem certeza que deseja apagar este registro?";
+  document.getElementById('confirm-icon').innerText = "🗑️";
+  document.getElementById('modal-confirmacao').style.display = 'flex';
+
+  const confirmado = await esperarConfirmacao();
+
+  if (confirmado) {
+    mostrarToast("⏳ Excluindo...");
+    await chamarGoogle("excluirRegistro", l);
+    mostrarToast("✅ Excluído!");
+    abrirHistorico(); // <--- MANTÉM NO HISTÓRICO
+  }
 }
-function chamarEditar(l) { var i = historicoGlobal.find(x => x.linha === l); abrirRegistro(l, i); }
+
+function chamarEditar(l) {
+  const idBusca = Number(l);
+
+  // NOVO: busca no cache primeiro
+  let servico = servicoCache.get(idBusca);
+
+  // Fallback para o array legado
+  if (!servico) {
+    servico = historicoGlobal.find(x => Number(x.linha) === idBusca);
+  }
+
+  if (!servico) {
+    mostrarToast("⚠️ Dados em sincronização. Tente novamente em 2 segundos.", "erro");
+    chamarGoogle("buscarTodosServicos").then(res => {
+      if (res?.dados) {
+        historicoGlobal = res.dados;
+        res.dados.forEach(s => servicoCache.set(Number(s.linha), s));
+      }
+    });
+    return;
+  }
+
+  abrirRegistro(l, servico);
+}
 
 // --- 7. RELATÓRIOS ---
 async function abrirRelatorios() {
@@ -760,101 +991,188 @@ function editarConfig(tipo, nome, valor = "") {
 // --- SALVAR AGÊNCIA (Editando ou Criando) ---
 async function salvarAgencia(e) {
   e.preventDefault();
-  if (verificarBloqueioLeitura()) return; // IMPEDE A EDição SE O PLANO ESTIVER BLOQUEADO
+  if (verificarBloqueioLeitura()) return;
 
-  const nomeNovo = document.getElementById('configNome').value;
+  const nomeNovo = document.getElementById('configNome').value.trim();
   const valorNovo = document.getElementById('configValor').value;
-  const nomeAntigo = document.getElementById('agencia-antigo').value; // Pega o que estava no hidden
+  const nomeAntigo = document.getElementById('agencia-antigo').value;
 
   mostrarToast("Salvando agência...");
-  await chamarGoogle("salvarConfigAgencia", {
-    nome: nomeNovo,
-    valor: valorNovo,
-    antigo: nomeAntigo
-  });
+  await chamarGoogle("salvarConfigAgencia", { nome: nomeNovo, valor: valorNovo, antigo: nomeAntigo });
+
+  // Atualiza a global localmente
+  if (nomeAntigo) {
+    const idx = agenciasGlobais.findIndex(a => a.nome === nomeAntigo);
+    if (idx !== -1) agenciasGlobais[idx] = { nome: nomeNovo, valor: valorNovo };
+  } else {
+    if (!agenciasGlobais.find(a => a.nome === nomeNovo)) {
+      agenciasGlobais.push({ nome: nomeNovo, valor: valorNovo });
+    }
+  }
+
+  // Mantém o select de agência no formulário de registro sincronizado
+  atualizarSelectAgencias();
 
   document.getElementById('formConfig').reset();
-  document.getElementById('agencia-antigo').value = ""; // Limpa para o próximo
+  document.getElementById('agencia-antigo').value = "";
+  mostrarToast("✅ Agência salva!", "sucesso");
   abrirConfiguracoes();
 }
 
 // --- SALVAR EQUIPE ---
 async function salvarEquipe(e) {
   e.preventDefault();
-  if (verificarBloqueioLeitura()) return; // IMPEDE A EDição SE O PLANO ESTIVER BLOQUEADO
+  if (verificarBloqueioLeitura()) return;
 
-  // --- TRAVA DA FASE 1: Limite de 2 Membros ---
   const idEdicao = document.getElementById('equipe-id') ? document.getElementById('equipe-id').value : "";
-
-  // Se NÃO for uma edição (id vazio) e o limite já foi atingido
   if (!idEdicao && equipeGlobal.length >= 2) {
     mostrarToast("Limite máximo de 2 membros atingido.", "erro");
-    return; // Interrompe a função aqui e não salva
+    return;
   }
-  const nomeNovo = document.getElementById('configEquipeNome').value;
+
+  const nomeNovo = document.getElementById('configEquipeNome').value.trim();
   const nomeAntigo = document.getElementById('equipe-antigo').value;
 
   mostrarToast("Salvando membro...");
-  await chamarGoogle("salvarMembroEquipe", {
-    nome: nomeNovo,
-    antigo: nomeAntigo
-  });
+  await chamarGoogle("salvarMembroEquipe", { nome: nomeNovo, antigo: nomeAntigo });
+
+  // Atualiza a global localmente
+  if (nomeAntigo) {
+    const idx = equipeGlobal.indexOf(nomeAntigo);
+    if (idx !== -1) equipeGlobal[idx] = nomeNovo;
+  } else {
+    if (!equipeGlobal.includes(nomeNovo)) equipeGlobal.push(nomeNovo);
+  }
+
+  // Mantém o select de intérprete no formulário de registro sincronizado
+  atualizarSelectInterprete();
 
   document.getElementById('formEquipe').reset();
   document.getElementById('equipe-antigo').value = "";
+  mostrarToast("✅ Membro salvo!", "sucesso");
   abrirConfiguracoes();
 }
 
 // --- SALVAR CLIENTE ---
 async function salvarCliente(e) {
   e.preventDefault();
-  if (verificarBloqueioLeitura()) return; // IMPEDE A EDição SE O PLANO ESTIVER BLOQUEADO
+  if (verificarBloqueioLeitura()) return;
 
-  const nomeNovo = document.getElementById('configClienteNome').value;
+  const nomeNovo = document.getElementById('configClienteNome').value.trim();
   const nomeAntigo = document.getElementById('cliente-antigo').value;
 
   mostrarToast("Salvando cliente...");
-  await chamarGoogle("salvarEmpresaFinal", {
-    nome: nomeNovo,
-    antigo: nomeAntigo
-  });
+  await chamarGoogle("salvarEmpresaFinal", { nome: nomeNovo, antigo: nomeAntigo });
+
+  // Atualiza a global localmente sem buscar o servidor de novo
+  if (nomeAntigo) {
+    const idx = clientesGlobais.indexOf(nomeAntigo);
+    if (idx !== -1) clientesGlobais[idx] = nomeNovo;
+  } else {
+    if (!clientesGlobais.includes(nomeNovo)) clientesGlobais.push(nomeNovo);
+  }
+
+  // Mantém o datalist do formulário de registro sincronizado
+  atualizarDatalistEmpresas();
 
   document.getElementById('formClientes').reset();
   document.getElementById('cliente-antigo').value = "";
+  mostrarToast("✅ Cliente salvo!", "sucesso");
   abrirConfiguracoes();
 }
 
 // --- SALVAR TIPO DE SERVIÇO ---
 async function salvarTipoServico(e) {
   e.preventDefault();
-  if (verificarBloqueioLeitura()) return; // IMPEDE A EDição SE O PLANO ESTIVER BLOQUEADO
+  if (verificarBloqueioLeitura()) return;
 
-  const nomeNovo = document.getElementById('configServicoNome').value;
+  const nomeNovo = document.getElementById('configServicoNome').value.trim();
   const nomeAntigo = document.getElementById('servico-antigo').value;
 
   mostrarToast("Salvando serviço...");
-  await chamarGoogle("salvarTipoServico", {
-    nome: nomeNovo,
-    antigo: nomeAntigo
-  });
+  await chamarGoogle("salvarTipoServico", { nome: nomeNovo, antigo: nomeAntigo });
+
+  // Atualiza a global localmente
+  if (nomeAntigo) {
+    const idx = tiposServicoGlobal.indexOf(nomeAntigo);
+    if (idx !== -1) tiposServicoGlobal[idx] = nomeNovo;
+  } else {
+    if (!tiposServicoGlobal.includes(nomeNovo)) tiposServicoGlobal.push(nomeNovo);
+  }
+
+  // Mantém o select de tipo de serviço no formulário de registro sincronizado
+  atualizarSelectTipoServico();
 
   document.getElementById('formServicos').reset();
   document.getElementById('servico-antigo').value = "";
+  mostrarToast("✅ Serviço salvo!", "sucesso");
   abrirConfiguracoes();
 }
 
 // Melhore a exclusão para não deletar sem querer no celular
 async function excluirConfig(aba, valor) {
-  if (verificarBloqueioLeitura()) return; // IMPEDE A EDição SE O PLANO ESTIVER BLOQUEADO
+  if (verificarBloqueioLeitura()) return;
   if (!confirm(`Tem certeza que deseja excluir "${valor}"?`)) return;
 
   mostrarToast("Excluindo...");
   const res = await chamarGoogle("excluirConfig", { aba: aba, valor: valor });
+
   if (res.status === "Sucesso") {
-    abrirConfiguracoes(); // Recarrega a lista
+
+    // Atualiza a global correspondente localmente
+    if (aba === "Minhas_Empresas_Finais") {
+      clientesGlobais = clientesGlobais.filter(c => c !== valor);
+      atualizarDatalistEmpresas();
+    } else if (aba === "Minhas_Empresas") {
+      agenciasGlobais = agenciasGlobais.filter(a => a.nome !== valor);
+      atualizarSelectAgencias();
+    } else if (aba === "Minha_Equipe") {
+      equipeGlobal = equipeGlobal.filter(e => e !== valor);
+      atualizarSelectInterprete();
+    } else if (aba === "Tipos_Servico") {
+      tiposServicoGlobal = tiposServicoGlobal.filter(s => s !== valor);
+      atualizarSelectTipoServico();
+    }
+
     mostrarToast("✅ Excluído com sucesso");
+    abrirConfiguracoes();
   }
 }
+
+function atualizarSelectAgencias() {
+  const sel = document.getElementById('agencia');
+  if (!sel) return;
+  const valorAtual = sel.value;
+  sel.innerHTML = '<option value="" disabled selected>Escolha...</option>';
+  agenciasGlobais.forEach(a => sel.innerHTML += `<option value="${a.nome}">${a.nome}</option>`);
+  if (valorAtual) sel.value = valorAtual;
+}
+
+function atualizarSelectInterprete() {
+  const sel = document.getElementById('interprete');
+  if (!sel) return;
+  const valorAtual = sel.value;
+  sel.innerHTML = '<option value="" disabled selected>Quem executou?</option>';
+  equipeGlobal.forEach(e => sel.innerHTML += `<option value="${e}">${e}</option>`);
+  if (valorAtual) sel.value = valorAtual;
+}
+
+function atualizarSelectTipoServico() {
+  const sel = document.getElementById('tipoServico');
+  if (!sel) return;
+  const valorAtual = sel.value;
+  sel.innerHTML = '<option value="" disabled selected>O que foi feito?</option>';
+  tiposServicoGlobal.forEach(s => sel.innerHTML += `<option value="${s}">${s}</option>`);
+  if (valorAtual) sel.value = valorAtual;
+}
+
+function atualizarDatalistEmpresas() {
+  const dl = document.getElementById('listaEmpresasDatalist');
+  if (!dl) return;
+  dl.innerHTML = "";
+  clientesGlobais.forEach(c => dl.innerHTML += `<option value="${c}">`);
+}
+
 
 function mostrarToast(mensagem, tipo = 'sucesso') {
   var container = document.getElementById('toast-container');
@@ -1196,6 +1514,10 @@ function carregarDadosConta() {
   document.getElementById('conta-email').innerText = localStorage.getItem("user_email") || "Não identificado";
   document.getElementById('conta-plano').innerText = localStorage.getItem("user_plano") || "Padrão";
   document.getElementById('conta-validade').innerText = localStorage.getItem("user_validade") || "---";
+
+  // Carrega foto se existir
+  const foto = localStorage.getItem("user_photo");
+  if (foto) aplicarFotoPerfil(foto);
 }
 
 function toggleCamposAgencia() {
@@ -1224,4 +1546,317 @@ function esconderTodasTelas() {
   if (feedback && localStorage.getItem("user_email")) {
     feedback.style.display = 'block';
   }
+}
+
+// =========================================================
+// --- 9. IMPORTAÇÃO INTELIGENTE (VIA LINK GOOGLE SHEETS) ---
+// =========================================================
+
+let loteGlobalParaImportar = [];
+
+async function prepararImportacaoLink() {
+  let url = document.getElementById('input-link-planilha').value.trim();
+  if (!url) return mostrarToast("⚠️ Cole o link da planilha.", "erro");
+
+  url = url.replace("output=csv", "output=tsv");
+  if (!url.includes("output=tsv")) url += "&output=tsv";
+
+  mostrarToast("⏳ Lendo colunas da planilha...", "info");
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Erro na leitura");
+
+    const texto = await response.text();
+    const linhas = texto.split(/\r?\n/);
+
+    if (linhas.length < 2) return mostrarToast("⚠️ Planilha vazia.", "erro");
+
+    // LÊ O CABEÇALHO PARA DESCOBRIR A POSIÇÃO DAS COLUNAS DINAMICAMENTE
+    const cabecalho = linhas[0].toLowerCase().split('\t');
+
+    // Agora o robô procura as palavras, MAS pula fora se a coluna tiver a palavra "carimbo"
+    const findIdx = (termos) => cabecalho.findIndex(c => termos.some(t => c.includes(t)) && !c.includes("carimbo"));
+
+    const iInterprete = findIdx(["quem interpretou", "intérprete"]);
+    const iAgencia = findIdx(["intermediária", "agência", "agencia"]);
+    const iEmpresa = findIdx(["empresa final", "cliente"]);
+    const iData = findIdx(["data do evento", "data"]);
+    const iInicio = findIdx(["horário - início", "início", "inicio"]);
+    const iFim = findIdx(["horário - fim", "fim"]);
+    const iTema = findIdx(["tema", "link"]); // Tirei a palavra solta "serviço"
+    const iValor = findIdx(["valor total", "valor final", "valor do serviço"]);
+    const iObs = findIdx(["observação", "obs"]);
+    const iStatus = findIdx(["status"]);
+    const iDataPgto = findIdx(["data de pagamento", "data pgto"]);
+    const iTipoServico = findIdx(["tipo de serviço", "tipo do serviço"]); // Agora só busca o termo exato
+
+    loteGlobalParaImportar = [];
+
+    for (let i = 1; i < linhas.length; i++) {
+      const cols = linhas[i].split('\t');
+      if (cols.length < 5 || !cols[iData]) continue; // Pula linhas vazias
+
+      // Limpeza de Datas
+      let d = (cols[iData] || "").trim().split("/");
+      let dataEUA = d.length === 3 ? `${d[2]}-${d[1]}-${d[0]}` : cols[iData].trim();
+
+      let dataPgtoInfo = "";
+      if (iDataPgto > -1) {
+        let dP = (cols[iDataPgto] || "").trim();
+        if (dP && dP.includes("/")) dataPgtoInfo = ` (Pago em: ${dP})`;
+      }
+
+      // Horários
+      let hrInicio = iInicio > -1 ? (cols[iInicio] || "").trim().substring(0, 5) : "";
+      let hrFim = iFim > -1 ? (cols[iFim] || "").trim().substring(0, 5) : "";
+
+      // Status
+      let statusLimpo = iStatus > -1 ? ((cols[iStatus] || "").toLowerCase().includes("pago") ? "Pago" : "Pendente") : "Pendente";
+
+      // Valor
+      let valorLimpo = padronizarMoedaBR(iValor > -1 ? cols[iValor] : "0");
+
+      // Observação + Tema + Data Pgto
+      let tema = iTema > -1 ? (cols[iTema] || "").trim() : "";
+      let obsOrig = iObs > -1 ? (cols[iObs] || "").trim() : "";
+      let obsFinal = tema;
+      if (obsOrig) obsFinal += (tema ? " | " : "") + obsOrig;
+      obsFinal += dataPgtoInfo;
+
+      let agenciaLida = iAgencia > -1 ? (cols[iAgencia] || "Particular").trim() : "Particular";
+
+      // Extrai a informação, se houver
+      let tipoServLimpo = iTipoServico > -1 && cols[iTipoServico] ? cols[iTipoServico].trim() : "Geral";
+
+      // BLOQUEIO INTELIGENTE: Se estiver vazio, se for a palavra "Interpretação" 
+      // ou se tiver copiado o nome da agência por engano, forçamos para "Geral"
+      if (tipoServLimpo === "" ||
+        tipoServLimpo.toLowerCase() === "interpretação" ||
+        tipoServLimpo.toLowerCase() === agenciaLida.toLowerCase()) {
+        tipoServLimpo = "Geral";
+      }
+
+      loteGlobalParaImportar.push({
+        interprete: iInterprete > -1 ? (cols[iInterprete] || "Eu") : "Eu",
+        agencia: agenciaLida,
+
+        empresa: iEmpresa > -1 ? (cols[iEmpresa] || "Sem Cliente") : "Sem Cliente",
+        data: dataEUA,
+        inicio: hrInicio,
+        fim: hrFim,
+        tipoServico: tipoServLimpo, // Agora é inteligente e puxa "Geral" como padrão!
+        valorFinal: valorLimpo,
+        obs: obsFinal || "Importado",
+        status: statusLimpo
+      });
+    }
+
+    if (loteGlobalParaImportar.length === 0) return mostrarToast("⚠️ Nenhum serviço válido.", "erro");
+
+    // Atualiza a Janelinha Bonita
+    const p = loteGlobalParaImportar[0];
+    const prevHTML = `
+      <strong>Total de Serviços Lidos:</strong> ${loteGlobalParaImportar.length} linhas<br><br>
+      <strong style="color:#9c27b0;">📌 Exemplo (Linha 1 identificada):</strong><br>
+      <strong>🏢 Empresa/Agência:</strong> ${p.empresa} / ${p.agencia}<br>
+      <strong>📅 Data:</strong> ${p.data} (${p.inicio} às ${p.fim})<br>
+      <strong>💰 Valor e Status:</strong> ${p.valorFinal} <strong>(${p.status})</strong><br>
+      <strong>ℹ️ Obs/Tema:</strong> <span style="font-size: 11px;">${p.obs.substring(0, 70)}...</span>
+    `;
+
+    document.getElementById('msg-preview-import').innerHTML = prevHTML;
+    document.getElementById('modal-confirmacao-import').style.display = 'flex';
+
+  } catch (e) {
+    console.error(e);
+    mostrarToast("❌ Falha! Planilha não encontrada ou link incorreto.", "erro");
+  }
+}
+
+function fecharModalImport() {
+  document.getElementById('modal-confirmacao-import').style.display = 'none';
+  loteGlobalParaImportar = [];
+}
+
+async function executarImportacaoLote() {
+  // 1. Clonamos os dados em segurança ANTES de fechar a janela
+  const loteSeguroParaEnviar = [...loteGlobalParaImportar];
+
+  // 2. Agora podemos fechar a janela (que apaga a variável global)
+  fecharModalImport();
+
+  mostrarToast(`🚀 Importando ${loteSeguroParaEnviar.length} serviços... Aguarde.`, "info");
+
+  try {
+    // 3. Enviamos o lote clonado que está cheio de dados
+    const res = await chamarGoogle("importarLoteMassa", { lote: loteSeguroParaEnviar });
+
+    if (res && res.status === "Sucesso") {
+      mostrarToast(`✅ Importação concluída com sucesso!`, "sucesso");
+      document.getElementById('input-link-planilha').value = "";
+      voltarDashboard();
+    } else {
+      mostrarToast("❌ Falha ao salvar no banco de dados.", "erro");
+    }
+  } catch (err) {
+    mostrarToast("❌ Erro de conexão com o banco de dados.", "erro");
+  }
+}
+
+// Função mágica que converte qualquer bagunça financeira para "R$ XX,XX"
+function padronizarMoedaBR(valorBruto) {
+  if (!valorBruto) return "R$ 0,00";
+
+  // Transforma em texto e tira o "R$", "r$" e os espaços em branco
+  let v = String(valorBruto).trim().replace(/R\$/gi, '').replace(/\s/g, '');
+
+  // Se tiver vírgula (ex: 42,67), preparamos para o Javascript entender
+  if (v.includes(',')) {
+    v = v.replace(/\./g, ''); // Tira ponto de milhar se a pessoa digitou 1.200,00
+    v = v.replace(',', '.');  // Troca a vírgula decimal por ponto (padrão de sistema)
+  }
+
+  // Converte para número decimal real
+  let numeroFinal = parseFloat(v);
+
+  // Se a conversão falhar por algum motivo, não quebra o app, retorna zero
+  if (isNaN(numeroFinal)) return "R$ 0,00";
+
+  // Devolve no formato brasileiro perfeito com 2 casas decimais
+  return "R$ " + numeroFinal.toFixed(2).replace('.', ',');
+}
+
+// --- 3. FUNÇÃO DE DUPLICAÇÃO SEM ERRO DE REPETIÇÃO ---
+async function perguntarDuplicacao(dadosOriginais) {
+  document.getElementById('confirm-titulo').innerText = "Dividiu este evento?";
+  document.getElementById('confirm-icon').innerText = "👥";
+
+  let opcoesEquipe = equipeGlobal
+    .filter(m => m !== dadosOriginais.interprete)
+    .map(m => `<option value="${m}">${m}</option>`).join('');
+
+  document.getElementById('confirm-mensagem').innerHTML = `
+    Este evento tem mais de 1h de duração. <br>
+    <b>Deseja duplicar para outro colega?</b>
+    <br><br>
+    <select id="selecionar-duplicado" class="input-field" style="margin-top:10px; width:100%; border: 1px solid #9c27b0;">
+      <option value="">Não, apenas o meu</option>
+      ${opcoesEquipe}
+    </select>
+  `;
+
+  document.getElementById('modal-confirmacao').style.display = 'flex';
+
+  // LIMPANDO O CLIQUE ANTERIOR (O segredo contra a triplicação)
+  const btnOk = document.getElementById('btn-confirmar-ok');
+  btnOk.onclick = null;
+
+  // Agora definimos o novo clique
+  btnOk.onclick = async () => {
+    btnOk.disabled = true; // Trava o botão para não clicar duas vezes
+    const outroMembro = document.getElementById('selecionar-duplicado').value;
+
+    if (outroMembro) {
+      mostrarToast(`⏳ Duplicando para ${outroMembro}...`);
+      const dadosDuplicados = { ...dadosOriginais, interprete: outroMembro };
+      await chamarGoogle("salvarRegistro", dadosDuplicados);
+      mostrarToast("✅ Registros duplicados!");
+    }
+
+    btnOk.disabled = false;
+    fecharConfirmacao(true);
+    voltarDashboard();
+  };
+}
+
+// --- 4. FUNÇÃO VOLTAR INTELIGENTE ---
+function fecharRegistroManual() {
+  if (origemNavegacao === 'historico') {
+    abrirHistorico();
+  } else {
+    voltarDashboard();
+  }
+}
+
+// --- PERFIL: FOTO ---
+function salvarFotoPerfil(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  // Valida tamanho (máx 2MB)
+  if (file.size > 2 * 1024 * 1024) {
+    mostrarToast("⚠️ Imagem muito grande. Use uma menor que 2MB.", "erro");
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const base64 = e.target.result;
+    localStorage.setItem("user_photo", base64);
+    aplicarFotoPerfil(base64);
+    mostrarToast("✅ Foto atualizada!");
+  };
+  reader.readAsDataURL(file);
+}
+
+function removerFotoPerfil() {
+  localStorage.removeItem("user_photo");
+  const avatar = document.getElementById('avatar-display');
+  if (avatar) {
+    avatar.innerHTML = "👤";
+    avatar.style.backgroundImage = "";
+    avatar.style.backgroundSize = "";
+  }
+  document.getElementById('btn-remover-foto').style.display = "none";
+  mostrarToast("Foto removida.");
+}
+
+function aplicarFotoPerfil(base64) {
+  const avatar = document.getElementById('avatar-display');
+  if (!avatar) return;
+  avatar.innerHTML = "";
+  avatar.style.backgroundImage = `url(${base64})`;
+  avatar.style.backgroundSize = "cover";
+  avatar.style.backgroundPosition = "center";
+  document.getElementById('btn-remover-foto').style.display = "flex";
+}
+
+// --- PERFIL: NOME ---
+function ativarEdicaoNome() {
+  const nomeCompleto = localStorage.getItem("user_name") || "";
+  const partes = nomeCompleto.split(" ");
+  const nome = partes[0] || "";
+  const sobrenome = partes.slice(1).join(" ") || "";
+
+  document.getElementById('input-nome-perfil').value = nome;
+  document.getElementById('input-sobrenome-perfil').value = sobrenome;
+  document.getElementById('nome-display-perfil').style.display = "none";
+  document.getElementById('nome-edit-perfil').style.display = "flex";
+}
+
+function cancelarEdicaoNome() {
+  document.getElementById('nome-display-perfil').style.display = "flex";
+  document.getElementById('nome-edit-perfil').style.display = "none";
+}
+
+function salvarNomePerfil() {
+  const nome = document.getElementById('input-nome-perfil').value.trim();
+  const sobrenome = document.getElementById('input-sobrenome-perfil').value.trim();
+
+  if (!nome) {
+    mostrarToast("⚠️ Digite ao menos o nome.", "erro");
+    return;
+  }
+
+  const nomeCompleto = sobrenome ? `${nome} ${sobrenome}` : nome;
+  localStorage.setItem("user_name", nomeCompleto);
+
+  // Atualiza todos os lugares que exibem o nome
+  document.getElementById('conta-nome').innerText = nomeCompleto;
+  const spanLoading = document.getElementById('nome-usuario-loading');
+  if (spanLoading) spanLoading.innerText = nome;
+
+  cancelarEdicaoNome();
+  mostrarToast("✅ Nome atualizado!");
 }
