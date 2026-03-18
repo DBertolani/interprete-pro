@@ -518,11 +518,21 @@ textarea {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   border: 1px solid #f3e5f5;
   transition: transform 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .stat-card strong {
   font-size: 18px;
   color: #4a148c;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .item-relatorio {
@@ -733,6 +743,24 @@ button[onclick="gerarPagamento()"]::after {
 #tela-historico,
 #tela-relatorios {
   padding-bottom: 60px !important;
+}
+
+
+/* Ajuste para os campos de data ficarem iguais no mobile */
+#filtroDataInicio,
+#filtroDataFim {
+  min-height: 45px;
+  background-color: #ffffff;
+  border: 1px solid #90caf9;
+  color: #1565c0;
+  font-weight: bold;
+  -webkit-appearance: none;
+  /* Remove estilos estranhos no iOS */
+}
+
+#btnOrdenacaoData {
+  padding: 8px 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 </style>
