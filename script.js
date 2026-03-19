@@ -133,11 +133,23 @@ async function acessarModoLeitura() {
 async function voltarDashboard() {
   esconderTodasTelas();
   document.getElementById('tela-app').style.display = 'block';
-  const res = await chamarGoogle("carregarDadosIniciais");
-  document.getElementById('valor-pendente').innerText = "R$ " + res.dados.pendente;
 
-  // ADICIONE ESTA LINHA:
-  renderizarPendenteDetalhado(res.dados.pendenteDetalhado);
+  // 1. EFEITO VISUAL: Avisa o usuário que o sistema está recalculando o cofre
+  document.getElementById('valor-pendente').innerText = "⏳ Atualizando...";
+  const divDetalhes = document.getElementById('pendente-detalhado');
+  if (divDetalhes) divDetalhes.innerHTML = "";
+
+  // 2. Pede os dados atualizados para o servidor
+  const res = await chamarGoogle("carregarDadosIniciais");
+
+  // 3. Imprime o valor fresquinho assim que chegar!
+  if (res && res.dados) {
+    document.getElementById('valor-pendente').innerText = "R$ " + res.dados.pendente;
+    renderizarPendenteDetalhado(res.dados.pendenteDetalhado);
+  } else {
+    // Tratamento de segurança caso a internet oscile
+    document.getElementById('valor-pendente').innerText = "R$ --";
+  }
 }
 
 
