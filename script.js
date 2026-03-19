@@ -1602,9 +1602,13 @@ async function prepararImportacaoLink() {
       let dataEUA = d.length === 3 ? `${d[2]}-${d[1]}-${d[0]}` : cols[iData].trim();
 
       let dataPgtoInfo = "";
+      let dataPgtoReal = "";
       if (iDataPgto > -1) {
         let dP = (cols[iDataPgto] || "").trim();
-        if (dP && dP.includes("/")) dataPgtoInfo = ` (Pago em: ${dP})`;
+        if (dP && dP.includes("/")) {
+          dataPgtoInfo = ` (Pago em: ${dP})`;
+          dataPgtoReal = dP;  // guarda a data real para passar ao AppScript
+        }
       }
 
       // Horários
@@ -1640,15 +1644,15 @@ async function prepararImportacaoLink() {
       loteGlobalParaImportar.push({
         interprete: iInterprete > -1 ? (cols[iInterprete] || "Eu") : "Eu",
         agencia: agenciaLida,
-
         empresa: iEmpresa > -1 ? (cols[iEmpresa] || "Sem Cliente") : "Sem Cliente",
         data: dataEUA,
         inicio: hrInicio,
         fim: hrFim,
-        tipoServico: tipoServLimpo, // Agora é inteligente e puxa "Geral" como padrão!
+        tipoServico: tipoServLimpo,
         valorFinal: valorLimpo,
         obs: obsFinal || "Importado",
-        status: statusLimpo
+        status: statusLimpo,
+        dataPgto: dataPgtoReal  // FIX: preserva a data real de pagamento da planilha importada
       });
     }
 
