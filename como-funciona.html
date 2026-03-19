@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conheça o IntérpretePro | Gestão para Intérpretes de LIBRAS</title>
+    <style>
+        /* Manteremos sua base de CSS, mas adicionando toques de Landing Page */
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, #4a148c, #7b1fa2);
+            color: white;
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 32px;
+            margin: 0;
+            font-weight: 900;
+        }
+
+        .hero p {
+            font-size: 18px;
+            opacity: 0.9;
+            margin-top: 15px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: -30px auto 40px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            box-sizing: border-box;
+        }
+
+        /* Seção de Benefícios (Venda) */
+        .venda-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .venda-card {
+            background: #f3e5f5;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .venda-card h3 {
+            color: #4a148c;
+            margin-top: 10px;
+            font-size: 18px;
+        }
+
+        .venda-card p {
+            font-size: 14px;
+            color: #666;
+            margin: 0;
+        }
+
+        .section-title {
+            text-align: center;
+            color: #4a148c;
+            margin-top: 40px;
+            font-size: 24px;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 50px;
+            height: 4px;
+            background: #FF9800;
+            margin: 10px auto;
+            border-radius: 2px;
+        }
+
+        .step {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            align-items: flex-start;
+        }
+
+        .step-num {
+            background: #FF9800;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .step-content h4 {
+            margin: 0 0 5px 0;
+            color: #4a148c;
+            font-size: 18px;
+        }
+
+        .faq {
+            background: #fafafa;
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 40px;
+        }
+
+        .faq h3 {
+            margin-top: 0;
+            color: #4a148c;
+        }
+
+        .faq-item {
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .faq-item strong {
+            display: block;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .cta-final {
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        .btn-principal {
+            background: #25D366;
+            color: white;
+            padding: 18px 35px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 20px;
+            display: inline-block;
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
+            transition: transform 0.2s;
+        }
+
+        .btn-principal:hover {
+            transform: scale(1.05);
+        }
+
+        @media (max-width: 600px) {
+            .venda-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                margin-top: 0;
+                border-radius: 0;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="hero">
+        <h1>Pare de perder dinheiro por falta de organização.</h1>
+        <p>O IntérpretePro é o escritório virtual que organiza suas horas, seus repasses e sua vida financeira de
+            intérprete.</p>
+    </div>
+
+    <div class="container">
+        <div class="venda-grid">
+            <div class="venda-card">
+                <span>📊</span>
+                <h3>Dashboard Inteligente</h3>
+                <p>Saiba na hora quanto tem para receber de cada agência.</p>
+            </div>
+            <div class="venda-card">
+                <span>⏱️</span>
+                <h3>Cálculo Automático</h3>
+                <p>Insira o horário e o app calcula o valor do serviço na hora.</p>
+            </div>
+            <div class="venda-card">
+                <span>📄</span>
+                <h3>Relatórios em 1 Clique</h3>
+                <p>Gere listas para emissão de NF em segundos, sem Excel.</p>
+            </div>
+            <div class="venda-card">
+                <span>🛡️</span>
+                <h3>Dados Protegidos</h3>
+                <p>Seus registros ficam no seu Google Drive pessoal.</p>
+            </div>
+        </div>
+
+        <h2 class="section-title">Como funciona na prática?</h2>
+
+        <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-content">
+                <h4>Configure sua base</h4>
+                <p>Cadastre suas agências e valores por hora. Assim, quando você for registrar um serviço, o app já sabe
+                    quanto cobrar.</p>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-content">
+                <h4>Registre em segundos</h4>
+                <p>No celular ou no PC, informe a data e o horário. O app faz a matemática chata por você e salva tudo
+                    no histórico.</p>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-content">
+                <h4>Controle o que entra</h4>
+                <p>Marque serviços como "Pagos" e veja o valor pendente diminuir. Tenha controle total do seu fluxo de
+                    caixa.</p>
+            </div>
+        </div>
+
+        <div class="faq">
+            <h3>Dúvidas frequentes</h3>
+            <div class="faq-item">
+                <strong>O app é seguro?</strong>
+                <p>Sim! Usamos o Google Identity para login e seus dados são salvos em uma planilha que pertence a você
+                    no seu Google Drive.</p>
+            </div>
+            <div class="faq-item">
+                <strong>E se eu parar de assinar?</strong>
+                <p>Diferente de outros apps, no IntérpretePro você tem o "Modo Leitura". Você nunca perde acesso aos
+                    seus dados históricos, mesmo sem pagar.</p>
+            </div>
+            <div class="faq-item">
+                <strong>Preciso instalar algo?</strong>
+                <p>Não. Ele é um Web App. Você acessa pelo navegador e pode "Instalar" um atalho na tela do seu celular
+                    para parecer um app nativo.</p>
+            </div>
+        </div>
+
+        <div class="cta-final">
+            <p style="margin-bottom: 20px; font-weight: bold; color: #666;">Pronto para profissionalizar sua carreira?
+            </p>
+            <a href="index.html" class="btn-principal">🚀 Começar 7 Dias Grátis</a>
+            <p style="font-size: 12px; color: #999; margin-top: 10px;">Sem cartão de crédito necessário.</p>
+        </div>
+    </div>
+
+</body>
+
+</html>
