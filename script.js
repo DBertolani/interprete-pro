@@ -9,8 +9,8 @@ const servicoCache = new Map();
 
 
 // --- 1. CONFIGURAÇÃO DA PONTE (GITHUB -> GOOGLE) ---
-//const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxLC1WJjrWUPQnUVyonMScINtlwj-VRiPU5aBIxc7kbAnVmI7o_bSR2peINpnPysY0/exec"; // <--- LINK TESTE
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxbYi7t7TjEi0TX750IzWDwy5QGBXKIqcRAOZ8ZLEvMHwqvoyIT_4jfrE2vFSU2EU16/exec"; // <--- LINK PROD
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxLC1WJjrWUPQnUVyonMScINtlwj-VRiPU5aBIxc7kbAnVmI7o_bSR2peINpnPysY0/exec"; // <--- LINK TESTE
+// const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxbYi7t7TjEi0TX750IzWDwy5QGBXKIqcRAOZ8ZLEvMHwqvoyIT_4jfrE2vFSU2EU16/exec"; // <--- LINK PROD
 
 async function chamarGoogle(acao, dadosExtras = {}) {
   const email = localStorage.getItem("user_email");
@@ -131,20 +131,28 @@ async function acessarModoLeitura() {
 
 // --- 2. Ajuste na voltarDashboard ---
 async function voltarDashboard() {
-  esconderTodasTelas(); // <--- Mudança aqui
+  esconderTodasTelas();
   document.getElementById('tela-app').style.display = 'block';
   const res = await chamarGoogle("carregarDadosIniciais");
   document.getElementById('valor-pendente').innerText = "R$ " + res.dados.pendente;
+
+  // ADICIONE ESTA LINHA:
+  renderizarPendenteDetalhado(res.dados.pendenteDetalhado);
 }
 
 
 
+// --- 1. Ajuste na montarApp ---
 // --- 1. Ajuste na montarApp ---
 function montarApp(dados) {
   document.getElementById('tela-loading').style.display = 'none';
   esconderTodasTelas();
   document.getElementById('tela-app').style.display = 'block';
   document.getElementById('valor-pendente').innerText = "R$ " + dados.pendente;
+
+  // ---> ADICIONAMOS ESTA LINHA AQUI <---
+  renderizarPendenteDetalhado(dados.pendenteDetalhado);
+
   atualizarSelectsFormulario(dados);
 
   // --- TRAVA DE MODO LEITURA ---
@@ -161,7 +169,7 @@ function montarApp(dados) {
     });
   }
 
-  // --- TRAVA DO ADMIN (Essa parte havia sumido!) ---
+  // --- TRAVA DO ADMIN ---
   const emailLogado = localStorage.getItem("user_email");
   const btnAdmin = document.getElementById('btn-tab-admin');
   if (btnAdmin) {
@@ -170,12 +178,6 @@ function montarApp(dados) {
 
   // Garante que o atalho de feedback apareça
   document.getElementById('atalho-feedback-fixo').style.display = 'block';
-}
-
-// --- FUNÇÃO AUXILIAR PARA O BOTÃO "ENTRAR NO SISTEMA" ---
-function irParaDashboard() {
-  document.getElementById('tela-home').style.display = 'none';
-  document.getElementById('tela-app').style.display = 'block';
 }
 
 // Função para sair da Vitrine e ir para a tela de Login
@@ -346,6 +348,8 @@ async function enviarDados(e) {
     interprete: document.getElementById('interprete').value,
     valorFinal: document.getElementById('valor-live-preview').innerText.replace("R$ ", ""),
     obs: document.getElementById('obs').value,
+    ///Atualização de status
+    status: (linhaId === "") ? "Pendente" : document.getElementById('edit-status').value,
     // CORREÇÃO: nomes que o GAS espera receber
     statusAntigo: (linhaId !== "") ? document.getElementById('edit-status').value : "Pendente",
     dataPgtoAntiga: (linhaId !== "") ? document.getElementById('edit-data-pgto').value : ""
@@ -1863,4 +1867,32 @@ function salvarNomePerfil() {
 
   cancelarEdicaoNome();
   mostrarToast("✅ Nome atualizado!");
+}
+
+// =========================================================
+// --- 10. FUNÇÃO PARA DETALHAR VALORES NA DASHBOARD ---
+// =========================================================
+function renderizarPendenteDetalhado(detalhes) {
+  const container = document.getElementById('pendente-detalhado');
+  if (!container) return;
+
+  container.innerHTML = ""; // Limpa a área
+
+  // Ajusta o espaçamento do container direto pelo JS
+  container.style.gap = "10px";
+  container.style.marginTop = "12px";
+
+  // Só mostra se houver mais de 1 membro com pendências.
+  if (detalhes && detalhes.length > 1) {
+    detalhes.forEach(item => {
+      container.innerHTML += `
+        <div style="background: #ffffff; border: 1px solid #e0e0e0; border-radius: 20px; padding: 6px 14px; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.03);">
+          <span style="color: #555; font-size: 12px; display: flex; align-items: center; gap: 4px;">
+            <span style="font-size: 10px;">👤</span> <b>${item.nome}</b>
+          </span>
+          <strong style="color: #4a148c; font-size: 13px; border-left: 1px solid #eeeeee; padding-left: 8px;">R$ ${item.valor}</strong>
+        </div>
+      `;
+    });
+  }
 }
