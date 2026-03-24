@@ -22,6 +22,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#4a148c">
+  <link rel="manifest" href="manifest.json">
 
   <title>IntérpretePro - App para Gestão de Intérpretes de LIBRAS</title>
 
@@ -51,6 +52,10 @@
 </head>
 
 <body>
+  <div id="barra-offline">
+    ⚠️ Você está sem internet. Verifique sua conexão.
+  </div>
+
   <div id="toast-container" class="toast-container"></div>
 
   <div class="container-app">
@@ -150,9 +155,9 @@
         </p>
       </div>
 
-      <button onclick="gerarPagamento()" id="btn-pagar" class="btn-primario"
-        style="display: block; width: 100%; background: linear-gradient(135deg, #4a148c, #7b1fa2); font-size: 16px; padding: 15px; box-shadow: 0 4px 10px rgba(74, 20, 140, 0.3);">
-        💳 Renovar Plano Profissional
+
+      <button id="btn-pagar" onclick="abrirModalPlanos()" class="btn-primario" style="display:none; margin-top:15px;">
+        💳 Ver Planos e Assinar
       </button>
 
       <a href="https://wa.me/5527996962395?text=Olá, Danilo! Gostaria de renovar meu acesso ao App InterpretePro."
@@ -226,7 +231,12 @@
 
       <a href="como-funciona.html" target="_blank"
         style="color: #4a148c; font-size: 15px; font-weight: bold; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 20px; transition: 0.2s;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <path d="M12 16v-4"></path>
+          <path d="M12 8h.01"></path>
+        </svg>
         Descubra como funciona
       </a>
 
@@ -238,7 +248,6 @@
       </a>
 
     </div>
-    
     <div id="tela-app" style="display: none;">
 
       <div
@@ -555,6 +564,13 @@
             </p>
           </div>
 
+          <div style="margin-top: 20px; display: flex; justify-content: center;">
+            <button id="btn-instalar-app" onclick="instalarAplicativo()"
+              style="display: none; background: linear-gradient(135deg, #7b1fa2, #4a148c); color: white; border: none; padding: 14px 22px; font-size: 15px; font-weight: bold; border-radius: 999px; cursor: pointer; transition: 0.2s; box-shadow: 0 6px 16px rgba(74, 20, 140, 0.28); min-width: 230px;">
+              📲 Baixar Aplicativo
+            </button>
+          </div>
+
           <div style="margin-top: 25px; border-top: 1px solid #eee; padding-top: 20px;">
             <p style="font-size: 13px; color: #666; margin-bottom: 10px;">Sua opinião nos ajuda a evoluir o App!
             </p>
@@ -619,7 +635,7 @@
             </div>
 
             <!-- Botão Renovar -->
-            <button type="button" class="btn-primario" onclick="gerarPagamento()"
+            <button type="button" class="btn-primario" onclick="abrirModalPlanos()"
               style="margin-top: 0; margin-bottom: 20px;">
               💳 Fazer Upgrade / Renovar Plano
             </button>
@@ -872,6 +888,72 @@
     </div>
   </div>
 
+
+
+
+  <div id="modal-planos" class="modal-lgpd" style="display:none;">
+    <div class="modal-content" style="max-width:420px; padding:20px;">
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+        <div>
+          <h3 style="color:#4a148c; margin:0; font-size:20px;">🚀 Escolha seu Plano</h3>
+          <p style="margin:4px 0 0 0; font-size:12px; color:#888;">Acesso completo ao IntérpretePro</p>
+        </div>
+
+        <button onclick="fecharModal('modal-planos')"
+          style="background:none;border:none;font-size:28px;cursor:pointer;color:#aaa;line-height:1;">&times;</button>
+      </div>
+
+      <hr style="border:none; border-top:1px solid #eee; margin:14px 0;">
+
+      <!-- Os cards de plano são injetados aqui pelo script.js -->
+      <div id="modal-planos-lista">
+        <div class="loader" style="margin:40px auto; border-top-color:#9c27b0;"></div>
+      </div>
+
+      <p style="text-align:center; font-size:11px; color:#bbb; margin-top:16px;">
+        🔒 Pagamento seguro via Mercado Pago
+      </p>
+    </div>
+  </div>
+
+
+  <div id="modal-pix" class="modal-lgpd" style="display:none;">
+    <div class="modal-content" style="max-width:380px;">
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <h3 style="margin:0; color:#00897b; font-size:18px;">📱 Pague com PIX</h3>
+        <button onclick="fecharModal('modal-pix')"
+          style="background:none;border:none;font-size:26px;cursor:pointer;color:#aaa;">&times;</button>
+      </div>
+
+      <p style="font-size:13px; color:#555; margin:0 0 8px 0; text-align:center;">
+        Escaneie o QR Code ou copie o código abaixo.
+      </p>
+
+      <!-- QR Code -->
+      <div style="text-align:center;">
+        <img id="pix-qrcode-img" class="pix-qrcode-img" src="" alt="QR Code PIX">
+      </div>
+
+      <!-- Código Copia e Cola -->
+      <div class="pix-copia-cola" id="pix-copia-cola-texto">Gerando código...</div>
+
+      <button class="btn-copiar-pix" onclick="copiarCodigoPix()">
+        📋 Copiar código PIX
+      </button>
+
+      <div
+        style="background:#fff8e1; border-left:3px solid #fbc02d; padding:10px; border-radius:6px; margin-top:14px; font-size:12px; color:#555;">
+        ⏱️ <strong>Validade:</strong> 30 minutos. Após o pagamento, seu acesso será liberado
+        automaticamente em até 1 minuto.
+      </div>
+
+      <p style="text-align:center; margin-top:14px; font-size:12px; color:#aaa;">
+        🔒 Gerado pelo Mercado Pago
+      </p>
+    </div>
+  </div>
 
 </body>
 
