@@ -3,9 +3,10 @@
 
 <head>
 
-  <!-- Google tag: carregamento após interação ou 4 segundos -->
+  <!-- Google Analytics: carregamento em período ocioso -->
   <script>
     window.dataLayer = window.dataLayer || [];
+
     function gtag() {
       window.dataLayer.push(arguments);
     }
@@ -15,17 +16,10 @@
 
     (function () {
       let gtagCarregado = false;
-      let temporizador;
-      const eventos = ['pointerdown', 'touchstart', 'scroll', 'click', 'keydown'];
 
       function carregarGtag() {
         if (gtagCarregado) return;
         gtagCarregado = true;
-        clearTimeout(temporizador);
-
-        eventos.forEach(function (evento) {
-          document.removeEventListener(evento, carregarGtag);
-        });
 
         if (document.querySelector('script[data-gtag-lazy]')) return;
 
@@ -36,16 +30,16 @@
         document.head.appendChild(script);
       }
 
-      eventos.forEach(function (evento) {
-        document.addEventListener(evento, carregarGtag, { once: true, passive: true });
-      });
-
-      temporizador = setTimeout(carregarGtag, 4000);
+      if ('requestIdleCallback' in window) {
+        window.requestIdleCallback(carregarGtag);
+      } else {
+        window.setTimeout(carregarGtag, 4000);
+      }
     })();
   </script>
 
 <meta charset="UTF-8">
-  <link rel="preload" as="image" href="logo.png" fetchpriority="high">
+  <link rel="preload" as="image" href="logo.webp" type="image/webp" fetchpriority="high">
   <base target="_top">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
 
@@ -216,7 +210,7 @@
     <div id="tela-home" class="card"
       style="display: block; padding: 40px 20px; text-align: center; border-top: 5px solid #FF9800; border-radius: 15px;">
 
-      <img src="logo.png" alt="Logo IntérpretePro" width="100" height="100" fetchpriority="high" decoding="async"
+      <img src="logo.webp" alt="Logo IntérpretePro" width="100" height="100" fetchpriority="high" decoding="async"
         style="width: 100px; height: 100px; border-radius: 50%; margin-bottom: 15px; box-shadow: 0 8px 16px rgba(0,0,0,0.12); border: 3px solid #f3e5f5;">
       <h1 style="color: #4a148c; margin: 0; font-size: 26px; font-weight: 900; letter-spacing: -0.5px;">IntérpretePro
       </h1>
