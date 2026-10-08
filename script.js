@@ -1022,16 +1022,65 @@ function copiarResumo() {
   navigator.clipboard.writeText(txt).then(() => mostrarToast("📋 Copiado para o WhatsApp!"));
 }
 
+// Carrega html2canvas somente quando o usuário solicita baixar o relatório.
+let html2canvasPromise = null;
+
+function carregarHtml2Canvas() {
+  if (typeof window.html2canvas === "function") {
+    return Promise.resolve(window.html2canvas);
+  }
+
+  if (!html2canvasPromise) {
+    html2canvasPromise = new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
+      script.async = true;
+
+      script.onload = () => {
+        if (typeof window.html2canvas === "function") {
+          resolve(window.html2canvas);
+        } else {
+          html2canvasPromise = null;
+          reject(new Error("html2canvas não foi inicializado."));
+        }
+      };
+
+      script.onerror = () => {
+        html2canvasPromise = null;
+        reject(new Error("Falha ao carregar html2canvas."));
+      };
+
+      document.head.appendChild(script);
+    });
+  }
+
+  return html2canvasPromise;
+}
+
 function baixarImagemRelatorio() {
   var btn = document.getElementById('btnBaixarImagem'), orig = btn.innerHTML;
   btn.innerHTML = "⏳ Gerando Foto..."; btn.disabled = true;
   document.querySelectorAll('details').forEach(d => d.open = true);
-  html2canvas(document.querySelector('#tela-relatorios .card'), { scale: 2 }).then(canvas => {
-    var link = document.createElement('a');
-    link.download = `Relatorio_InterpretePro_${document.getElementById('filtroMesRelatorio').value}.png`;
-    link.href = canvas.toDataURL('image/png'); link.click();
-    btn.innerHTML = orig; btn.disabled = false; mostrarToast("🖼️ Imagem salva!");
-  }).catch(() => { btn.innerHTML = orig; btn.disabled = false; mostrarToast("❌ Erro ao gerar imagem", "erro"); });
+
+  carregarHtml2Canvas()
+    .then(html2canvas => html2canvas(
+      document.querySelector('#tela-relatorios .card'),
+      { scale: 2 }
+    ))
+    .then(canvas => {
+      var link = document.createElement('a');
+      link.download = `Relatorio_InterpretePro_${document.getElementById('filtroMesRelatorio').value}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      btn.innerHTML = orig;
+      btn.disabled = false;
+      mostrarToast("🖼️ Imagem salva!");
+    })
+    .catch(() => {
+      btn.innerHTML = orig;
+      btn.disabled = false;
+      mostrarToast("❌ Erro ao gerar imagem", "erro");
+    });
 }
 
 // --- 8. CONFIGURAÇÕES ---
