@@ -199,11 +199,15 @@ function montarApp(dados) {
 
   const planoAtual = localStorage.getItem("user_plano");
   const botoesMenu = document.querySelectorAll('.menu-grid .menu-btn');
-  if (planoAtual !== "Ativo" && planoAtual !== "Trial") {
-    botoesMenu.forEach(btn => { if (btn.innerText.includes("Novo Serviço")) btn.style.display = 'none'; });
-  } else {
-    botoesMenu.forEach(btn => { if (btn.innerText.includes("Novo Serviço")) btn.style.display = 'flex'; });
-  }
+  const podeCriarServico = planoAtual === "Ativo" || planoAtual === "Trial";
+
+  botoesMenu.forEach(btn => {
+    const textoMenu = btn.querySelector('.menu-text')?.textContent || '';
+
+    if (textoMenu.includes("Novo Serviço")) {
+      btn.style.display = podeCriarServico ? 'flex' : 'none';
+    }
+  });
 
   const emailLogado = localStorage.getItem("user_email");
   const btnAdmin = document.getElementById('btn-tab-admin');
