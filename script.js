@@ -213,9 +213,50 @@ function montarApp(dados) {
   document.getElementById('atalho-feedback-fixo').style.display = 'block';
 }
 
+let gsiPromise = null;
+
+function carregarGoogleIdentityServices() {
+  if (window.google?.accounts?.oauth2) {
+    return Promise.resolve();
+  }
+
+  if (!gsiPromise) {
+    gsiPromise = new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.async = true;
+
+      script.onload = () => {
+        if (window.google?.accounts?.oauth2) {
+          resolve();
+        } else {
+          gsiPromise = null;
+          reject(new Error('Google Identity Services não inicializado.'));
+        }
+      };
+
+      script.onerror = () => {
+        gsiPromise = null;
+        reject(new Error('Falha ao carregar o login Google.'));
+      };
+
+      document.head.appendChild(script);
+    });
+  }
+
+  return gsiPromise;
+}
+
 function mostrarTelaLogin() {
   document.getElementById('tela-home').style.display = 'none';
   document.getElementById('tela-login-google').style.display = 'flex';
+
+  carregarGoogleIdentityServices().catch(() => {
+    mostrarToast(
+      'Não foi possível carregar o login Google. Verifique sua conexão e tente novamente.',
+      'erro'
+    );
+  });
 }
 
 function atualizarSelectsFormulario(d) {
@@ -1333,6 +1374,14 @@ function solicitarAcessoSaaS() {
   const aceito = document.getElementById('aceito-termos').checked;
   if (!aceito) { mostrarToast("⚠️ Você precisa aceitar os Termos para continuar.", "erro"); return; }
 
+  if (!window.google?.accounts?.oauth2) {
+    mostrarToast("⏳ O login Google ainda está carregando. Aguarde um instante e tente novamente.", "info");
+    carregarGoogleIdentityServices().catch(() => {
+      mostrarToast("❌ Não foi possível carregar o login Google. Verifique sua conexão.", "erro");
+    });
+    return;
+  }
+
   const client = google.accounts.oauth2.initTokenClient({
     client_id: '824713665703-lr9iacceof0mg41c0gb61lm3qia4bpr7.apps.googleusercontent.com',
     scope: 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile',
@@ -1710,18 +1759,22 @@ function fecharRegistroManual() {
 function renderizarPendenteDetalhado(detalhes) {
   const container = document.getElementById('pendente-detalhado');
   if (!container) return;
-  container.innerHTML = "";
+
   container.style.gap = "10px";
   container.style.marginTop = "12px";
-  if (detalhes && detalhes.length > 1) {
-    detalhes.forEach(item => {
-      container.innerHTML += `
-        <div style="background:#fff; border:1px solid #e0e0e0; border-radius:20px; padding:6px 14px; display:flex; align-items:center; gap:8px; box-shadow:0 2px 4px rgba(0,0,0,0.03);">
-          <span style="color:#555; font-size:12px; display:flex; align-items:center; gap:4px;">
-            <span style="font-size:10px;">👤</span> <b>${item.nome}</b>
-          </span>
-          <strong style="color:#4a148c; font-size:13px; border-left:1px solid #eee; padding-left:8px;">R$ ${item.valor}</strong>
-        </div>`;
-    });
+
+  if (!detalhes || detalhes.length <= 1) {
+    container.replaceChildren();
+    return;
   }
+
+  const html = detalhes.map(item => `
+    <div style="background:#fff; border:1px solid #e0e0e0; border-radius:20px; padding:6px 14px; display:flex; align-items:center; gap:8px; box-shadow:0 2px 4px rgba(0,0,0,0.03);">
+      <span style="color:#555; font-size:12px; display:flex; align-items:center; gap:4px;">
+        <span style="font-size:10px;">👤</span> <b>${item.nome}</b>
+      </span>
+      <strong style="color:#4a148c; font-size:13px; border-left:1px solid #eee; padding-left:8px;">R$ ${item.valor}</strong>
+    </div>`).join("");
+
+  container.innerHTML = html;
 }
