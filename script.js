@@ -122,19 +122,21 @@ function mudarAba(aba) {
 
 // --- 4. NAVEGAÇÃO E PORTARIA ---
 function validarPortaria(resposta) {
-  const loading = document.getElementById('tela-loading');
-  if (loading) loading.style.display = 'none';
-
   if (resposta && resposta.liberado === true) {
     localStorage.setItem("user_plano", resposta.plano || "Ativo");
     localStorage.setItem("user_validade", resposta.validade || "Sem data limite");
     montarApp(resposta.dadosIniciais);
 
   } else if (resposta && resposta.isNovo === true) {
-    const telaLogin = document.getElementById('tela-login-google');
-    const telaTrial = document.getElementById('tela-trial');
-    if (telaLogin) telaLogin.style.display = 'none';
-    if (telaTrial) telaTrial.style.display = 'flex';
+    requestAnimationFrame(() => {
+      const loading = document.getElementById('tela-loading');
+      const telaLogin = document.getElementById('tela-login-google');
+      const telaTrial = document.getElementById('tela-trial');
+
+      if (loading) loading.style.display = 'none';
+      if (telaLogin) telaLogin.style.display = 'none';
+      if (telaTrial) telaTrial.style.display = 'flex';
+    });
 
   } else {
     const btnPagar = document.getElementById('btn-pagar');
@@ -142,11 +144,17 @@ function validarPortaria(resposta) {
 
     const emailEl = document.getElementById('email-bloqueado');
     const motivoEl = document.getElementById('motivo-bloqueio');
-    const telaBloq = document.getElementById('tela-bloqueio');
 
     if (emailEl) emailEl.innerText = (resposta && resposta.email) || "não identificado";
     if (motivoEl) motivoEl.innerText = (resposta && resposta.motivo) || "E-mail sem licença ativa.";
-    if (telaBloq) telaBloq.style.display = 'flex';
+
+    requestAnimationFrame(() => {
+      const loading = document.getElementById('tela-loading');
+      const telaBloq = document.getElementById('tela-bloqueio');
+
+      if (loading) loading.style.display = 'none';
+      if (telaBloq) telaBloq.style.display = 'flex';
+    });
   }
 }
 
@@ -190,9 +198,6 @@ async function voltarDashboard() {
 }
 
 function montarApp(dados) {
-  document.getElementById('tela-loading').style.display = 'none';
-  esconderTodasTelas();
-  document.getElementById('tela-app').style.display = 'block';
   document.getElementById('valor-pendente').innerText = "R$ " + dados.pendente;
   renderizarPendenteDetalhado(dados.pendenteDetalhado);
   atualizarSelectsFormulario(dados);
@@ -214,7 +219,17 @@ function montarApp(dados) {
   if (btnAdmin) {
     btnAdmin.style.display = (emailLogado === "danilobertolani@gmail.com") ? 'block' : 'none';
   }
-  document.getElementById('atalho-feedback-fixo').style.display = 'block';
+  requestAnimationFrame(() => {
+    const loading = document.getElementById('tela-loading');
+    const telaApp = document.getElementById('tela-app');
+
+    if (loading) loading.style.display = 'none';
+    esconderTodasTelas();
+    if (telaApp) telaApp.style.display = 'block';
+
+    const feedback = document.getElementById('atalho-feedback-fixo');
+    if (feedback) feedback.style.display = 'block';
+  });
 }
 
 let gsiPromise = null;
@@ -1427,9 +1442,11 @@ async function handleSaaSLogin(email) {
     if (spanNome) spanNome.innerText = nomeCompleto.split(" ")[0];
   }
 
-  document.querySelectorAll('.container-app > div').forEach(d => d.style.display = 'none');
-  const loading = document.getElementById('tela-loading');
-  loading.style.display = 'flex';
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.container-app > div').forEach(d => d.style.display = 'none');
+    const loading = document.getElementById('tela-loading');
+    if (loading) loading.style.display = 'flex';
+  });
   localStorage.setItem("user_email", email);
 
   try {
