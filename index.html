@@ -3,25 +3,28 @@
 
 <head>
 
-  <!-- Google Analytics: carregamento em período ocioso -->
+  <!-- Google Analytics: carregamento após interação real ou fallback -->
   <script>
-    window.dataLayer = window.dataLayer || [];
-
-    function gtag() {
-      window.dataLayer.push(arguments);
-    }
-
-    gtag('js', new Date());
-    gtag('config', 'G-GJYN95318X');
-
     (function () {
       let gtagCarregado = false;
+      const eventos = ['scroll', 'touchstart', 'click', 'mousemove'];
 
       function carregarGtag() {
         if (gtagCarregado) return;
         gtagCarregado = true;
 
-        if (document.querySelector('script[data-gtag-lazy]')) return;
+        eventos.forEach(function (evento) {
+          document.removeEventListener(evento, carregarGtag);
+        });
+        clearTimeout(temporizador);
+
+        window.dataLayer = window.dataLayer || [];
+        window.gtag = function () {
+          window.dataLayer.push(arguments);
+        };
+
+        window.gtag('js', new Date());
+        window.gtag('config', 'G-GJYN95318X');
 
         const script = document.createElement('script');
         script.src = 'https://www.googletagmanager.com/gtag/js?id=G-GJYN95318X';
@@ -30,11 +33,11 @@
         document.head.appendChild(script);
       }
 
-      if ('requestIdleCallback' in window) {
-        window.requestIdleCallback(carregarGtag);
-      } else {
-        window.setTimeout(carregarGtag, 4000);
-      }
+      eventos.forEach(function (evento) {
+        document.addEventListener(evento, carregarGtag, { passive: true });
+      });
+
+      const temporizador = window.setTimeout(carregarGtag, 8000);
     })();
   </script>
 
@@ -61,15 +64,15 @@
   <meta property="og:title" content="IntérpretePro | O seu escritório na palma da mão">
   <meta property="og:description"
     content="Gestão financeira e controle de atendimentos exclusivo para intérpretes de LIBRAS. Acesse agora!">
-  <meta property="og:image" content="https://interpretepro.deab.com.br/logo.png">
+  <meta property="og:image" content="https://interpretepro.deab.com.br/logo.webp">
   <meta property="og:image:width" content="500">
   <meta property="og:image:height" content="500">
 
   <meta name="twitter:url" content="https://interpretepro.deab.com.br/">
-  <meta name="twitter:image" content="https://interpretepro.deab.com.br/logo.png">
+  <meta name="twitter:image" content="https://interpretepro.deab.com.br/logo.webp">
 
-  <link rel="icon" type="image/png" href="logo.png">
-  <link rel="apple-touch-icon" href="logo.png">
+  <link rel="icon" type="image/png" href="logo.webp">
+  <link rel="apple-touch-icon" href="logo.webp">
 
 
   <link rel="stylesheet" href="style.css">
@@ -86,8 +89,8 @@
 
     <div id="tela-login-google" class="card" style="display: none; text-align: center; padding: 40px 20px;">
       <div style="margin-bottom: 20px; display: flex; justify-content: center; width: 100%;">
-        <img src="logo.png" alt="Logo IntérpretePro" width="180" height="180" decoding="async"
-          style="width: 180px; height: 180px; border-radius: 50%; object-fit: cover; box-shadow: 0 4px 8px rgba(0,0,0,0.1); background: #fff;">
+        <img src="logo.webp" alt="Logo IntérpretePro" width="150" height="150" decoding="async"
+          style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; box-shadow: 0 4px 8px rgba(0,0,0,0.1); background: #fff;">
       </div>
       <h2 style="color: #4a148c; margin-bottom: 8px;">Portal IntérpretePro</h2>
       <p style="color: #757575; font-size: 14px; margin-bottom: 30px;">Gestão inteligente para intérpretes de LIBRAS.
@@ -125,7 +128,7 @@
 
     <div id="tela-loading" style="display: none;">
       <div style="margin-bottom: 30px;">
-        <img src="logo.png" alt="Logo IntérpretePro" width="160" height="160" decoding="async"
+        <img src="logo.webp" alt="Logo IntérpretePro" width="160" height="160" decoding="async"
           style="width: 160px; height: 160px; border-radius: 50%; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
       </div>
       <h2 style="color: #4a148c; font-size: 36px; font-weight: 900; margin: 0 0 15px 0;">Olá, <span
@@ -278,7 +281,7 @@
         style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #e0e0e0;">
 
         <div style="display: flex; align-items: center; gap: 12px;">
-          <img src="logo.png" alt="Logo"
+          <img src="logo.webp" alt="Logo"
             style="width: 45px; height: 45px; border-radius: 50%; border: 2px solid #f3e5f5;">
           <span class="header-app-logo">IntérpretePro</span>
         </div>
@@ -568,7 +571,7 @@
         </div>
 
         <div id="content-sobre" class="tab-content" style="text-align: center; padding: 30px 10px;">
-          <img src="logo.png" alt="IntérpretePro"
+          <img src="logo.webp" alt="IntérpretePro"
             style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin-bottom: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
           <h2 style="color: #4a148c; margin-bottom: 5px;">IntérpretePro</h2>
           <p style="color: #666; font-size: 14px; margin-bottom: 20px;">Versão 1.0.0</p>
