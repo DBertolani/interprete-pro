@@ -1,3 +1,5 @@
+<style>
+
 /* 1. Ajuste de Fundo e Centralização Real */
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -939,3 +941,4 @@ textarea {
   pointer-events: none;
 }
 
+</style>
