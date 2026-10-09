@@ -123,7 +123,7 @@ function mudarAba(aba) {
 // --- 4. NAVEGAÇÃO E PORTARIA ---
 // Adia a transição visual por dois frames para separar o frame atual do próximo layout.
 function executarAposDoisFrames(callback) {
-  executarAposDoisFrames(() => {
+  requestAnimationFrame(() => {
     requestAnimationFrame(callback);
   });
 }
