@@ -27,7 +27,7 @@
   <meta charset="UTF-8">
   <link rel="preload" as="image" href="logo.webp" type="image/webp" fetchpriority="high">
   <base target="_top">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1000,6 +1000,23 @@ textarea {
   opacity: 0.7;
   pointer-events: none;
 }
+
+/* =========================================
+   AJUSTES CIRÚRGICOS DE ACESSIBILIDADE (a11y)
+========================================= */
+span#nome-usuario-loading {
+  color: #333333 !important;
+}
+
+#atalho-feedback-fixo, .feedback-atalho {
+  background-color: #4a148c !important;
+  color: #ffffff !important;
+}
+
+a {
+  color: #4a148c;
+}
+
 </style>
 </head>
 
@@ -1010,7 +1027,7 @@ textarea {
 
   <div id="toast-container" class="toast-container"></div>
 
-  <div class="container-app">
+  <div class="container-app" role="main">
 
     <div id="tela-login-google" class="card" style="display: none; text-align: center; padding: 40px 20px;">
       <div style="margin-bottom: 20px; display: flex; justify-content: center; width: 100%;">
