@@ -121,6 +121,13 @@ function mudarAba(aba) {
 }
 
 // --- 4. NAVEGAÇÃO E PORTARIA ---
+// Adia a transição visual por dois frames para separar o frame atual do próximo layout.
+function executarAposDoisFrames(callback) {
+  executarAposDoisFrames(() => {
+    requestAnimationFrame(callback);
+  });
+}
+
 function validarPortaria(resposta) {
   if (resposta && resposta.liberado === true) {
     localStorage.setItem("user_plano", resposta.plano || "Ativo");
@@ -128,7 +135,7 @@ function validarPortaria(resposta) {
     montarApp(resposta.dadosIniciais);
 
   } else if (resposta && resposta.isNovo === true) {
-    requestAnimationFrame(() => {
+    executarAposDoisFrames(() => {
       const loading = document.getElementById('tela-loading');
       const telaLogin = document.getElementById('tela-login-google');
       const telaTrial = document.getElementById('tela-trial');
@@ -148,7 +155,7 @@ function validarPortaria(resposta) {
     if (emailEl) emailEl.innerText = (resposta && resposta.email) || "não identificado";
     if (motivoEl) motivoEl.innerText = (resposta && resposta.motivo) || "E-mail sem licença ativa.";
 
-    requestAnimationFrame(() => {
+    executarAposDoisFrames(() => {
       const loading = document.getElementById('tela-loading');
       const telaBloq = document.getElementById('tela-bloqueio');
 
@@ -219,7 +226,7 @@ function montarApp(dados) {
   if (btnAdmin) {
     btnAdmin.style.display = (emailLogado === "danilobertolani@gmail.com") ? 'block' : 'none';
   }
-  requestAnimationFrame(() => {
+  executarAposDoisFrames(() => {
     const loading = document.getElementById('tela-loading');
     const telaApp = document.getElementById('tela-app');
 
@@ -1442,7 +1449,7 @@ async function handleSaaSLogin(email) {
     if (spanNome) spanNome.innerText = nomeCompleto.split(" ")[0];
   }
 
-  requestAnimationFrame(() => {
+  executarAposDoisFrames(() => {
     document.querySelectorAll('.container-app > div').forEach(d => d.style.display = 'none');
     const loading = document.getElementById('tela-loading');
     if (loading) loading.style.display = 'flex';
