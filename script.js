@@ -732,7 +732,7 @@ function renderizarHistorico(l) {
     equipeGlobal.forEach(m => selMemEl.innerHTML += `<option value="${m.toLowerCase()}">${m}</option>`);
   }
 
-  l.forEach(i => {
+  const itensHtml = l.map(i => {
     var p = (i.status === "Pago");
     let dataPgtoFormatada = "";
     if (p && i.dataPgto) {
@@ -741,7 +741,7 @@ function renderizarHistorico(l) {
         : i.dataPgto;
     }
     i.dataExibicaoCompleta = i.data;
-    c.innerHTML += `
+    return `
       <div class="item-pendente item-historico"
            onclick="abrirDetalhesServico(${i.linha})"
            style="border-left-color:${p ? '#4CAF50' : '#ff9800'}; cursor:pointer;"
@@ -764,7 +764,8 @@ function renderizarHistorico(l) {
           <span style="font-size:11px;">👤 ${i.interprete}</span>
         </div>
       </div>`;
-  });
+  }).join("");
+  c.innerHTML = itensHtml;
 
   if (selAgEl) selAgEl.value = valAg;
   if (selMemEl) selMemEl.value = valMem;
