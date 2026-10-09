@@ -1,8 +1,6 @@
-<style>
-
 /* 1. Ajuste de Fundo e Centralização Real */
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Times New Roman', Times, serif;
   background-color: #f4f7f6;
   margin: 0;
   display: flex;
@@ -12,6 +10,14 @@ body {
   padding: 20px 0;
   width: 100%;
   overflow-x: hidden;
+}
+
+/* Mantém a mesma família tipográfica também nos controles do navegador */
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
 }
 
 /* LOGO + NOME NO TOPO (MAIS VISÍVEL) - AUMENTADO */
@@ -941,4 +947,53 @@ textarea {
   pointer-events: none;
 }
 
-</style>
+/* =========================================
+   AJUSTES CIRÚRGICOS DE ACESSIBILIDADE (a11y)
+========================================= */
+#atalho-feedback-fixo, .feedback-atalho {
+  background-color: #4a148c !important;
+  color: #ffffff !important;
+}
+
+a {
+  color: #4a148c;
+}
+
+.feedback-atalho a {
+  color: #ffffff !important;
+}
+
+
+
+#tela-app .dash-card {
+  background: linear-gradient(135deg, #4CAF50, #2E7D32) !important;
+  color: #ffffff !important;
+  text-align: center;
+  padding: 25px 15px;
+  border-radius: 16px;
+}
+
+#tela-app .dash-card .dash-title {
+  font-family: 'Times New Roman', Times, serif !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+}
+
+#tela-app .dash-card .dash-value {
+  font-family: 'Times New Roman', Times, serif !important;
+  font-size: 36px !important;
+  font-weight: 700 !important;
+}
+
+#tela-app #pendente-detalhado {
+  gap: 10px !important;
+  margin-top: 12px !important;
+}
+
+#tela-historico,
+#tela-historico .card,
+#tela-historico .filtros-box,
+#tela-historico #lista-html,
+#tela-historico .item-historico {
+  font-family: 'Times New Roman', Times, serif !important;
+}
