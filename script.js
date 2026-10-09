@@ -6,7 +6,7 @@ let origemNavegacao = 'dash';
 const servicoCache = new Map();
 
 // --- 1. CONFIGURAÇÃO DA PONTE ---
-//const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxLC1WJjrWUPQnUVyonMScINtlwj-VRiPU5aBIxc7kbAnVmI7o_bSR2peINpnPysY0/exec"; // TESTE
+// const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxLC1WJjrWUPQnUVyonMScINtlwj-VRiPU5aBIxc7kbAnVmI7o_bSR2peINpnPysY0/exec"; // TESTE
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxbYi7t7TjEi0TX750IzWDwy5QGBXKIqcRAOZ8ZLEvMHwqvoyIT_4jfrE2vFSU2EU16/exec"; // PROD
 
 async function chamarGoogle(acao, dadosExtras = {}) {
@@ -121,20 +121,29 @@ function mudarAba(aba) {
 }
 
 // --- 4. NAVEGAÇÃO E PORTARIA ---
-function validarPortaria(resposta) {
-  const loading = document.getElementById('tela-loading');
-  if (loading) loading.style.display = 'none';
+// Adia a transição visual por dois frames para separar o frame atual do próximo layout.
+function executarAposDoisFrames(callback) {
+  requestAnimationFrame(() => {
+    requestAnimationFrame(callback);
+  });
+}
 
+function validarPortaria(resposta) {
   if (resposta && resposta.liberado === true) {
     localStorage.setItem("user_plano", resposta.plano || "Ativo");
     localStorage.setItem("user_validade", resposta.validade || "Sem data limite");
     montarApp(resposta.dadosIniciais);
 
   } else if (resposta && resposta.isNovo === true) {
-    const telaLogin = document.getElementById('tela-login-google');
-    const telaTrial = document.getElementById('tela-trial');
-    if (telaLogin) telaLogin.style.display = 'none';
-    if (telaTrial) telaTrial.style.display = 'flex';
+    executarAposDoisFrames(() => {
+      const loading = document.getElementById('tela-loading');
+      const telaLogin = document.getElementById('tela-login-google');
+      const telaTrial = document.getElementById('tela-trial');
+
+      if (loading) loading.style.display = 'none';
+      if (telaLogin) telaLogin.style.display = 'none';
+      if (telaTrial) telaTrial.style.display = 'flex';
+    });
 
   } else {
     const btnPagar = document.getElementById('btn-pagar');
@@ -142,11 +151,17 @@ function validarPortaria(resposta) {
 
     const emailEl = document.getElementById('email-bloqueado');
     const motivoEl = document.getElementById('motivo-bloqueio');
-    const telaBloq = document.getElementById('tela-bloqueio');
 
     if (emailEl) emailEl.innerText = (resposta && resposta.email) || "não identificado";
     if (motivoEl) motivoEl.innerText = (resposta && resposta.motivo) || "E-mail sem licença ativa.";
-    if (telaBloq) telaBloq.style.display = 'flex';
+
+    executarAposDoisFrames(() => {
+      const loading = document.getElementById('tela-loading');
+      const telaBloq = document.getElementById('tela-bloqueio');
+
+      if (loading) loading.style.display = 'none';
+      if (telaBloq) telaBloq.style.display = 'flex';
+    });
   }
 }
 
@@ -190,32 +205,84 @@ async function voltarDashboard() {
 }
 
 function montarApp(dados) {
-  document.getElementById('tela-loading').style.display = 'none';
-  esconderTodasTelas();
-  document.getElementById('tela-app').style.display = 'block';
   document.getElementById('valor-pendente').innerText = "R$ " + dados.pendente;
   renderizarPendenteDetalhado(dados.pendenteDetalhado);
   atualizarSelectsFormulario(dados);
 
   const planoAtual = localStorage.getItem("user_plano");
   const botoesMenu = document.querySelectorAll('.menu-grid .menu-btn');
-  if (planoAtual !== "Ativo" && planoAtual !== "Trial") {
-    botoesMenu.forEach(btn => { if (btn.innerText.includes("Novo Serviço")) btn.style.display = 'none'; });
-  } else {
-    botoesMenu.forEach(btn => { if (btn.innerText.includes("Novo Serviço")) btn.style.display = 'flex'; });
-  }
+  const podeCriarServico = planoAtual === "Ativo" || planoAtual === "Trial";
+
+  botoesMenu.forEach(btn => {
+    const textoMenu = btn.querySelector('.menu-text')?.textContent || '';
+
+    if (textoMenu.includes("Novo Serviço")) {
+      btn.style.display = podeCriarServico ? 'flex' : 'none';
+    }
+  });
 
   const emailLogado = localStorage.getItem("user_email");
   const btnAdmin = document.getElementById('btn-tab-admin');
   if (btnAdmin) {
     btnAdmin.style.display = (emailLogado === "danilobertolani@gmail.com") ? 'block' : 'none';
   }
-  document.getElementById('atalho-feedback-fixo').style.display = 'block';
+  executarAposDoisFrames(() => {
+    const loading = document.getElementById('tela-loading');
+    const telaApp = document.getElementById('tela-app');
+
+    if (loading) loading.style.display = 'none';
+    esconderTodasTelas();
+    if (telaApp) telaApp.style.display = 'block';
+
+    const feedback = document.getElementById('atalho-feedback-fixo');
+    if (feedback) feedback.style.display = 'block';
+  });
+}
+
+let gsiPromise = null;
+
+function carregarGoogleIdentityServices() {
+  if (window.google?.accounts?.oauth2) {
+    return Promise.resolve();
+  }
+
+  if (!gsiPromise) {
+    gsiPromise = new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.async = true;
+
+      script.onload = () => {
+        if (window.google?.accounts?.oauth2) {
+          resolve();
+        } else {
+          gsiPromise = null;
+          reject(new Error('Google Identity Services não inicializado.'));
+        }
+      };
+
+      script.onerror = () => {
+        gsiPromise = null;
+        reject(new Error('Falha ao carregar o login Google.'));
+      };
+
+      document.head.appendChild(script);
+    });
+  }
+
+  return gsiPromise;
 }
 
 function mostrarTelaLogin() {
   document.getElementById('tela-home').style.display = 'none';
   document.getElementById('tela-login-google').style.display = 'flex';
+
+  carregarGoogleIdentityServices().catch(() => {
+    mostrarToast(
+      'Não foi possível carregar o login Google. Verifique sua conexão e tente novamente.',
+      'erro'
+    );
+  });
 }
 
 function atualizarSelectsFormulario(d) {
@@ -665,7 +732,7 @@ function renderizarHistorico(l) {
     equipeGlobal.forEach(m => selMemEl.innerHTML += `<option value="${m.toLowerCase()}">${m}</option>`);
   }
 
-  l.forEach(i => {
+  const itensHtml = l.map(i => {
     var p = (i.status === "Pago");
     let dataPgtoFormatada = "";
     if (p && i.dataPgto) {
@@ -674,7 +741,7 @@ function renderizarHistorico(l) {
         : i.dataPgto;
     }
     i.dataExibicaoCompleta = i.data;
-    c.innerHTML += `
+    return `
       <div class="item-pendente item-historico"
            onclick="abrirDetalhesServico(${i.linha})"
            style="border-left-color:${p ? '#4CAF50' : '#ff9800'}; cursor:pointer;"
@@ -697,7 +764,8 @@ function renderizarHistorico(l) {
           <span style="font-size:11px;">👤 ${i.interprete}</span>
         </div>
       </div>`;
-  });
+  }).join("");
+  c.innerHTML = itensHtml;
 
   if (selAgEl) selAgEl.value = valAg;
   if (selMemEl) selMemEl.value = valMem;
@@ -1022,16 +1090,65 @@ function copiarResumo() {
   navigator.clipboard.writeText(txt).then(() => mostrarToast("📋 Copiado para o WhatsApp!"));
 }
 
+// Carrega html2canvas somente quando o usuário solicita baixar o relatório.
+let html2canvasPromise = null;
+
+function carregarHtml2Canvas() {
+  if (typeof window.html2canvas === "function") {
+    return Promise.resolve(window.html2canvas);
+  }
+
+  if (!html2canvasPromise) {
+    html2canvasPromise = new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
+      script.async = true;
+
+      script.onload = () => {
+        if (typeof window.html2canvas === "function") {
+          resolve(window.html2canvas);
+        } else {
+          html2canvasPromise = null;
+          reject(new Error("html2canvas não foi inicializado."));
+        }
+      };
+
+      script.onerror = () => {
+        html2canvasPromise = null;
+        reject(new Error("Falha ao carregar html2canvas."));
+      };
+
+      document.head.appendChild(script);
+    });
+  }
+
+  return html2canvasPromise;
+}
+
 function baixarImagemRelatorio() {
   var btn = document.getElementById('btnBaixarImagem'), orig = btn.innerHTML;
   btn.innerHTML = "⏳ Gerando Foto..."; btn.disabled = true;
   document.querySelectorAll('details').forEach(d => d.open = true);
-  html2canvas(document.querySelector('#tela-relatorios .card'), { scale: 2 }).then(canvas => {
-    var link = document.createElement('a');
-    link.download = `Relatorio_InterpretePro_${document.getElementById('filtroMesRelatorio').value}.png`;
-    link.href = canvas.toDataURL('image/png'); link.click();
-    btn.innerHTML = orig; btn.disabled = false; mostrarToast("🖼️ Imagem salva!");
-  }).catch(() => { btn.innerHTML = orig; btn.disabled = false; mostrarToast("❌ Erro ao gerar imagem", "erro"); });
+
+  carregarHtml2Canvas()
+    .then(html2canvas => html2canvas(
+      document.querySelector('#tela-relatorios .card'),
+      { scale: 2 }
+    ))
+    .then(canvas => {
+      var link = document.createElement('a');
+      link.download = `Relatorio_InterpretePro_${document.getElementById('filtroMesRelatorio').value}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      btn.innerHTML = orig;
+      btn.disabled = false;
+      mostrarToast("🖼️ Imagem salva!");
+    })
+    .catch(() => {
+      btn.innerHTML = orig;
+      btn.disabled = false;
+      mostrarToast("❌ Erro ao gerar imagem", "erro");
+    });
 }
 
 // --- 8. CONFIGURAÇÕES ---
@@ -1284,6 +1401,14 @@ function solicitarAcessoSaaS() {
   const aceito = document.getElementById('aceito-termos').checked;
   if (!aceito) { mostrarToast("⚠️ Você precisa aceitar os Termos para continuar.", "erro"); return; }
 
+  if (!window.google?.accounts?.oauth2) {
+    mostrarToast("⏳ O login Google ainda está carregando. Aguarde um instante e tente novamente.", "info");
+    carregarGoogleIdentityServices().catch(() => {
+      mostrarToast("❌ Não foi possível carregar o login Google. Verifique sua conexão.", "erro");
+    });
+    return;
+  }
+
   const client = google.accounts.oauth2.initTokenClient({
     client_id: '824713665703-lr9iacceof0mg41c0gb61lm3qia4bpr7.apps.googleusercontent.com',
     scope: 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile',
@@ -1325,9 +1450,11 @@ async function handleSaaSLogin(email) {
     if (spanNome) spanNome.innerText = nomeCompleto.split(" ")[0];
   }
 
-  document.querySelectorAll('.container-app > div').forEach(d => d.style.display = 'none');
-  const loading = document.getElementById('tela-loading');
-  loading.style.display = 'flex';
+  executarAposDoisFrames(() => {
+    document.querySelectorAll('.container-app > div').forEach(d => d.style.display = 'none');
+    const loading = document.getElementById('tela-loading');
+    if (loading) loading.style.display = 'flex';
+  });
   localStorage.setItem("user_email", email);
 
   try {
@@ -1661,18 +1788,22 @@ function fecharRegistroManual() {
 function renderizarPendenteDetalhado(detalhes) {
   const container = document.getElementById('pendente-detalhado');
   if (!container) return;
-  container.innerHTML = "";
+
   container.style.gap = "10px";
   container.style.marginTop = "12px";
-  if (detalhes && detalhes.length > 1) {
-    detalhes.forEach(item => {
-      container.innerHTML += `
-        <div style="background:#fff; border:1px solid #e0e0e0; border-radius:20px; padding:6px 14px; display:flex; align-items:center; gap:8px; box-shadow:0 2px 4px rgba(0,0,0,0.03);">
-          <span style="color:#555; font-size:12px; display:flex; align-items:center; gap:4px;">
-            <span style="font-size:10px;">👤</span> <b>${item.nome}</b>
-          </span>
-          <strong style="color:#4a148c; font-size:13px; border-left:1px solid #eee; padding-left:8px;">R$ ${item.valor}</strong>
-        </div>`;
-    });
+
+  if (!detalhes || detalhes.length <= 1) {
+    container.replaceChildren();
+    return;
   }
+
+  const html = detalhes.map(item => `
+    <div style="background:#fff; border:1px solid #e0e0e0; border-radius:20px; padding:6px 14px; display:flex; align-items:center; gap:8px; box-shadow:0 2px 4px rgba(0,0,0,0.03);">
+      <span style="color:#555; font-size:12px; display:flex; align-items:center; gap:4px;">
+        <span style="font-size:10px;">👤</span> <b>${item.nome}</b>
+      </span>
+      <strong style="color:#4a148c; font-size:13px; border-left:1px solid #eee; padding-left:8px;">R$ ${item.valor}</strong>
+    </div>`).join("");
+
+  container.innerHTML = html;
 }

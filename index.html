@@ -3,18 +3,29 @@
 
 <head>
 
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-GJYN95318X"></script>
+  <!-- Google Analytics: carregamento 8s após o carregamento completo da página -->
   <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag() { dataLayer.push(arguments); }
-    gtag('js', new Date());
+    window.addEventListener('load', function () {
+      window.setTimeout(function carregarGtag() {
+        window.dataLayer = window.dataLayer || [];
+        window.gtag = function () {
+          window.dataLayer.push(arguments);
+        };
 
-    gtag('config', 'G-GJYN95318X');
+        window.gtag('js', new Date());
+        window.gtag('config', 'G-GJYN95318X');
+
+        const script = document.createElement('script');
+        script.src = 'https://www.googletagmanager.com/gtag/js?id=G-GJYN95318X';
+        script.async = true;
+        script.setAttribute('data-gtag-lazy', 'true');
+        document.head.appendChild(script);
+      }, 8000);
+    }, { once: true });
   </script>
 
-
   <meta charset="UTF-8">
+  <link rel="preload" as="image" href="logo.webp" type="image/webp" fetchpriority="high">
   <base target="_top">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -36,17 +47,16 @@
   <meta property="og:title" content="IntérpretePro | O seu escritório na palma da mão">
   <meta property="og:description"
     content="Gestão financeira e controle de atendimentos exclusivo para intérpretes de LIBRAS. Acesse agora!">
-  <meta property="og:image" content="https://interpretepro.deab.com.br/logo.png">
+  <meta property="og:image" content="https://interpretepro.deab.com.br/logo.webp">
   <meta property="og:image:width" content="500">
   <meta property="og:image:height" content="500">
 
   <meta name="twitter:url" content="https://interpretepro.deab.com.br/">
-  <meta name="twitter:image" content="https://interpretepro.deab.com.br/logo.png">
+  <meta name="twitter:image" content="https://interpretepro.deab.com.br/logo.webp">
 
-  <link rel="icon" type="image/png" href="logo.png">
-  <link rel="apple-touch-icon" href="logo.png">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <link rel="icon" type="image/png" href="logo.webp">
+  <link rel="apple-touch-icon" href="logo.webp">
+
 
   <link rel="stylesheet" href="style.css">
 </head>
@@ -58,12 +68,12 @@
 
   <div id="toast-container" class="toast-container"></div>
 
-  <div class="container-app">
+  <div class="container-app" role="main">
 
     <div id="tela-login-google" class="card" style="display: none; text-align: center; padding: 40px 20px;">
       <div style="margin-bottom: 20px; display: flex; justify-content: center; width: 100%;">
-        <img src="logo.png" alt="Logo IntérpretePro"
-          style="width: 180px; height: 180px; border-radius: 50%; object-fit: cover; box-shadow: 0 4px 8px rgba(0,0,0,0.1); background: #fff;">
+        <img src="logo.webp" alt="Logo IntérpretePro" width="150" height="150" decoding="async"
+          style="aspect-ratio: 1 / 1; width: 150px; height: 150px; border-radius: 50%; object-fit: cover; box-shadow: 0 4px 8px rgba(0,0,0,0.1); background: #fff;">
       </div>
       <h2 style="color: #4a148c; margin-bottom: 8px;">Portal IntérpretePro</h2>
       <p style="color: #757575; font-size: 14px; margin-bottom: 30px;">Gestão inteligente para intérpretes de LIBRAS.
@@ -101,8 +111,8 @@
 
     <div id="tela-loading" style="display: none;">
       <div style="margin-bottom: 30px;">
-        <img src="logo.png"
-          style="width: 160px; height: 160px; border-radius: 50%; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
+        <img src="logo.webp" alt="Logo IntérpretePro" width="150" height="150" decoding="async"
+          style="aspect-ratio: 1 / 1; width: 150px; height: 150px; border-radius: 50%; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
       </div>
       <h2 style="color: #4a148c; font-size: 36px; font-weight: 900; margin: 0 0 15px 0;">Olá, <span
           id="nome-usuario-loading" style="color: #FF9800;">Intérprete</span>! 🤟</h2>
@@ -186,7 +196,7 @@
     <div id="tela-home" class="card"
       style="display: block; padding: 40px 20px; text-align: center; border-top: 5px solid #FF9800; border-radius: 15px;">
 
-      <img src="logo.png"
+      <img src="logo.webp" alt="Logo IntérpretePro" width="100" height="100" fetchpriority="high" decoding="async"
         style="width: 100px; height: 100px; border-radius: 50%; margin-bottom: 15px; box-shadow: 0 8px 16px rgba(0,0,0,0.12); border: 3px solid #f3e5f5;">
       <h1 style="color: #4a148c; margin: 0; font-size: 26px; font-weight: 900; letter-spacing: -0.5px;">IntérpretePro
       </h1>
@@ -254,7 +264,7 @@
         style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #e0e0e0;">
 
         <div style="display: flex; align-items: center; gap: 12px;">
-          <img src="logo.png" alt="Logo"
+          <img src="logo.webp" alt="Logo"
             style="width: 45px; height: 45px; border-radius: 50%; border: 2px solid #f3e5f5;">
           <span class="header-app-logo">IntérpretePro</span>
         </div>
@@ -544,7 +554,7 @@
         </div>
 
         <div id="content-sobre" class="tab-content" style="text-align: center; padding: 30px 10px;">
-          <img src="logo.png" alt="IntérpretePro"
+          <img src="logo.webp" alt="IntérpretePro"
             style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin-bottom: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
           <h2 style="color: #4a148c; margin-bottom: 5px;">IntérpretePro</h2>
           <p style="color: #666; font-size: 14px; margin-bottom: 20px;">Versão 1.0.0</p>
