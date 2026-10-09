@@ -1,10 +1,11 @@
-const CACHE_NAME = 'interpretepro-v1';
+const CACHE_NAME = 'interpretepro-v5';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './style.css',
   './script.js',
   './logo.png',
+  './logo.webp',
   './manifest.json',
   './como-funciona.html',
   './privacidade.html'
