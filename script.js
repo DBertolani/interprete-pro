@@ -1,25 +1,730 @@
 var dadosFiltradosAtuais = [];
-var agenciasGlobais = [], dadosPagosGlobais = [], historicoGlobal = [], equipeGlobal = [], clientesGlobais = [], tiposServicoGlobal = [];
+const atendimentosSelecionadosLote = new Set();
+var agenciasGlobais = [], dadosPagosGlobais = [], historicoGlobal = [], equipeGlobal = [], clientesGlobais = [], minhasEmpresasFinais = [], tiposServicoGlobal = [];
 var dadosGeraisRelatorio = [];
+
+// Identifica automaticamente a execução em homologação ou desenvolvimento local.
+const isHomologacao = window.location.hostname.includes("github.io") || window.location.hostname.includes("localhost");
+
+function aplicarIdentificacaoAmbiente() {
+  const badge = document.getElementById("badge-ambiente");
+  const rodapeAmbiente = document.getElementById("rodape-ambiente");
+
+  if (badge) badge.style.display = isHomologacao ? "inline-flex" : "none";
+  if (rodapeAmbiente) {
+    rodapeAmbiente.textContent = isHomologacao
+      ? "IntérpretePro v2.0.0 • Ambiente de Testes / Supabase"
+      : "IntérpretePro v2.0.0";
+  }
+}
+
+// Carrega os documentos do Google Drive vinculados ao usuário logado.
+async function carregarDocumentosDrive(emailUsuario) {
+  const { data, error } = await supabaseClient
+    .from('documentos_arquivos')
+    .select('*')
+    .eq('email_usuario', emailUsuario)
+    .order('criado_em', { ascending: false });
+  return data || [];
+}
 let ordemDataHistorico = 'desc';
 let origemNavegacao = 'dash';
 const servicoCache = new Map();
 
-// --- 1. CONFIGURAÇÃO DA PONTE ---
-// const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxLC1WJjrWUPQnUVyonMScINtlwj-VRiPU5aBIxc7kbAnVmI7o_bSR2peINpnPysY0/exec"; // TESTE
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxbYi7t7TjEi0TX750IzWDwy5QGBXKIqcRAOZ8ZLEvMHwqvoyIT_4jfrE2vFSU2EU16/exec"; // PROD
+// --- 1. CONFIGURAÇÃO DA PONTE (MIGRADO PARA SUPABASE) ---
+const SUPABASE_URL = "https://bvavzgmsiflydrlgeiqf.supabase.co"; // Ex: https://bvavzgmsifflydrlgeiqf.supabase.co
+const SUPABASE_ANON_KEY = "sb_publishable_IgTCeiytetM678AtADKUtQ_n3SL6akf"; // Ex: sb_publishable_...
+
+var supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Controle de segurança: manter false até as Edge Functions estarem publicadas
+// e os Secrets de TESTE configurados no projeto de homologação.
+// Não existe fallback para Google Apps Script.
+const PAGAMENTOS_SUPABASE_HABILITADOS = true;
 
 async function chamarGoogle(acao, dadosExtras = {}) {
   const email = localStorage.getItem("user_email");
+  if (!email) throw new Error("Usuário não logado");
+
   try {
-    const response = await fetch(SCRIPT_URL, {
-      method: "POST",
-      body: JSON.stringify({ acao, email, dados: dadosExtras })
-    });
-    return await response.json();
+    // ---------------------------------------------------------
+    // 1. CARREGAR DADOS INICIAIS (DASHBOARD)
+    // ---------------------------------------------------------
+    if (acao === "carregarDadosIniciais") {
+      // Busca as configurações do usuário no Supabase
+      const [resAgencias, resEquipe, resClientes, resServicos, resPendentes] = await Promise.all([
+        supabaseClient.from('interpretepro_minhas_empresas').select('*').eq('email_usuario', email),
+        supabaseClient.from('interpretepro_equipe').select('nome_interprete').eq('email_usuario', email),
+        supabaseClient.from('interpretepro_minhas_empresas_finais').select('*').eq('email_usuario', email),
+        supabaseClient.from('interpretepro_tipos_servico').select('*').eq('email_usuario', email),
+        supabaseClient.from('interpretepro_registros_gerais').select('*').eq('email_usuario', email).eq('status_pgto', 'Pendente')
+      ]);
+
+      // Não tratar falhas de consulta como listas vazias: isso poderia exibir
+      // um dashboard aparentemente válido com totais incompletos.
+      const erroConsultaInicial = [resAgencias, resEquipe, resClientes, resServicos, resPendentes]
+        .find(resultado => resultado && resultado.error);
+
+      if (erroConsultaInicial) {
+        console.error("Erro ao carregar dados iniciais do Supabase:", erroConsultaInicial.error);
+        throw new Error("Não foi possível carregar todos os dados do dashboard. Tente novamente.");
+      }
+
+      // Calcula o total pendente e agrupa os valores por intérprete,
+      // reproduzindo o detalhamento que a versão de produção recebe do Apps Script.
+      let totalPendente = 0;
+      const pendentePorInterprete = new Map();
+
+      (resPendentes.data || []).forEach(item => {
+        const valor = Number(item.valor_servico || 0);
+        totalPendente += valor;
+
+        const nome = String(item.interprete || "").trim();
+        if (!nome) return;
+
+        pendentePorInterprete.set(
+          nome,
+          (pendentePorInterprete.get(nome) || 0) + valor
+        );
+      });
+
+      const pendenteDetalhado = Array.from(pendentePorInterprete, ([nome, valor]) => ({
+        nome,
+        valor: valor.toLocaleString('pt-BR', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        })
+      })).sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+
+      return {
+        dados: {
+          pendente: totalPendente.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+          pendenteDetalhado,
+          agencias: (resAgencias.data || []).map(a => ({ nome: a.nome_agencia, valor: a.valor_hora })),
+          equipe: (resEquipe.data || []).map(e => e.nome_interprete).filter(Boolean),
+          clientes: (resClientes.data || []).map(c => c.nome_cliente),
+          clientesFinais: (resClientes.data || []).map(c => c.nome_cliente),
+          tiposServico: (resServicos.data || []).map(s => s.tipo_servico)
+        }
+      };
+    }
+
+    // ---------------------------------------------------------
+    // 2. BUSCAR HISTÓRICO DE SERVIÇOS
+    // ---------------------------------------------------------
+    if (acao === "buscarTodosServicos" || acao === "buscarServicosRecentes") {
+      const { data, error } = await supabaseClient
+        .from('interpretepro_registros_gerais')
+        .select('*')
+        .eq('email_usuario', email)
+        .order('data_evento', { ascending: false });
+
+      if (error) throw error;
+
+      // O Supabase retorna colunas com "_" (snake_case). 
+      // Este mapeamento traduz de volta para o padrão que o seu front-end (HTML) já conhece.
+      const formatados = (data || []).map(d => ({
+        linha: d.id, // O Supabase usa UUID como ID agora
+        dataOriginal: d.data_evento,
+        data: d.data_evento ? d.data_evento.split('-').reverse().join('/') : '',
+        agencia: d.agencia_intermediaria,
+        empresa: d.empresa_final,
+        inicio: (d.horario_inicio || "").substring(0, 5),
+        fim: (d.horario_fim || "").substring(0, 5),
+        interprete: d.interprete,
+        tipoServico: d.tipo_servico,
+        valor: "R$ " + Number(d.valor_servico).toLocaleString('pt-BR', { minimumFractionDigits: 2 }),
+        valorNum: Number(d.valor_servico),
+        obs: d.observacao,
+        status: d.status_pgto,
+        dataPgto: d.data_pgto
+      }));
+
+      return { dados: formatados };
+    }
+
+    // ---------------------------------------------------------
+    // 3. GRAVAÇÃO DE ATENDIMENTOS NO SUPABASE
+    // ---------------------------------------------------------
+    if (["salvarRegistro", "atualizarRegistro", "buscarServicoPorLinha", "darBaixaPagamento", "darBaixaPagamentoLote", "excluirRegistro"].includes(acao)) {
+      const { data: authData, error: authError } = await supabaseClient.auth.getUser();
+      const usuario = authData && authData.user;
+      if (authError || !usuario || !usuario.id || !usuario.email) {
+        throw new Error("Sessão expirada. Entre novamente para continuar.");
+      }
+
+      const tabela = "interpretepro_registros_gerais";
+      const valorNumerico = (valor) => {
+        if (typeof converterParaFloat === "function") return converterParaFloat(valor);
+        const normalizado = String(valor ?? "0").replace(/R\$\s?/g, "").replace(/\./g, "").replace(",", ".");
+        const n = Number(normalizado);
+        return Number.isFinite(n) ? n : 0;
+      };
+
+      if (acao === "salvarRegistro" || acao === "atualizarRegistro") {
+        const dados = acao === "salvarRegistro" ? dadosExtras : (dadosExtras.dados || {});
+        const id = acao === "atualizarRegistro" ? String(dadosExtras.linha ?? "").trim() : "";
+        const payload = {
+          email_usuario: usuario.email,
+          auth_user_id: usuario.id,
+          data_evento: dados.data,
+          agencia_intermediaria: dados.agencia,
+          empresa_final: dados.empresa,
+          horario_inicio: dados.inicio,
+          horario_fim: dados.fim,
+          interprete: dados.interprete,
+          tipo_servico: dados.tipoServico,
+          valor_servico: valorNumerico(dados.valorFinal),
+          observacao: dados.obs || "",
+          status_pgto: dados.statusAntigo || dados.status || "Pendente",
+          data_pgto: dados.dataPgtoAntiga || null
+        };
+
+        let requisicao;
+        if (acao === "salvarRegistro") {
+          requisicao = await supabaseClient.from(tabela).insert(payload).select("id").single();
+        } else {
+          if (!id) throw new Error("O identificador do atendimento está vazio.");
+          // O filtro de proprietário é obrigatório; a RLS também deve validar auth.uid().
+          requisicao = await supabaseClient.from(tabela).update(payload)
+            .eq("id", id).eq("email_usuario", usuario.email).select("id").maybeSingle();
+        }
+        if (requisicao.error) throw requisicao.error;
+        if (acao === "atualizarRegistro" && !requisicao.data) {
+          throw new Error("Atendimento não encontrado ou sem permissão para alterá-lo.");
+        }
+        return { status: "Sucesso", id: requisicao.data?.id || null };
+      }
+
+      if (acao === "darBaixaPagamentoLote") {
+        const ids = Array.isArray(dadosExtras.ids)
+          ? [...new Set(dadosExtras.ids.map(id => String(id || "").trim()).filter(Boolean))]
+          : [];
+        const dataPagamento = String(dadosExtras.data || "").trim();
+
+        if (!ids.length) throw new Error("Selecione ao menos um atendimento pendente.");
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(dataPagamento)) {
+          throw new Error("Informe uma data de pagamento válida.");
+        }
+
+        // Confere todos os IDs antes da atualização para evitar baixa parcial
+        // quando algum registro já tiver sido alterado ou não pertencer ao usuário.
+        const { data: pendentesValidos, error: erroValidacao } = await supabaseClient
+          .from(tabela).select("id")
+          .in("id", ids)
+          .eq("email_usuario", usuario.email)
+          .eq("status_pgto", "Pendente");
+        if (erroValidacao) throw erroValidacao;
+        if ((pendentesValidos || []).length !== ids.length) {
+          throw new Error("A seleção contém atendimentos que não estão mais pendentes ou não podem ser acessados. Atualize o histórico e selecione novamente.");
+        }
+
+        const { data, error } = await supabaseClient.from(tabela)
+          .update({ status_pgto: "Pago", data_pgto: dataPagamento })
+          .in("id", ids)
+          .eq("email_usuario", usuario.email)
+          .eq("status_pgto", "Pendente")
+          .select("id");
+
+        if (error) throw error;
+        const idsAtualizados = (data || []).map(item => String(item.id));
+        if (idsAtualizados.length !== ids.length) {
+          throw new Error("Nem todos os atendimentos puderam ser atualizados. Atualize o histórico e confira os registros antes de tentar novamente.");
+        }
+        return { status: "Sucesso", quantidade: idsAtualizados.length };
+      }
+
+      const idRecebido = typeof dadosExtras === "object" && dadosExtras !== null
+        ? String(dadosExtras.linha ?? "").trim()
+        : String(dadosExtras ?? "").trim();
+      if (!idRecebido) throw new Error("O identificador do atendimento está vazio.");
+
+      if (acao === "buscarServicoPorLinha") {
+        const { data, error } = await supabaseClient.from(tabela).select("*")
+          .eq("id", idRecebido).eq("email_usuario", usuario.email).maybeSingle();
+        if (error) throw error;
+        if (!data) return { dados: null };
+        return { dados: {
+          linha: data.id, dataOriginal: data.data_evento,
+          data: data.data_evento ? data.data_evento.split("-").reverse().join("/") : "",
+          agencia: data.agencia_intermediaria, empresa: data.empresa_final,
+          inicio: (data.horario_inicio || "").substring(0, 5),
+          fim: (data.horario_fim || "").substring(0, 5),
+          interprete: data.interprete, tipoServico: data.tipo_servico,
+          valor: "R$ " + Number(data.valor_servico || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 }),
+          valorNum: Number(data.valor_servico || 0), obs: data.observacao,
+          status: data.status_pgto, dataPgto: data.data_pgto
+        }};
+      }
+
+      if (acao === "darBaixaPagamento") {
+        const dataPagamento = dadosExtras.data;
+        if (!dataPagamento) throw new Error("Informe a data do pagamento.");
+        const { data, error } = await supabaseClient.from(tabela)
+          .update({ status_pgto: "Pago", data_pgto: dataPagamento })
+          .eq("id", idRecebido).eq("email_usuario", usuario.email).select("id").maybeSingle();
+        if (error) throw error;
+        if (!data) throw new Error("Atendimento não encontrado ou sem permissão para alterá-lo.");
+        return { status: "Sucesso" };
+      }
+
+      if (acao === "excluirRegistro") {
+        const { data, error } = await supabaseClient.from(tabela)
+          .delete().eq("id", idRecebido).eq("email_usuario", usuario.email).select("id").maybeSingle();
+        if (error) throw error;
+        if (!data) throw new Error("Atendimento não encontrado ou sem permissão para excluí-lo.");
+        return { status: "Sucesso" };
+      }
+    }
+
+    // ---------------------------------------------------------
+    // 4. VERIFICAÇÃO DE ACESSO (nega por padrão)
+    // ---------------------------------------------------------
+    if (acao === "verificarAcesso") {
+      // Não confiar no e-mail do localStorage: confirmar a sessão no Supabase.
+      const { data: sessaoAtual, error: erroAuth } =
+        await supabaseClient.auth.getUser();
+
+      const usuarioAuth = sessaoAtual && sessaoAtual.user;
+
+      if (erroAuth || !usuarioAuth || !usuarioAuth.id || !usuarioAuth.email) {
+        return {
+          liberado: false,
+          motivo: "Não foi possível confirmar sua autenticação. Entre novamente."
+        };
+      }
+
+      // Conta Master Admin: exceção restrita ao e-mail administrativo validado
+      // pela sessão do Supabase. Não depende da licença comercial.
+      if (
+        String(usuarioAuth.email).trim().toLowerCase() ===
+        "danilobertolani@gmail.com"
+      ) {
+        localStorage.setItem("user_email", usuarioAuth.email);
+
+        const respostaDados = await chamarGoogle("carregarDadosIniciais");
+
+        return {
+          liberado: true,
+          email: usuarioAuth.email,
+          plano: "Master Admin",
+          validade: "Acesso administrativo",
+          dadosIniciais: respostaDados.dados
+        };
+      }
+
+      // Vincula somente uma licença pré-existente, usando a identidade autenticada
+      // no servidor. A RPC nunca recebe ID ou e-mail enviados pelo navegador.
+      const { data: resultadoVinculo, error: erroVinculo } =
+        await supabaseClient.rpc("vincular_licenca_usuario_atual");
+
+      // Falha fechada: sem a RPC instalada ou se ela retornar erro, não liberar acesso.
+      if (erroVinculo) {
+        console.error("Falha ao verificar vínculo da licença:", erroVinculo);
+        return {
+          liberado: false,
+          email: usuarioAuth.email,
+          motivo: "Não foi possível validar o vínculo da sua licença. O acesso permanece bloqueado até a verificação do cadastro."
+        };
+      }
+
+      if (resultadoVinculo === "email_nao_confirmado") {
+        return {
+          liberado: false,
+          email: usuarioAuth.email,
+          motivo: "Confirme o e-mail da sua conta Google/Supabase e entre novamente."
+        };
+      }
+
+      if (resultadoVinculo === "licenca_ambigua") {
+        return {
+          liberado: false,
+          email: usuarioAuth.email,
+          motivo: "Encontramos mais de uma licença compatível com sua conta. Entre em contato com o suporte para conferir o cadastro."
+        };
+      }
+
+      if (resultadoVinculo === "sem_licenca") {
+        return {
+          liberado: false,
+          email: usuarioAuth.email,
+          motivo: "Não há uma licença compatível com o e-mail da sua conta. Entre em contato com o suporte."
+        };
+      }
+
+      if (!["vinculada", "ja_vinculada"].includes(resultadoVinculo)) {
+        console.error("Resultado inesperado na validação do vínculo:", resultadoVinculo);
+        return {
+          liberado: false,
+          email: usuarioAuth.email,
+          motivo: "Não foi possível confirmar sua licença. O acesso permanece bloqueado até a verificação do cadastro."
+        };
+      }
+
+      // A RPC apenas estabelece/confirma o vínculo. O status e a validade
+      // comercial continuam sendo verificados pela consulta abaixo.
+      const { data: cliente, error: erroCliente } = await supabaseClient
+        .from("interpretepro_clientes")
+        .select("email, status, data_expiracao, plano")
+        .eq("auth_user_id", usuarioAuth.id)
+        .maybeSingle();
+
+      // Sem consulta autorizada e válida, nunca liberar acesso.
+      if (erroCliente) {
+        console.error("Falha ao validar licença:", erroCliente);
+        return {
+          liberado: false,
+          email: usuarioAuth.email,
+          motivo: "Não foi possível validar sua licença. O acesso permanece bloqueado até a configuração do cadastro e das permissões."
+        };
+      }
+
+      if (!cliente) {
+        return {
+          liberado: false,
+          email: usuarioAuth.email,
+          motivo: "Não há uma licença vinculada à sua conta. Entre em contato com o suporte."
+        };
+      }
+
+      const statusLicenca = String(cliente.status || "").trim().toLowerCase();
+      const dataExpiracao = cliente.data_expiracao
+        ? new Date(cliente.data_expiracao + "T23:59:59")
+        : null;
+
+      if (statusLicenca !== "ativo") {
+        return {
+          liberado: false,
+          email: usuarioAuth.email,
+          motivo: "Sua licença não está ativa."
+        };
+      }
+
+      if (dataExpiracao && (
+        isNaN(dataExpiracao.getTime()) || dataExpiracao < new Date()
+      )) {
+        return {
+          liberado: false,
+          email: usuarioAuth.email,
+          motivo: "Sua licença expirou."
+        };
+      }
+
+      // Só definir a identidade legada depois de confirmar a sessão e a licença.
+      localStorage.setItem("user_email", usuarioAuth.email);
+
+      const respostaDados = await chamarGoogle("carregarDadosIniciais");
+
+      return {
+        liberado: true,
+        plano: cliente.plano || "Ativo",
+        validade: cliente.data_expiracao || "Vitalício",
+        dadosIniciais: respostaDados.dados
+      };
+    }
+
+
+    // ---------------------------------------------------------
+    // 5. CADASTRO E EDIÇÃO DAS CONFIGURAÇÕES DO USUÁRIO
+    // ---------------------------------------------------------
+    if (["salvarConfigAgencia", "salvarEmpresaFinal", "salvarTipoServico", "excluirConfig", "salvarMembroEquipe"].includes(acao)) {
+      const { data: authData, error: authError } = await supabaseClient.auth.getUser();
+      const usuario = authData && authData.user;
+      if (authError || !usuario || !usuario.id || !usuario.email) {
+        throw new Error("Sessão expirada. Entre novamente para continuar.");
+      }
+
+      if (acao === "salvarMembroEquipe") {
+        const nomeNovo = String(dadosExtras.nome || "").trim();
+        const nomeAntigo = String(dadosExtras.antigo || "").trim();
+        if (!nomeNovo) throw new Error("Informe o nome do intérprete.");
+
+        if (nomeAntigo) {
+          const { data, error } = await supabaseClient.from("interpretepro_equipe")
+            .update({ nome_interprete: nomeNovo, auth_user_id: usuario.id })
+            .eq("email_usuario", usuario.email)
+            .eq("nome_interprete", nomeAntigo)
+            .select("id");
+          if (error) throw error;
+          if (!data || data.length === 0) throw new Error("Membro da equipe não encontrado ou sem permissão para alterá-lo.");
+        } else {
+          const { error } = await supabaseClient.from("interpretepro_equipe").insert({
+            email_usuario: usuario.email,
+            auth_user_id: usuario.id,
+            nome_interprete: nomeNovo
+          });
+          if (error) throw error;
+        }
+        return { status: "Sucesso" };
+      }
+
+      const configs = {
+        salvarConfigAgencia: { tabela: "interpretepro_minhas_empresas", coluna: "nome_agencia", valor: dadosExtras.nome, antigo: dadosExtras.antigo, extras: { valor_hora: Number(String(dadosExtras.valor || "0").replace(",", ".")) } },
+        salvarEmpresaFinal: { tabela: "interpretepro_minhas_empresas_finais", coluna: "nome_cliente", valor: dadosExtras.nome, antigo: dadosExtras.antigo, extras: {} },
+        salvarTipoServico: { tabela: "interpretepro_tipos_servico", coluna: "tipo_servico", valor: dadosExtras.nome, antigo: dadosExtras.antigo, extras: {} }
+      };
+
+      if (acao === "excluirConfig") {
+        const mapa = {
+          "Minhas_Empresas": { tabela: "interpretepro_minhas_empresas", coluna: "nome_agencia" },
+          "Minhas_Empresas_Finais": { tabela: "interpretepro_minhas_empresas_finais", coluna: "nome_cliente" },
+          "Tipos_Servico": { tabela: "interpretepro_tipos_servico", coluna: "tipo_servico" },
+          "Minha_Equipe": { tabela: "interpretepro_equipe", coluna: "nome_interprete" }
+        };
+        const cfgExclusao = mapa[dadosExtras.aba];
+        if (!cfgExclusao) throw new Error("Este tipo de configuração ainda não possui armazenamento no Supabase.");
+        const { data, error } = await supabaseClient.from(cfgExclusao.tabela).delete()
+          .eq("email_usuario", usuario.email).eq(cfgExclusao.coluna, dadosExtras.valor).select(cfgExclusao.coluna);
+        if (error) throw error;
+        if (!data || data.length === 0) throw new Error("Registro não encontrado ou sem permissão para excluí-lo.");
+        return { status: "Sucesso" };
+      }
+
+      const cfg = configs[acao];
+      const nomeNovo = String(cfg.valor || "").trim();
+      const nomeAntigo = String(cfg.antigo || "").trim();
+      if (!nomeNovo) throw new Error("Informe um nome antes de salvar.");
+
+      if (nomeAntigo) {
+        const { data: existentes, error: buscaError } = await supabaseClient.from(cfg.tabela).select("id")
+          .eq("email_usuario", usuario.email).eq(cfg.coluna, nomeAntigo);
+        if (buscaError) throw buscaError;
+        if (!existentes || existentes.length === 0) throw new Error("Configuração original não encontrada.");
+        const { error } = await supabaseClient.from(cfg.tabela)
+          .update({ [cfg.coluna]: nomeNovo, ...cfg.extras })
+          .eq("email_usuario", usuario.email).eq(cfg.coluna, nomeAntigo);
+        if (error) throw error;
+      } else {
+        const { error } = await supabaseClient.from(cfg.tabela).insert({
+          email_usuario: usuario.email, [cfg.coluna]: nomeNovo, ...cfg.extras
+        });
+        if (error) throw error;
+      }
+      return { status: "Sucesso" };
+    }
+
+// ---------------------------------------------------------
+    // 6. PLANOS ATIVOS — LEITURA DIRETA DO SUPABASE
+    // ---------------------------------------------------------
+    if (acao === "buscarPlanosAtivos") {
+      const { data, error } = await supabaseClient
+        .from("interpretepro_planos")
+        .select("id, nome, meses, valor_total, ativo, destaque")
+        .eq("ativo", true)
+        .order("meses", { ascending: true });
+
+      if (error) {
+        console.error("Erro ao consultar planos no Supabase:", error);
+        throw new Error("Não foi possível carregar os planos. Tente novamente.");
+      }
+
+      return {
+        planos: (data || []).map(plano => ({
+          id: plano.id,
+          nome: plano.nome,
+          meses: plano.meses,
+          valor_total: Number(plano.valor_total),
+          destaque: plano.destaque
+        }))
+      };
+    }
+
+    // 7. PAGAMENTOS — Edge Functions Supabase (homologação)
+    // ---------------------------------------------------------
+    if (acao === "gerarPixAvulso" || acao === "gerarLinkAssinatura") {
+      // Habilitar somente depois de publicar as Edge Functions e configurar
+      // os Secrets de teste no projeto bvavzgmsiflydrlgeiqf.
+      // Nunca recorrer ao GAS: o GAS pode estar ligado a credenciais externas.
+      if (!PAGAMENTOS_SUPABASE_HABILITADOS) {
+        return {
+          status: "Erro",
+          codigo: "PAGAMENTOS_AGUARDANDO_IMPLANTACAO",
+          mensagem: "Os pagamentos de homologação aguardam a implantação segura das funções do Supabase. Nenhuma cobrança foi enviada."
+        };
+      }
+
+      const { data: sessaoData, error: sessaoError } =
+        await supabaseClient.auth.getSession();
+      if (sessaoError || !sessaoData?.session?.access_token) {
+        return {
+          status: "Erro",
+          mensagem: "Sua sessão expirou. Entre novamente para continuar."
+        };
+      }
+
+      const modalidade = acao === "gerarPixAvulso" ? "pix" : "assinatura";
+      const planoId = String(dadosExtras.idPlano || "").trim();
+      if (!planoId) {
+        return { status: "Erro", mensagem: "Selecione um plano válido." };
+      }
+
+      const storageKey = "ip_pagamento_req_" + modalidade + "_" + planoId;
+      let chaveRequisicao = sessionStorage.getItem(storageKey);
+      if (!chaveRequisicao) {
+        chaveRequisicao = crypto.randomUUID();
+        sessionStorage.setItem(storageKey, chaveRequisicao);
+      }
+
+      const nomeFuncao = modalidade === "pix" ? "criar-pix-homologacao" : "criar-assinatura-homologacao";
+      const { data, error } = await supabaseClient.functions.invoke(nomeFuncao, {
+        body: {
+          planoId,
+          chaveRequisicao
+        }
+      });
+
+      if (error) {
+        let detalhe = null;
+        try {
+          if (error.context && typeof error.context.json === "function") {
+            detalhe = await error.context.json();
+          }
+        } catch (_) {
+          // Não registrar tokens nem conteúdo bruto da resposta.
+        }
+
+        if (detalhe?.codigo === "NOVA_TENTATIVA") {
+          sessionStorage.removeItem(storageKey);
+        }
+
+        return {
+          status: "Erro",
+          codigo: detalhe?.codigo || "EDGE_FUNCTION_ERRO",
+          mensagem: detalhe?.mensagem || "Não foi possível iniciar o pagamento. Tente novamente."
+        };
+      }
+
+      if (data?.codigo === "NOVA_TENTATIVA") {
+        sessionStorage.removeItem(storageKey);
+      }
+
+      // Preserva os contratos legados esperados pela interface:
+      // cartão: { status, url }
+      // Pix: { status, paymentId, qrCodeBase64, qrCodeTexto }
+      return data || {
+        status: "Erro",
+        mensagem: "O serviço de pagamento não retornou uma resposta válida."
+      };
+    }
+
+    // 8.1 ALTERAR STATUS/LICENÇA — EXCLUSIVO DO MASTER ADMIN
+    // ---------------------------------------------------------
+    if (acao === "alterarStatusCliente") {
+      const { data: authData, error: authError } =
+        await supabaseClient.auth.getUser();
+      const usuario = authData && authData.user;
+
+      if (
+        authError ||
+        !usuario ||
+        String(usuario.email || "").trim().toLowerCase() !==
+          "danilobertolani@gmail.com"
+      ) {
+        throw new Error("Acesso negado à gestão de clientes.");
+      }
+
+      const emailAlvo = String(dadosExtras.emailAlvo || "").trim().toLowerCase();
+      const novoStatus = String(dadosExtras.novoStatus || "").trim();
+
+      if (!emailAlvo) throw new Error("E-mail do cliente não informado.");
+      if (!["Ativo", "Suspenso"].includes(novoStatus)) {
+        throw new Error("Status solicitado inválido.");
+      }
+
+      const atualizacao = { status: novoStatus };
+
+      if (novoStatus === "Ativo") {
+        const planoEscolhido = String(dadosExtras.plano || "").trim();
+        const novaData = String(dadosExtras.dataExpiracao || "").trim();
+
+        if (!planoEscolhido) throw new Error("Selecione um plano ativo.");
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(novaData)) {
+          throw new Error("Informe uma data de expiração válida.");
+        }
+
+        const dataValidada = new Date(novaData + "T00:00:00Z");
+        if (
+          Number.isNaN(dataValidada.getTime()) ||
+          dataValidada.toISOString().slice(0, 10) !== novaData
+        ) {
+          throw new Error("A data de expiração informada é inválida.");
+        }
+
+        const { data: planoAtivo, error: erroPlano } = await supabaseClient
+          .from("interpretepro_planos")
+          .select("nome")
+          .eq("ativo", true)
+          .eq("nome", planoEscolhido)
+          .maybeSingle();
+
+        if (erroPlano) throw erroPlano;
+        if (!planoAtivo) throw new Error("O plano selecionado não está ativo.");
+
+        atualizacao.plano = planoAtivo.nome;
+        atualizacao.data_expiracao = novaData;
+      }
+
+      const { data, error } = await supabaseClient
+        .from("interpretepro_clientes")
+        .update(atualizacao)
+        .eq("email", emailAlvo)
+        .select("email, status, data_expiracao, plano")
+        .maybeSingle();
+
+      if (error) {
+        console.error("Erro ao atualizar licença do cliente:", error);
+        throw new Error("Não foi possível atualizar o cliente. Confira a política RLS de UPDATE.");
+      }
+      if (!data) throw new Error("Cliente não encontrado ou atualização não autorizada.");
+
+      return { status: "Sucesso", cliente: data };
+    }
+
+    // 8. CLIENTES — LISTAGEM ADMINISTRATIVA (SOMENTE LEITURA)
+    // ---------------------------------------------------------
+    if (acao === "buscarTodosClientes") {
+      const { data: authData, error: authError } =
+        await supabaseClient.auth.getUser();
+      const usuario = authData && authData.user;
+
+      if (
+        authError ||
+        !usuario ||
+        String(usuario.email || "").trim().toLowerCase() !==
+          "danilobertolani@gmail.com"
+      ) {
+        throw new Error("Acesso negado à gestão de clientes.");
+      }
+
+      const { data, error } = await supabaseClient
+        .from("interpretepro_clientes")
+        .select("email, status, data_expiracao, plano")
+        .order("email", { ascending: true });
+
+      if (error) {
+        console.error("Erro ao consultar clientes no Supabase:", error);
+        throw new Error("Não foi possível carregar os clientes.");
+      }
+
+      return {
+        clientes: (data || []).map(cliente => ({
+          // A coluna de nome não foi confirmada no esquema.
+          nome: cliente.email || "Cliente",
+          email: cliente.email || "",
+          status: cliente.status || "Sem status",
+          vencimento: cliente.data_expiracao || "Sem data",
+          plano: cliente.plano || "S/ Plano"
+        }))
+      };
+    }
+
+    // Se chegar aqui, a ação ainda não foi migrada
+    console.error("Ação ainda não migrada para Supabase:", acao);
+    return { status: "Erro", mensagem: `Ação "${acao}" não encontrada.` };
+
   } catch (erro) {
-    console.error("Erro na chamada Google:", erro);
-    mostrarToast("❌ Erro de conexão com o servidor", "erro");
+    console.error("Erro na chamada:", erro);
+    mostrarToast("❌ Erro de conexão com o banco", "erro");
     throw erro;
   }
 }
@@ -131,6 +836,7 @@ function executarAposDoisFrames(callback) {
 function validarPortaria(resposta) {
   if (resposta && resposta.liberado === true) {
     localStorage.setItem("user_plano", resposta.plano || "Ativo");
+    localStorage.setItem("user_modo_leitura", "false");
     localStorage.setItem("user_validade", resposta.validade || "Sem data limite");
     montarApp(resposta.dadosIniciais);
 
@@ -169,6 +875,7 @@ async function acessarModoLeitura() {
   document.getElementById('tela-bloqueio').style.display = 'none';
   document.getElementById('tela-loading').style.display = 'flex';
   localStorage.setItem("user_plano", "Vencido");
+  localStorage.setItem("user_modo_leitura", "true");
   localStorage.setItem("user_validade", "Expirado");
   try {
     const res = await chamarGoogle("carregarDadosIniciais");
@@ -211,7 +918,7 @@ function montarApp(dados) {
 
   const planoAtual = localStorage.getItem("user_plano");
   const botoesMenu = document.querySelectorAll('.menu-grid .menu-btn');
-  const podeCriarServico = planoAtual === "Ativo" || planoAtual === "Trial";
+  const podeCriarServico = localStorage.getItem("user_modo_leitura") !== "true";
 
   botoesMenu.forEach(btn => {
     const textoMenu = btn.querySelector('.menu-text')?.textContent || '';
@@ -289,6 +996,7 @@ function atualizarSelectsFormulario(d) {
   agenciasGlobais = d.agencias || [];
   equipeGlobal = d.equipe || [];
   clientesGlobais = d.clientes || [];
+  minhasEmpresasFinais = d.clientesFinais || [];
   tiposServicoGlobal = d.tiposServico || [];
 
   var selServ = document.getElementById('tipoServico');
@@ -406,7 +1114,7 @@ function renderizarModalPlanos(planos) {
         ? 'por mês (cobrado anualmente)'
         : `por mês (cobrado a cada ${meses} meses)`;
 
-    const ehDestaque = idx === Math.floor(planos.length / 2) || plano.destaque === true;
+    const ehDestaque = plano.destaque === true;
     const fmtBRL = (v) => v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
     let badges = '';
@@ -443,11 +1151,19 @@ async function assinarComCartao(idPlano, nomePlano) {
     } else {
       throw new Error(res?.mensagem || 'Erro desconhecido');
     }
-  } catch (err) {
-    mostrarToast('❌ Erro ao gerar link. Tente novamente.', 'erro');
-    btn.innerHTML = textoOriginal;
-    btn.disabled = false;
-  }
+    
+    } catch (err) {
+    console.error('[Checkout de teste] Falha ao gerar assinatura:', err);
+  
+    mostrarToast(
+      'Erro ao gerar link: ' + (err.message || 'Erro desconhecido'),
+      'erro'
+    );
+
+  btn.innerHTML = textoOriginal;
+  btn.disabled = false;
+}
+  
 }
 
 async function assinarComPix(idPlano, nomePlano) {
@@ -473,10 +1189,39 @@ async function assinarComPix(idPlano, nomePlano) {
 }
 
 // --- MODAL PIX ---
-function abrirModalPix(qrCodeBase64, copiaCola, nomePlano) {
+async function abrirModalPix(qrCodeBase64, copiaCola, nomePlano) {
   const img = document.getElementById('pix-qrcode-img');
   const texto = document.getElementById('pix-copia-cola-texto');
-  if (img) { img.src = 'data:image/png;base64,' + qrCodeBase64; img.alt = `QR Code PIX — ${nomePlano}`; }
+
+  if (img) {
+    img.alt = `QR Code PIX — ${nomePlano}`;
+    if (qrCodeBase64) {
+      // Compatibilidade com respostas antigas da Payments API.
+      img.src = 'data:image/png;base64,' + qrCodeBase64;
+    } else if (copiaCola && typeof window.QRCode === 'function') {
+      // A Orders API de teste pode retornar qr_code_base64 vazio.
+      // Nesse caso, gerar a imagem localmente a partir do Pix Copia e Cola.
+      const holder = document.createElement('div');
+      new window.QRCode(holder, {
+        text: copiaCola,
+        width: 256,
+        height: 256,
+        correctLevel: window.QRCode.CorrectLevel.M
+      });
+      const canvas = holder.querySelector('canvas');
+      const generatedImage = holder.querySelector('img');
+      if (canvas) {
+        img.src = canvas.toDataURL('image/png');
+      } else if (generatedImage?.src) {
+        img.src = generatedImage.src;
+      } else {
+        img.removeAttribute('src');
+      }
+    } else {
+      img.removeAttribute('src');
+    }
+  }
+
   if (texto) texto.textContent = copiaCola;
   window._pixCopiaCola = copiaCola;
   const modal = document.getElementById('modal-pix');
@@ -507,6 +1252,9 @@ function abrirRegistro(linha = "", dados = null) {
   origemNavegacao = (linha === "") ? 'dash' : 'historico';
 
   if (linha === "") {
+    valorBaseEditadoManualmente = false;
+    estadoFinanceiroOriginalEdicao = null;
+    ultimoTipoCobranca = "hora";
     document.getElementById('titulo-form').innerText = "Novo Atendimento";
     document.getElementById('formRegistro').reset();
     document.getElementById('data').valueAsDate = new Date();
@@ -520,6 +1268,7 @@ function abrirRegistro(linha = "", dados = null) {
       fecharRegistroManual();
       return;
     }
+    valorBaseEditadoManualmente = true;
     document.getElementById('titulo-form').innerText = "Editar Atendimento";
     document.getElementById('secao-edicao-financeira').style.display = "block";
     document.getElementById('data').value = dados.dataOriginal || "";
@@ -528,7 +1277,39 @@ function abrirRegistro(linha = "", dados = null) {
     document.getElementById('fim').value = dados.fim || "";
     document.getElementById('interprete').value = dados.interprete || "";
     document.getElementById('tipoServico').value = dados.tipoServico || "";
-    document.getElementById('valor-base').value = (dados.valor || "").replace("R$ ", "").trim();
+
+    // O banco armazena o valor TOTAL. Identifica cobrança fixa comparando
+    // o total salvo com duração × valor/hora cadastrado para a agência.
+    const valorTotalBanco = Number.isFinite(Number(dados.valorNum))
+      ? Number(dados.valorNum)
+      : converterParaFloat(dados.valor || 0);
+    const duracaoOriginal = calcularDuracaoEmHoras(dados.inicio || "", dados.fim || "");
+    const agenciaOriginal = agenciasGlobais.find(a => a.nome === dados.agencia);
+    const valorHoraReferencia = agenciaOriginal ? converterParaFloat(agenciaOriginal.valor) : 0;
+    const totalPrevistoPorHora = duracaoOriginal * valorHoraReferencia;
+    const cobrancaOriginal = duracaoOriginal <= 0 ||
+      (valorHoraReferencia > 0 && Math.abs(totalPrevistoPorHora - valorTotalBanco) > 0.01)
+      ? "fixo"
+      : "hora";
+    const valorBaseOriginal = Number((cobrancaOriginal === "hora"
+      ? valorTotalBanco / duracaoOriginal
+      : valorTotalBanco).toFixed(2));
+
+    document.querySelector('input[name="tipoCobranca"][value="hora"]').checked = cobrancaOriginal === "hora";
+    document.querySelector('input[name="tipoCobranca"][value="fixo"]').checked = cobrancaOriginal === "fixo";
+    document.getElementById('valor-base').value = valorBaseOriginal.toLocaleString('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+
+    estadoFinanceiroOriginalEdicao = {
+      valorTotal: valorTotalBanco,
+      inicio: dados.inicio || "",
+      fim: dados.fim || "",
+      tipoCobranca: cobrancaOriginal,
+      valorBase: valorBaseOriginal
+    };
+    ultimoTipoCobranca = cobrancaOriginal;
     document.getElementById('obs').value = dados.obs || "";
     if (dados.agencia === "Particular") {
       document.getElementById('origem-p').checked = true;
@@ -541,6 +1322,7 @@ function abrirRegistro(linha = "", dados = null) {
     document.getElementById('edit-data-pgto').value = dados.dataPgtoOriginal || "";
     toggleDataEdicao();
   }
+  atualizarObrigatoriedadeHorarios();
   calcularTotalLive();
 }
 
@@ -549,54 +1331,105 @@ function toggleDataEdicao() {
   document.getElementById('box-data-recebimento-edit').style.display = (status === "Pago") ? "block" : "none";
 }
 
+let valorBaseEditadoManualmente = false;
+let estadoFinanceiroOriginalEdicao = null;
+let ultimoTipoCobranca = "hora";
+
+function calcularDuracaoEmHoras(inicio, fim) {
+  if (!inicio || !fim) return 0;
+  const [horaInicio, minutoInicio] = inicio.split(":").map(Number);
+  const [horaFim, minutoFim] = fim.split(":").map(Number);
+  if (![horaInicio, minutoInicio, horaFim, minutoFim].every(Number.isFinite)) return 0;
+
+  const dataInicio = new Date(0, 0, 0, horaInicio, minutoInicio);
+  const dataFim = new Date(0, 0, 0, horaFim, minutoFim);
+  if (dataFim < dataInicio) dataFim.setDate(dataFim.getDate() + 1);
+  return (dataFim - dataInicio) / 3600000;
+}
+
+function obterDuracaoHoras() {
+  const inicio = document.getElementById('inicio')?.value || '';
+  const fim = document.getElementById('fim')?.value || '';
+  const duracao = calcularDuracaoEmHoras(inicio, fim);
+  return duracao > 0 ? duracao : 1;
+}
+
+function servicoDispensaHorarios() {
+  const tipo = String(document.getElementById('tipoServico')?.value || '').toLowerCase();
+  return tipo.includes('tradu') || tipo.includes('ediç') || tipo.includes('edicao') || tipo.includes('edição');
+}
+
+function atualizarObrigatoriedadeHorarios() {
+  const opcionais = servicoDispensaHorarios();
+  ['inicio', 'fim'].forEach(id => {
+    const campo = document.getElementById(id);
+    if (campo) campo.required = !opcionais;
+  });
+}
+
 function aoMudarAgencia() {
   var ag = document.getElementById('agencia').value;
   var obj = agenciasGlobais.find(a => a.nome === ag);
-  if (obj) {
+  if (obj && !valorBaseEditadoManualmente) {
     var num = converterParaFloat(obj.valor);
     document.getElementById('valor-base').value = num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    calcularTotalLive();
   }
+  calcularTotalLive();
 }
 
 function calcularTotalLive() {
-  var tipo = document.querySelector('input[name="tipoCobranca"]:checked').value;
-  var campoValor = document.getElementById('valor-base');
-  var vI = converterParaFloat(campoValor.value);
-  var p = document.getElementById('valor-live-preview');
-  var hI = document.getElementById('inicio').value;
-  var hF = document.getElementById('fim').value;
-  var horas = 0;
+  const radioSelecionado = document.querySelector('input[name="tipoCobranca"]:checked');
+  const tipo = radioSelecionado?.value || "hora";
+  const campoValor = document.getElementById('valor-base');
+  const preview = document.getElementById('valor-live-preview');
+  const inicio = document.getElementById('inicio').value;
+  const fim = document.getElementById('fim').value;
+  const duracao = obterDuracaoHoras();
+  let valorDigitado = converterParaFloat(campoValor.value);
 
-  if (hI && hF) {
-    var dI = new Date(0, 0, 0, hI.split(":")[0], hI.split(":")[1]);
-    var dF = new Date(0, 0, 0, hF.split(":")[0], hF.split(":")[1]);
-    if (dF < dI) dF.setDate(dF.getDate() + 1);
-    horas = (dF - dI) / 3600000;
+  // Ao alternar o rádio, converte o próprio campo para a nova unidade.
+  // A variável guarda a seleção anterior para não converter em eventos de input.
+  if (tipo !== ultimoTipoCobranca) {
+    if (tipo === "fixo") {
+      valorDigitado = valorDigitado * duracao;
+    } else {
+      valorDigitado = valorDigitado / duracao;
+    }
+    campoValor.value = valorDigitado.toLocaleString('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+    valorBaseEditadoManualmente = true;
+    ultimoTipoCobranca = tipo;
   }
 
-  var agNome = document.getElementById('agencia').value;
-  var objAg = agenciasGlobais.find(a => a.nome === agNome);
-  var valorAgencia = objAg ? converterParaFloat(objAg.valor) : 0;
+  // Fixo = valor total digitado; Hora = valor unitário × duração.
+  const subtotal = tipo === "fixo" ? valorDigitado : valorDigitado * duracao;
+  preview.innerText = "R$ " + subtotal.toLocaleString('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
 
-  if (tipo === "hora") {
-    if (objAg && vI !== valorAgencia && vI > valorAgencia) {
-      vI = valorAgencia;
-      campoValor.value = vI.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  // Preserva o total gravado somente enquanto todos os campos financeiros
+  // continuam exatamente iguais aos carregados na edição.
+  if (estadoFinanceiroOriginalEdicao) {
+    const financeiroIntacto =
+      inicio === estadoFinanceiroOriginalEdicao.inicio &&
+      fim === estadoFinanceiroOriginalEdicao.fim &&
+      tipo === estadoFinanceiroOriginalEdicao.tipoCobranca &&
+      Math.abs(valorDigitado - estadoFinanceiroOriginalEdicao.valorBase) < 0.000001;
+    if (financeiroIntacto) {
+      preview.innerText = "R$ " + estadoFinanceiroOriginalEdicao.valorTotal.toLocaleString('pt-BR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
     }
-    p.innerText = "R$ " + (horas * vI).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  } else {
-    if (objAg && vI === valorAgencia && horas > 0) {
-      vI = horas * valorAgencia;
-      campoValor.value = vI.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
-    p.innerText = "R$ " + vI.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 }
 
 function verificarBloqueioLeitura() {
   const planoAtual = localStorage.getItem("user_plano");
-  if (planoAtual !== "Ativo" && planoAtual !== "Trial") {
+  if (localStorage.getItem("user_modo_leitura") === "true") {
     mostrarToast("Plano inativo. O sistema está no Modo Somente Leitura.", "erro");
     return true;
   }
@@ -613,15 +1446,29 @@ async function enviarDados(e) {
     ? "Particular"
     : document.getElementById('agencia').value;
 
+  const inicioAtual = document.getElementById('inicio').value;
+  const fimAtual = document.getElementById('fim').value;
+  const tipoCobrancaAtual = document.querySelector('input[name="tipoCobranca"]:checked').value;
+  const valorBaseAtual = converterParaFloat(document.getElementById('valor-base').value);
+  const financeiroPermaneceIgual = linhaId !== "" &&
+    estadoFinanceiroOriginalEdicao &&
+    inicioAtual === estadoFinanceiroOriginalEdicao.inicio &&
+    fimAtual === estadoFinanceiroOriginalEdicao.fim &&
+    tipoCobrancaAtual === estadoFinanceiroOriginalEdicao.tipoCobranca &&
+    Math.abs(valorBaseAtual - estadoFinanceiroOriginalEdicao.valorBase) < 0.000001;
+  const valorFinalCalculado = financeiroPermaneceIgual
+    ? estadoFinanceiroOriginalEdicao.valorTotal.toFixed(2).replace(".", ",")
+    : document.getElementById('valor-live-preview').innerText.replace("R$ ", "");
+
   const d = {
     tipoServico: document.getElementById('tipoServico').value,
     data: document.getElementById('data').value,
     agencia: valorAgencia,
     empresa: document.getElementById('empresa').value,
-    inicio: document.getElementById('inicio').value,
-    fim: document.getElementById('fim').value,
+    inicio: inicioAtual,
+    fim: fimAtual,
     interprete: document.getElementById('interprete').value,
-    valorFinal: document.getElementById('valor-live-preview').innerText.replace("R$ ", ""),
+    valorFinal: valorFinalCalculado,
     obs: document.getElementById('obs').value,
     status: (linhaId === "") ? "Pendente" : document.getElementById('edit-status').value,
     statusAntigo: (linhaId !== "") ? document.getElementById('edit-status').value : "Pendente",
@@ -635,10 +1482,13 @@ async function enviarDados(e) {
     if (linhaId === "") {
       await chamarGoogle("salvarRegistro", d);
       const hI = d.inicio, hF = d.fim;
-      const dI = new Date(0, 0, 0, hI.split(":")[0], hI.split(":")[1]);
-      let dF = new Date(0, 0, 0, hF.split(":")[0], hF.split(":")[1]);
-      if (dF < dI) dF.setDate(dF.getDate() + 1);
-      const horas = (dF - dI) / 3600000;
+      let horas = 0;
+      if (hI && hF) {
+        const dI = new Date(0, 0, 0, hI.split(":")[0], hI.split(":")[1]);
+        let dF = new Date(0, 0, 0, hF.split(":")[0], hF.split(":")[1]);
+        if (dF < dI) dF.setDate(dF.getDate() + 1);
+        horas = (dF - dI) / 3600000;
+      }
       if (horas > 1.0) {
         mostrarToast("✅ Registro salvo!");
         await perguntarDuplicacao(d);
@@ -648,8 +1498,8 @@ async function enviarDados(e) {
       voltarDashboard();
     } else {
       await chamarGoogle("atualizarRegistro", { linha: linhaId, dados: d });
-      const idNumerico = Number(linhaId);
-      const entradaExistente = servicoCache.get(idNumerico) ?? {};
+      const idNumerico = String(linhaId);
+      const entradaExistente = servicoCache.get(String(idNumerico)) ?? {};
       const entradaAtualizada = {
         ...entradaExistente,
         linha: idNumerico,
@@ -667,8 +1517,8 @@ async function enviarDados(e) {
         dataOriginal: d.data,
         data: d.data.split('-').reverse().join('/'),
       };
-      servicoCache.set(idNumerico, entradaAtualizada);
-      const idx = historicoGlobal.findIndex(s => Number(s.linha) === idNumerico);
+      servicoCache.set(String(idNumerico), entradaAtualizada);
+      const idx = historicoGlobal.findIndex(s => String(s.linha) === idNumerico);
       if (idx !== -1) historicoGlobal[idx] = entradaAtualizada;
       mostrarToast("✅ Alteração salva!");
       abrirHistorico();
@@ -694,19 +1544,19 @@ async function abrirHistorico() {
 
   const resRecentes = await chamarGoogle("buscarServicosRecentes");
   historicoGlobal = resRecentes.dados;
-  resRecentes.dados.forEach(s => servicoCache.set(Number(s.linha), s));
+  resRecentes.dados.forEach(s => servicoCache.set(String(s.linha), s));
   renderizarHistorico(historicoGlobal);
 
   chamarGoogle("buscarTodosServicos").then(resCompleto => {
     if (resCompleto?.dados) {
       historicoGlobal = resCompleto.dados;
-      resCompleto.dados.forEach(s => servicoCache.set(Number(s.linha), s));
+      resCompleto.dados.forEach(s => servicoCache.set(String(s.linha), s));
     }
   });
 }
 
 function renderizarHistorico(l) {
-  l.forEach(s => servicoCache.set(Number(s.linha), s));
+  l.forEach(s => servicoCache.set(String(s.linha), s));
   l.sort((a, b) => {
     let dA = a.dataOriginal || "", dB = b.dataOriginal || "";
     return ordemDataHistorico === 'desc'
@@ -743,13 +1593,14 @@ function renderizarHistorico(l) {
     i.dataExibicaoCompleta = i.data;
     return `
       <div class="item-pendente item-historico"
-           onclick="abrirDetalhesServico(${i.linha})"
-           style="border-left-color:${p ? '#4CAF50' : '#ff9800'}; cursor:pointer;"
+           onclick="abrirDetalhesServico('${i.linha}')"
+           style="border-left-color:${p ? '#4CAF50' : '#ff9800'}; cursor:pointer; position:relative; padding-right:42px;"
            data-status="${p ? 'pago' : 'pendente'}"
            data-agencia="${String(i.agencia).toLowerCase()}"
            data-empresa="${String(i.empresa).toLowerCase()}"
            data-interprete="${String(i.interprete).toLowerCase()}"
            data-data-iso="${i.dataOriginal}">
+        ${!p ? `<label onclick="event.stopPropagation()" style="position:absolute;right:12px;top:12px;display:flex;align-items:center;cursor:pointer;" title="Selecionar para baixa em lote"><input class="checkbox-baixa-lote" type="checkbox" data-id="${String(i.linha).replace(/"/g,'&quot;')}" onchange="alternarSelecaoBaixaLote(this)" style="width:17px;height:17px;margin:0;accent-color:#2e7d32;cursor:pointer;"></label>` : ''}
         <div style="display:flex; justify-content:space-between; align-items:center;">
           <strong>${i.agencia}</strong>
           <span style="font-size:10px; font-weight:bold; padding:2px 8px; border-radius:10px; background:${p ? '#e8f5e9' : '#fff3e0'}; color:${p ? '#2e7d32' : '#e65100'}">
@@ -780,14 +1631,14 @@ function alternarOrdemData() {
 }
 
 async function abrirDetalhesServico(linha) {
-  const idBusca = Number(linha);
+  const idBusca = String(linha);
   let servico = servicoCache.get(idBusca);
-  if (!servico) servico = historicoGlobal.find(s => Number(s.linha) === idBusca);
+  if (!servico) servico = historicoGlobal.find(s => String(s.linha) === idBusca);
   if (!servico) {
     mostrarToast("⏳ Carregando dados...");
     try {
       const res = await chamarGoogle("buscarServicoPorLinha", { linha: idBusca });
-      if (res?.dados) { servico = res.dados; servicoCache.set(idBusca, servico); }
+      if (res?.dados) { servico = res.dados; servicoCache.set(String(idBusca), servico); }
     } catch (e) { mostrarToast("❌ Não foi possível carregar o registro.", "erro"); return; }
   }
   if (!servico) { mostrarToast("❌ Registro não encontrado.", "erro"); return; }
@@ -874,6 +1725,122 @@ function filtrarListaHistorico() {
     let okCliente = (!cl || card.getAttribute('data-empresa').includes(cl));
     card.style.display = (okData && okStatus && okAgencia && okMembro && okCliente) ? 'block' : 'none';
   }
+  atualizarAcoesBaixaLote();
+}
+
+function obterItensSelecionadosBaixaLote() {
+  return historicoGlobal.filter(item =>
+    item.status === "Pendente" && atendimentosSelecionadosLote.has(String(item.linha))
+  );
+}
+
+function formatarMoedaBaixaLote(valor) {
+  return Number(valor || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
+function atualizarAcoesBaixaLote() {
+  const barra = document.getElementById("barra-baixa-lote");
+  const resumo = document.getElementById("resumo-baixa-lote");
+  const selecionarTodos = document.getElementById("selecionarTodosBaixaLote");
+  if (!barra || !resumo) return;
+
+  const selecionados = obterItensSelecionadosBaixaLote();
+  const total = selecionados.reduce((soma, item) => soma + Number(item.valorNum || 0), 0);
+  resumo.textContent = `${selecionados.length} selecionados • Total: ${formatarMoedaBaixaLote(total)}`;
+  barra.style.display = selecionados.length ? "flex" : "none";
+
+  const visiveis = Array.from(document.querySelectorAll("#lista-html .item-historico"))
+    .filter(card => card.style.display !== "none" && card.dataset.status === "pendente");
+  const checks = visiveis.map(card => card.querySelector(".checkbox-baixa-lote")).filter(Boolean);
+  if (selecionarTodos) {
+    selecionarTodos.checked = checks.length > 0 && checks.every(check => check.checked);
+    selecionarTodos.indeterminate = checks.some(check => check.checked) && !selecionarTodos.checked;
+  }
+}
+
+function alternarSelecaoBaixaLote(checkbox) {
+  const id = String(checkbox?.dataset?.id || "");
+  if (!id) return;
+  if (checkbox.checked) atendimentosSelecionadosLote.add(id);
+  else atendimentosSelecionadosLote.delete(id);
+  atualizarAcoesBaixaLote();
+}
+
+function selecionarTodosBaixaLote(checkbox) {
+  const cards = Array.from(document.querySelectorAll("#lista-html .item-historico"))
+    .filter(card => card.style.display !== "none" && card.dataset.status === "pendente");
+  cards.forEach(card => {
+    const campo = card.querySelector(".checkbox-baixa-lote");
+    if (!campo) return;
+    campo.checked = checkbox.checked;
+    const id = String(campo.dataset.id || "");
+    if (checkbox.checked) atendimentosSelecionadosLote.add(id);
+    else atendimentosSelecionadosLote.delete(id);
+  });
+  atualizarAcoesBaixaLote();
+}
+
+function abrirModalBaixaLote() {
+  const itens = obterItensSelecionadosBaixaLote();
+  if (!itens.length) return mostrarToast("Selecione atendimentos pendentes.", "erro");
+
+  const total = itens.reduce((soma, item) => soma + Number(item.valorNum || 0), 0);
+  const lista = document.getElementById("resumo-itens-baixa-lote");
+  const totalEl = document.getElementById("total-modal-baixa-lote");
+  const dataEl = document.getElementById("data-pagamento-lote");
+  if (lista) {
+    lista.innerHTML = itens.map(item =>
+      `<div style="padding:7px 0;border-bottom:1px solid #eee;font-size:12px;color:#444;">${escaparHtmlRelatorio(item.data)} • ${escaparHtmlRelatorio(item.empresa)} • ${escaparHtmlRelatorio(item.interprete)} — <strong>${formatarMoedaBaixaLote(item.valorNum)}</strong></div>`
+    ).join("");
+  }
+  if (totalEl) totalEl.textContent = formatarMoedaBaixaLote(total);
+  if (dataEl) {
+    const hoje = new Date();
+    dataEl.value = [hoje.getFullYear(), String(hoje.getMonth()+1).padStart(2,"0"), String(hoje.getDate()).padStart(2,"0")].join("-");
+  }
+  document.getElementById("modal-baixa-lote").style.display = "flex";
+}
+
+function fecharModalBaixaLote() {
+  const modal = document.getElementById("modal-baixa-lote");
+  if (modal) modal.style.display = "none";
+}
+
+async function confirmarBaixaLote() {
+  if (verificarBloqueioLeitura()) return;
+  const itens = obterItensSelecionadosBaixaLote();
+  const data = document.getElementById("data-pagamento-lote")?.value || "";
+  if (!itens.length) return mostrarToast("Nenhum atendimento pendente selecionado.", "erro");
+  if (!data) return mostrarToast("Informe a data do pagamento.", "erro");
+
+  const botao = document.getElementById("btn-confirmar-baixa-lote");
+  if (botao) { botao.disabled = true; botao.textContent = "⏳ Registrando..."; }
+  try {
+    const resposta = await chamarGoogle("darBaixaPagamentoLote", {
+      ids: itens.map(item => String(item.linha)),
+      data
+    });
+    if (resposta?.status !== "Sucesso") throw new Error("Não foi possível confirmar a baixa em lote.");
+
+    fecharModalBaixaLote();
+    atendimentosSelecionadosLote.clear();
+    mostrarToast(`✅ ${resposta.quantidade || itens.length} pagamentos registrados!`);
+    await abrirHistorico();
+
+    // Atualiza os números do dashboard em segundo plano, sem tirar o usuário
+    // da tela de Histórico após concluir a baixa em lote.
+    const dadosDashboard = await chamarGoogle("carregarDadosIniciais");
+    if (dadosDashboard?.dados) {
+      const valorPendente = document.getElementById("valor-pendente");
+      if (valorPendente) valorPendente.innerText = "R$ " + dadosDashboard.dados.pendente;
+      renderizarPendenteDetalhado(dadosDashboard.dados.pendenteDetalhado);
+    }
+  } catch (erro) {
+    console.error("Erro na baixa de pagamentos em lote:", erro);
+    mostrarToast(erro.message || "❌ Erro ao registrar os pagamentos.", "erro");
+  } finally {
+    if (botao) { botao.disabled = false; botao.textContent = "✔️ Confirmar Baixa"; }
+  }
 }
 
 async function confirmarBaixa(l) {
@@ -900,15 +1867,15 @@ async function chamarExcluir(l) {
 }
 
 function chamarEditar(l) {
-  const idBusca = Number(l);
+  const idBusca = String(l);
   let servico = servicoCache.get(idBusca);
-  if (!servico) servico = historicoGlobal.find(x => Number(x.linha) === idBusca);
+  if (!servico) servico = historicoGlobal.find(x => String(x.linha) === idBusca);
   if (!servico) {
     mostrarToast("⚠️ Dados em sincronização. Tente novamente em 2 segundos.", "erro");
     chamarGoogle("buscarTodosServicos").then(res => {
       if (res?.dados) {
         historicoGlobal = res.dados;
-        res.dados.forEach(s => servicoCache.set(Number(s.linha), s));
+        res.dados.forEach(s => servicoCache.set(String(s.linha), s));
       }
     });
     return;
@@ -930,19 +1897,133 @@ async function abrirRelatorios() {
 
   var sa = document.getElementById('filtroAgenciaRelatorio');
   var sm = document.getElementById('filtroMembroRelatorio');
+  var sc = document.getElementById('filtroAgenciaCobranca');
+  var smc = document.getElementById('filtroMembroCobranca');
   sa.innerHTML = '<option value="todas">Todas as Agências</option>';
   sm.innerHTML = '<option value="todos">Todos os Membros</option>';
+  if (sc) sc.innerHTML = '<option value="todas">Todas as Agências</option>';
+  if (smc) smc.innerHTML = '<option value="todos">Todos os Membros</option>';
 
   var lAg = [], lMem = [];
   res.dados.forEach(i => {
-    if (!lAg.includes(i.agencia)) { lAg.push(i.agencia); sa.innerHTML += `<option value="${i.agencia}">${i.agencia}</option>`; }
-    if (!lMem.includes(i.interprete)) { lMem.push(i.interprete); sm.innerHTML += `<option value="${i.interprete}">${i.interprete}</option>`; }
+    if (i.agencia && !lAg.includes(i.agencia)) {
+      lAg.push(i.agencia);
+      sa.innerHTML += `<option value="${i.agencia}">${i.agencia}</option>`;
+      if (sc) sc.innerHTML += `<option value="${escaparHtmlRelatorio(i.agencia)}">${escaparHtmlRelatorio(i.agencia)}</option>`;
+    }
+    if (i.interprete && !lMem.includes(i.interprete)) {
+      lMem.push(i.interprete);
+      sm.innerHTML += `<option value="${i.interprete}">${i.interprete}</option>`;
+    }
   });
+  if (smc) {
+    const membrosCadastrados = equipeGlobal.length ? equipeGlobal : lMem;
+    membrosCadastrados.filter(Boolean).forEach(nome => {
+      if (!Array.from(smc.options).some(opcao => opcao.value === nome)) {
+        smc.innerHTML += `<option value="${escaparHtmlRelatorio(nome)}">${escaparHtmlRelatorio(nome)}</option>`;
+      }
+    });
+  }
+  atualizarFiltroClienteFinalCobranca();
+  const dataFimCobranca = document.getElementById('filtroDataFimCobranca');
+  if (dataFimCobranca) dataFimCobranca.value = hj.toISOString().split('T')[0];
   gerarRelatorio();
+}
+
+function atualizarFiltroClienteFinalCobranca() {
+  const select=document.getElementById('filtroClienteFinalCobranca');if(!select)return;
+  const agencia=document.getElementById('filtroAgenciaCobranca')?.value||'todas',anterior=select.value,names=new Set();
+  (minhasEmpresasFinais||[]).forEach(c=>{const n=typeof c==='string'?c:(c?.nome_cliente||c?.nome||'');if(n&&String(n).trim())names.add(String(n).trim());});
+  dadosGeraisRelatorio.filter(i=>i.status==='Pendente'&&(agencia==='todas'||i.agencia===agencia)).forEach(i=>{if(i.empresa&&String(i.empresa).trim())names.add(String(i.empresa).trim());});
+  const lista=Array.from(names).sort((a,b)=>a.localeCompare(b,'pt-BR'));
+  select.innerHTML='<option value="todos">Todos os Clientes</option>'+lista.map(n=>`<option value="${escaparHtmlRelatorio(n)}">${escaparHtmlRelatorio(n)}</option>`).join('');
+  select.value=lista.includes(anterior)?anterior:'todos';
+}
+
+function formatarDataExtrato(dataIso) {
+  if (!dataIso) return '';
+  const partes = String(dataIso).split('-');
+  return partes.length === 3 ? partes.reverse().join('/') : String(dataIso);
+}
+
+function escaparHtmlRelatorio(valor) {
+  return String(valor ?? '').replace(/[&<>"']/g, caractere => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  })[caractere]);
+}
+
+function renderizarExtratoPendencias() {
+  const container=document.getElementById('lista-relatorio'),agencia=document.getElementById('filtroAgenciaCobranca').value;
+  const membro=document.getElementById('filtroMembroCobranca')?.value||'todos',inicio=document.getElementById('filtroDataInicioCobranca').value,fim=document.getElementById('filtroDataFimCobranca').value;
+  if(inicio&&fim&&inicio>fim){container.innerHTML="<p style='text-align:center;color:#c62828;padding:15px;'>A Data Início não pode ser posterior à Data Fim.</p>";return;}
+  atualizarFiltroClienteFinalCobranca();const cliente=document.getElementById('filtroClienteFinalCobranca')?.value||'todos';
+  const pendentes=dadosGeraisRelatorio.filter(i=>i.status==='Pendente'&&(agencia==='todas'||i.agencia===agencia)&&(membro==='todos'||i.interprete===membro)&&(cliente==='todos'||i.empresa===cliente)&&(!inicio||(i.dataOriginal||'')>=inicio)&&(!fim||(i.dataOriginal||'')<=fim)).sort((a,b)=>(a.dataOriginal||'').localeCompare(b.dataOriginal||''));
+  dadosFiltradosAtuais=pendentes;const total=pendentes.reduce((s,i)=>s+(Number(i.valorNum)||0),0),nomeAgencia=agencia==='todas'?'Todas as Agências':agencia;
+  const periodo=(inicio?formatarDataExtrato(inicio):'Início não definido')+' até '+(fim?formatarDataExtrato(fim):'Data atual'),moeda=v=>Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}),grupos={};
+  pendentes.forEach(i=>{const n=String(i.interprete||'Membro não identificado').trim();if(!grupos[n])grupos[n]={total:0,itens:[]};grupos[n].total+=Number(i.valorNum)||0;grupos[n].itens.push(i);});
+  let html=`<section id="extrato-cobranca" style="font-family:Arial,Helvetica,sans-serif;background:#fff;border:1px solid #e8e3ed;border-radius:12px;padding:18px;margin-top:12px;color:#333;box-shadow:0 2px 8px rgba(74,20,140,.06);">
+    <div style="text-align:center;border-bottom:1px solid #eee;padding-bottom:14px;margin-bottom:14px;"><h3 style="margin:0 0 7px;color:#4a148c;font-size:19px;font-weight:700;">Extrato de Pendências / Cobrança</h3><div style="font-size:14px;font-weight:700;color:#444;">${escaparHtmlRelatorio(nomeAgencia)}</div><div style="font-size:12px;color:#777;margin-top:4px;">Período: ${escaparHtmlRelatorio(periodo)}</div><div style="font-size:12px;color:#777;margin-top:3px;">Cliente: ${cliente==='todos'?'Todos os Clientes':escaparHtmlRelatorio(cliente)}</div></div>
+    <div class="relatorio-stats" style="margin:0 0 16px;"><div class="stat-card"><span class="stat-label">Faturamento Pendente</span><strong style="color:#2e7d32;">R$ ${moeda(total)}</strong></div><div class="stat-card"><span class="stat-label">Total Atendimentos</span><strong>${pendentes.length}</strong></div></div>`;
+  if(!pendentes.length)html+="<p style='text-align:center;color:#666;padding:18px 4px;'>Nenhum atendimento pendente encontrado neste período.</p>";
+  else Object.keys(grupos).sort((a,b)=>a.localeCompare(b,'pt-BR')).forEach(nome=>{
+    const grupo=grupos[nome];html+=`<div class="item-pendente" style="border-left:5px solid #9c27b0;margin-bottom:12px;padding:12px;"><details class="extrato-membro-accordion" open ontoggle="this.querySelector('.seta-accordion').textContent=this.open?'▼':'▶️'" style="border:0;"><summary style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;cursor:pointer;list-style:none;color:#4a148c;"><span style="font-weight:700;"><span class="seta-accordion">▼</span> 👤 ${escaparHtmlRelatorio(nome)}</span><strong style="color:#2e7d32;font-size:15px;">Subtotal: R$ ${moeda(grupo.total)}</strong></summary><div style="font-size:12px;color:#666;margin:4px 0 8px;">${grupo.itens.length} atendimentos pendentes</div><div style="border-top:1px solid #eee;">`;
+    grupo.itens.forEach(i=>{const horario=i.inicio&&i.fim?i.inicio+'–'+i.fim:'';html+=`<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:8px 2px;border-bottom:1px solid #eee;font-size:12px;"><div style="min-width:0;flex:1;"><div style="font-weight:600;color:#333;">📅 ${escaparHtmlRelatorio(i.data||formatarDataExtrato(i.dataOriginal))} — ${escaparHtmlRelatorio(i.empresa||'Cliente não informado')}</div><div style="color:#666;margin-top:3px;">${escaparHtmlRelatorio(i.tipoServico||'Serviço não informado')}${horario?' • '+escaparHtmlRelatorio(horario):''}</div></div><strong style="color:#2e7d32;white-space:nowrap;">R$ ${moeda(i.valorNum)}</strong></div>`;});
+    html+='</div></details></div>';
+  });
+  html+='</section><div style="display:flex;gap:10px;margin-top:12px;"><button type="button" class="btn-primario" style="background-color:#9c27b0;flex:1;" onclick="copiarExtratoPendencias()">📄 Copiar Texto</button><button type="button" class="btn-primario" style="background-color:#1976d2;flex:1;" onclick="salvarImagemExtrato()">🖼️ Salvar Imagem</button></div>';container.innerHTML=html;
+}
+
+async function copiarExtratoPendencias() {
+  const agencia=document.getElementById('filtroAgenciaCobranca').value;
+  const inicio=document.getElementById('filtroDataInicioCobranca').value;
+  const fim=document.getElementById('filtroDataFimCobranca').value;
+  const itens=dadosFiltradosAtuais;
+  if(!itens.length)return mostrarToast('⚠️ Não há atendimentos para copiar neste filtro.','erro');
+  const total=itens.reduce((s,i)=>s+(Number(i.valorNum)||0),0);
+  const nomeAgencia=agencia==='todas'?'Todas as Agências':agencia;
+  const periodo=(inicio?formatarDataExtrato(inicio):'Início não definido')+' até '+(fim?formatarDataExtrato(fim):'Data atual');
+  const moeda=v=>Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const grupos={};
+  itens.forEach(item=>{const nome=String(item.interprete||'Membro não identificado').trim();if(!grupos[nome])grupos[nome]={total:0,itens:[]};grupos[nome].total+=Number(item.valorNum)||0;grupos[nome].itens.push(item);});
+  let texto='*EXTRATO DE PENDÊNCIAS / COBRANÇA*\n'+'🏢 *Agência:* '+nomeAgencia+'\n'+'📅 *Período:* '+periodo+'\n\n';
+  Object.keys(grupos).sort((a,b)=>a.localeCompare(b,'pt-BR')).forEach(nome=>{
+    const grupo=grupos[nome];
+    texto+='👤 *'+nome+'*\n'+'💰 *Subtotal:* R$ '+moeda(grupo.total)+' ('+grupo.itens.length+' atendimentos)\n';
+    grupo.itens.forEach(item=>{texto+='  • '+(item.data||formatarDataExtrato(item.dataOriginal))+' - '+(item.empresa||'Cliente não informado')+': R$ '+moeda(item.valorNum)+'\n';});
+    texto+='\n';
+  });
+  texto+='💵 *TOTAL GERAL A RECEBER: R$ '+moeda(total)+'*\n'+'📊 *Total de Atendimentos:* '+itens.length;
+  try{navigator.clipboard.writeText(texto).then(()=>mostrarToast('📄 Texto copiado com sucesso!','sucesso')).catch(()=>mostrarToast('❌ Não foi possível copiar. Verifique a permissão da área de transferência.','erro'));}
+  catch(erro){mostrarToast('❌ Não foi possível copiar. Verifique a permissão da área de transferência.','erro');}
+}
+
+async function salvarImagemExtrato() {
+  const botao=document.querySelector('#lista-relatorio button[onclick="salvarImagemExtrato()"]'),original=botao?botao.innerHTML:'🖼️ Salvar Imagem',card=document.getElementById('extrato-cobranca');
+  if(!card)return mostrarToast('❌ Card do extrato não encontrado.','erro');
+  const detalhes=Array.from(card.querySelectorAll('details')),estados=detalhes.map(d=>({elemento:d,aberto:d.open}));
+  if(botao){botao.innerHTML='⏳ Gerando Imagem...';botao.disabled=true;}
+  detalhes.forEach(d=>{d.open=true;const seta=d.querySelector('.seta-accordion');if(seta)seta.textContent='▼';});
+  try{const html2canvas=await carregarHtml2Canvas(),canvas=await html2canvas(card,{scale:2,backgroundColor:'#ffffff'}),link=document.createElement('a');link.download='Extrato_Pendencias_InterpretePro_'+new Date().toISOString().slice(0,10)+'.png';link.href=canvas.toDataURL('image/png');link.click();mostrarToast('🖼️ Imagem salva!','sucesso');}
+  catch(erro){console.error('Erro ao exportar extrato:',erro);mostrarToast('❌ Erro ao gerar imagem do extrato.','erro');}
+  finally{estados.forEach(e=>{if(e.elemento.isConnected){e.elemento.open=e.aberto;const seta=e.elemento.querySelector('.seta-accordion');if(seta)seta.textContent=e.aberto?'▼':'▶️';}});if(botao){botao.innerHTML=original;botao.disabled=false;}}
 }
 
 function gerarRelatorio() {
   var tipo = document.getElementById('tipoRelatorio').value;
+  const filtrosPadrao = document.getElementById('filtros-relatorio-padrao');
+  const filtrosCobranca = document.getElementById('filtros-cobranca-pendencias');
+  const statsRelatorio = document.getElementById('relatorio-stats');
+  if (filtrosPadrao) filtrosPadrao.style.display = tipo === 'cobranca_pendencias' ? 'none' : 'block';
+  if (filtrosCobranca) filtrosCobranca.style.display = tipo === 'cobranca_pendencias' ? 'block' : 'none';
+  if (statsRelatorio) statsRelatorio.style.display = tipo === 'cobranca_pendencias' ? 'none' : '';
+  const btnCopiar = document.getElementById('btnCopiarRelatorio');
+  const btnImagem = document.getElementById('btnBaixarImagem');
+  if (btnCopiar) btnCopiar.style.display = tipo === 'cobranca_pendencias' ? 'none' : 'block';
+  if (btnImagem) btnImagem.style.display = tipo === 'cobranca_pendencias' ? 'none' : 'block';
+  if (tipo === 'cobranca_pendencias') {
+    renderizarExtratoPendencias();
+    return;
+  }
   var mesFiltro = document.getElementById('filtroMesRelatorio').value;
   var agFiltro = document.getElementById('filtroAgenciaRelatorio').value;
   var memFiltro = document.getElementById('filtroMembroRelatorio').value;
@@ -1001,7 +2082,7 @@ function gerarRelatorio() {
           <div style="margin-top:8px; background:#fafafa; padding:8px; border-radius:6px; border:1px solid #e0e0e0;">`;
         nfPorM[nome].ags[ag].items.forEach(it => {
           h += `<div style="font-size:13px; padding:8px 0; border-bottom:1px dashed #ccc; display:flex; justify-content:space-between;">
-            <span>📅 ${it.data} - ${it.empresa}</span>
+            <span>🗓️ Demanda: ${escaparHtmlRelatorio(it.data || formatarDataExtrato(it.dataOriginal))}${it.dataPgto ? " | 💰 Pago em: " + escaparHtmlRelatorio(formatarDataExtrato(it.dataPgto)) : ""} — ${escaparHtmlRelatorio(it.empresa || "Cliente não informado")}</span>
             <span style="color:#2e7d32; font-weight:bold;">R$ ${it.valorNum.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
           </div>`;
         });
@@ -1126,29 +2207,17 @@ function carregarHtml2Canvas() {
 }
 
 function baixarImagemRelatorio() {
-  var btn = document.getElementById('btnBaixarImagem'), orig = btn.innerHTML;
-  btn.innerHTML = "⏳ Gerando Foto..."; btn.disabled = true;
-  document.querySelectorAll('details').forEach(d => d.open = true);
-
-  carregarHtml2Canvas()
-    .then(html2canvas => html2canvas(
-      document.querySelector('#tela-relatorios .card'),
-      { scale: 2 }
-    ))
-    .then(canvas => {
-      var link = document.createElement('a');
-      link.download = `Relatorio_InterpretePro_${document.getElementById('filtroMesRelatorio').value}.png`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-      btn.innerHTML = orig;
-      btn.disabled = false;
-      mostrarToast("🖼️ Imagem salva!");
-    })
-    .catch(() => {
-      btn.innerHTML = orig;
-      btn.disabled = false;
-      mostrarToast("❌ Erro ao gerar imagem", "erro");
-    });
+  const btn=document.getElementById('btnBaixarImagem'),orig=btn?btn.innerHTML:'🖼️ Salvar Imagem';
+  const detalhes=Array.from(document.querySelectorAll('#tela-relatorios .card details'));
+  const estados=detalhes.map(d=>({elemento:d,aberto:d.open}));
+  if(btn){btn.innerHTML='⏳ Gerando Foto...';btn.disabled=true;}
+  detalhes.forEach(d=>{d.open=true;const seta=d.querySelector('.seta-accordion');if(seta)seta.textContent='▼';});
+  carregarHtml2Canvas().then(html2canvas=>html2canvas(document.querySelector('#tela-relatorios .card'),{scale:2})).then(canvas=>{
+    const link=document.createElement('a');link.download=`Relatorio_InterpretePro_${document.getElementById('filtroMesRelatorio').value}.png`;link.href=canvas.toDataURL('image/png');link.click();mostrarToast('🖼️ Imagem salva!');
+  }).catch(()=>mostrarToast('❌ Erro ao gerar imagem','erro')).finally(()=>{
+    estados.forEach(e=>{if(e.elemento.isConnected){e.elemento.open=e.aberto;const seta=e.elemento.querySelector('.seta-accordion');if(seta)seta.textContent=e.aberto?'▼':'▶️';}});
+    if(btn){btn.innerHTML=orig;btn.disabled=false;}
+  });
 }
 
 // --- 8. CONFIGURAÇÕES ---
@@ -1159,7 +2228,7 @@ function abrirConfiguracoes() {
 
   const d = { tiposServico: tiposServicoGlobal, equipe: equipeGlobal, agencias: agenciasGlobais, clientes: clientesGlobais };
   const planoAtual = localStorage.getItem("user_plano");
-  const bloqueadoLeitura = (planoAtual !== "Ativo" && planoAtual !== "Trial");
+  const bloqueadoLeitura = localStorage.getItem("user_modo_leitura") === "true";
 
   document.getElementById('formServicos').style.display = bloqueadoLeitura ? 'none' : 'block';
   document.getElementById('formEquipe').style.display = bloqueadoLeitura ? 'none' : 'block';
@@ -1378,63 +2447,98 @@ function fecharConfirmacao(valor) {
 
 // --- AUTENTICAÇÃO ---
 // ✅ window.onload — definição única
-window.onload = () => {
+window.onload = async () => {
   inicializarPWA();
+  aplicarIdentificacaoAmbiente();
 
-  const token = localStorage.getItem("google_access_token");
-  const email = localStorage.getItem("user_email");
-  const nomeCompleto = localStorage.getItem("user_name");
+  try {
+    const { data, error } = await supabaseClient.auth.getSession();
 
-  if (token && email) {
-    const telaHome = document.getElementById('tela-home');
-    if (telaHome) telaHome.style.display = 'none';
-
-    if (nomeCompleto && nomeCompleto !== "Usuário") {
-      const spanNome = document.getElementById('nome-usuario-loading');
-      if (spanNome) spanNome.innerText = nomeCompleto.split(" ")[0];
+    if (error) {
+      throw error;
     }
-    handleSaaSLogin(email);
+
+    const session = data.session;
+
+    if (!session || !session.user) {
+      // Sem sessão Supabase: mantém a tela inicial normal.
+      return;
+    }
+
+    const usuario = session.user;
+    const email = usuario.email;
+
+    if (!email) {
+      throw new Error("A conta autenticada não possui e-mail.");
+    }
+
+    const nome =
+      usuario.user_metadata?.full_name ||
+      usuario.user_metadata?.name ||
+      usuario.user_metadata?.given_name ||
+      "Usuário";
+
+    // Mantém compatibilidade com as funções legadas da interface.
+    localStorage.setItem("user_email", email);
+    localStorage.setItem("user_name", nome);
+
+    const telaHome = document.getElementById('tela-home');
+    if (telaHome) {
+      telaHome.style.display = 'none';
+    }
+
+    const spanNome = document.getElementById('nome-usuario-loading');
+    if (spanNome) {
+      spanNome.innerText = nome.split(" ")[0];
+    }
+
+    await handleSaaSLogin(email);
+
+  } catch (erro) {
+    console.error("Erro ao recuperar sessão Supabase:", erro);
+    mostrarToast(
+      "❌ Não foi possível validar sua sessão. Tente entrar novamente.",
+      "erro"
+    );
   }
 };
 
-function solicitarAcessoSaaS() {
-  const aceito = document.getElementById('aceito-termos').checked;
-  if (!aceito) { mostrarToast("⚠️ Você precisa aceitar os Termos para continuar.", "erro"); return; }
+async function solicitarAcessoSaaS() {
+  const checkboxTermos = document.getElementById('aceito-termos');
 
-  if (!window.google?.accounts?.oauth2) {
-    mostrarToast("⏳ O login Google ainda está carregando. Aguarde um instante e tente novamente.", "info");
-    carregarGoogleIdentityServices().catch(() => {
-      mostrarToast("❌ Não foi possível carregar o login Google. Verifique sua conexão.", "erro");
-    });
+  if (!checkboxTermos || !checkboxTermos.checked) {
+    mostrarToast(
+      "⚠️ Você precisa aceitar os Termos para continuar.",
+      "erro"
+    );
     return;
   }
 
-  const client = google.accounts.oauth2.initTokenClient({
-    client_id: '824713665703-lr9iacceof0mg41c0gb61lm3qia4bpr7.apps.googleusercontent.com',
-    scope: 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile',
-    ux_mode: 'popup',
-    callback: (tokenResponse) => {
-      if (tokenResponse && tokenResponse.access_token) {
-        localStorage.setItem("google_access_token", tokenResponse.access_token);
-        fetch('https://www.googleapis.com/oauth2/v3/userinfo?access_token=' + tokenResponse.access_token)
-          .then(res => res.json())
-          .then(data => {
-            localStorage.setItem("user_email", data.email);
-            localStorage.setItem("user_name", data.name || data.given_name || "Usuário");
-            handleSaaSLogin(data.email);
-          })
-          .catch(() => {
-            localStorage.setItem("user_email", "Sem email");
-            localStorage.setItem("user_name", "Usuário");
-            handleSaaSLogin("Sem email");
-          });
+  try {
+    const redirectTo =
+      window.location.origin + window.location.pathname;
+
+    const { error } = await supabaseClient.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: redirectTo
       }
-    },
-    error_callback: () => {
-      mostrarToast("❌ Falha no login Google. Tente novamente.", "erro");
+    });
+
+    if (error) {
+      console.error("Erro no login Supabase:", error);
+      mostrarToast(
+        "❌ Não foi possível iniciar o login Google. Tente novamente.",
+        "erro"
+      );
     }
-  });
-  client.requestAccessToken();
+  } catch (erro) {
+    console.error("Falha ao iniciar autenticação:", erro);
+    mostrarToast(
+      "❌ Erro ao iniciar o login. Verifique sua conexão.",
+      "erro"
+    );
+  }
 }
 
 async function handleSaaSLogin(email) {
@@ -1523,16 +2627,112 @@ async function abrirAdmin() {
 }
 
 async function gerenciarAcesso(emailAlvo, novoStatus) {
-  document.getElementById('confirm-titulo').innerText = "Alterar Acesso";
-  document.getElementById('confirm-mensagem').innerHTML = `Deseja alterar o acesso de <b>${emailAlvo}</b> para <b>${novoStatus}</b>?`;
-  document.getElementById('confirm-icon').innerText = novoStatus === 'Ativo' ? "✅" : "🚫";
-  document.getElementById('modal-confirmacao').style.display = 'flex';
-  const confirmado = await esperarConfirmacao();
-  if (confirmado) {
-    mostrarToast("⏳ Atualizando...");
-    const res = await chamarGoogle("alterarStatusCliente", { emailAlvo, novoStatus });
-    if (res.status === "Sucesso") { mostrarToast("✅ Acesso atualizado!"); abrirAdmin(); }
-    else mostrarToast("❌ Erro na atualização.", "erro");
+  const modal = document.getElementById('modal-confirmacao');
+  const camposLicenca = document.getElementById('admin-licenca-campos');
+  const resumoAtual = document.getElementById('admin-licenca-atual');
+  const selectPlano = document.getElementById('admin-plano-select');
+  const inputData = document.getElementById('admin-data-expiracao');
+
+  try {
+    const respostaClientes = await chamarGoogle("buscarTodosClientes");
+    const clienteAtual = (respostaClientes.clientes || []).find(
+      cliente => String(cliente.email).toLowerCase() === String(emailAlvo).toLowerCase()
+    );
+
+    if (!clienteAtual) {
+      throw new Error("Não foi possível localizar os dados atuais deste cliente.");
+    }
+
+    document.getElementById('confirm-titulo').innerText =
+      novoStatus === 'Ativo' ? "Ativar ou renovar acesso" : "Bloquear acesso";
+    document.getElementById('confirm-mensagem').textContent =
+      novoStatus === 'Ativo'
+        ? "Confira os dados atuais, selecione o plano e defina a nova data de expiração."
+        : "Confirma o bloqueio de acesso deste cliente?";
+    document.getElementById('confirm-icon').innerText =
+      novoStatus === 'Ativo' ? "✅" : "🚫";
+    document.getElementById('btn-confirmar-ok').textContent =
+      novoStatus === 'Ativo' ? "Salvar licença" : "Confirmar bloqueio";
+
+    camposLicenca.style.display = novoStatus === 'Ativo' ? 'block' : 'none';
+    resumoAtual.textContent =
+      "Cliente: " + clienteAtual.email +
+      " | Status atual: " + clienteAtual.status +
+      " | Plano atual: " + (clienteAtual.plano || "Sem plano") +
+      " | Expiração atual: " + (clienteAtual.vencimento || "Sem data");
+
+    if (novoStatus === 'Ativo') {
+      selectPlano.innerHTML = "";
+      const respostaPlanos = await chamarGoogle("buscarPlanosAtivos");
+      const planos = respostaPlanos.planos || [];
+
+      if (!planos.length) {
+        throw new Error("Não há planos ativos disponíveis para selecionar.");
+      }
+
+      planos.forEach(plano => {
+        const option = document.createElement("option");
+        option.value = plano.nome;
+        option.textContent = plano.nome + " — " +
+          Number(plano.valor_total).toLocaleString("pt-BR", {
+            style: "currency",
+            currency: "BRL"
+          });
+        selectPlano.appendChild(option);
+      });
+
+      const normalizarPlano = valor =>
+        String(valor || "").trim().toLowerCase().replace(/^plano\s+/, "");
+      const planoAtual = planos.find(
+        plano => normalizarPlano(plano.nome) === normalizarPlano(clienteAtual.plano)
+      );
+      selectPlano.value = planoAtual ? planoAtual.nome : planos[0].nome;
+
+      const dataAtual = String(clienteAtual.vencimento || "").slice(0, 10);
+      const hoje = new Date();
+      const hojeLocal = [
+        hoje.getFullYear(),
+        String(hoje.getMonth() + 1).padStart(2, "0"),
+        String(hoje.getDate()).padStart(2, "0")
+      ].join("-");
+      inputData.value = /^\d{4}-\d{2}-\d{2}$/.test(dataAtual) ? dataAtual : hojeLocal;
+      inputData.required = true;
+    }
+
+    modal.style.display = 'flex';
+    const confirmado = await esperarConfirmacao();
+
+    if (!confirmado) return;
+
+    const dadosAtualizacao = { emailAlvo, novoStatus };
+    if (novoStatus === 'Ativo') {
+      if (!selectPlano.value) {
+        mostrarToast("❌ Selecione um plano.", "erro");
+        return;
+      }
+      if (!inputData.value) {
+        mostrarToast("❌ Informe a data de expiração.", "erro");
+        return;
+      }
+      dadosAtualizacao.plano = selectPlano.value;
+      dadosAtualizacao.dataExpiracao = inputData.value;
+    }
+
+    mostrarToast("⏳ Atualizando acesso...");
+    const resultado = await chamarGoogle("alterarStatusCliente", dadosAtualizacao);
+    if (resultado.status === "Sucesso") {
+      mostrarToast("✅ Acesso atualizado!", "sucesso");
+      await abrirAdmin();
+    } else {
+      throw new Error(resultado.mensagem || "A atualização não foi concluída.");
+    }
+  } catch (erro) {
+    console.error("Erro ao gerenciar acesso do cliente:", erro);
+    mostrarToast("❌ " + (erro.message || "Erro na atualização."), "erro");
+  } finally {
+    camposLicenca.style.display = 'none';
+    selectPlano.innerHTML = '<option value="">Selecione um plano</option>';
+    inputData.required = false;
   }
 }
 
