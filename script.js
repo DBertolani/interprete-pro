@@ -5,6 +5,7 @@ var dadosGeraisRelatorio = [];
 
 // Identifica automaticamente a execução em homologação ou desenvolvimento local.
 const isHomologacao = window.location.hostname.includes("github.io") || window.location.hostname.includes("localhost");
+const schemaAtivo = isHomologacao ? "homologacao" : "public";
 
 function aplicarIdentificacaoAmbiente() {
   const badge = document.getElementById("badge-ambiente");
@@ -31,11 +32,20 @@ let ordemDataHistorico = 'desc';
 let origemNavegacao = 'dash';
 const servicoCache = new Map();
 
-// --- 1. CONFIGURAÇÃO DA PONTE (MIGRADO PARA SUPABASE) ---
+// --- 1. CONFIGURAÇÃO DA PONTE (SUPABASE + PAGAMENTO LEGADO DE PRODUÇÃO) ---
+// Endpoint legado de produção: mantém Pix e assinatura no Google Apps Script.
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxbYi7t7TjEi0TX750IzWDwy5QGBXKIqcRAOZ8ZLEvMHwqvoyIT_4jfrE2vFSU2EU16/exec";
 const SUPABASE_URL = "https://bvavzgmsiflydrlgeiqf.supabase.co"; // Ex: https://bvavzgmsifflydrlgeiqf.supabase.co
 const SUPABASE_ANON_KEY = "sb_publishable_IgTCeiytetM678AtADKUtQ_n3SL6akf"; // Ex: sb_publishable_...
 
-var supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+var supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  db: { schema: schemaAtivo },
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    flowType: 'pkce'
+  }
+});
 
 // Controle de segurança: manter false até as Edge Functions estarem publicadas
 // e os Secrets de TESTE configurados no projeto de homologação.
@@ -532,6 +542,19 @@ async function chamarGoogle(acao, dadosExtras = {}) {
     // 7. PAGAMENTOS — Edge Functions Supabase (homologação)
     // ---------------------------------------------------------
     if (acao === "gerarPixAvulso" || acao === "gerarLinkAssinatura") {
+      // PRODUÇÃO: preservar o checkout legado já utilizado pelos clientes.
+      // HOMOLOGAÇÃO: continuar usando exclusivamente as Edge Functions sandbox.
+      if (!isHomologacao) {
+        const response = await fetch(SCRIPT_URL, {
+          method: "POST",
+          body: JSON.stringify({ acao, email, dados: dadosExtras })
+        });
+        if (!response.ok) {
+          throw new Error("Não foi possível iniciar o pagamento pelo servidor de produção.");
+        }
+        return await response.json();
+      }
+
       // Habilitar somente depois de publicar as Edge Functions e configurar
       // os Secrets de teste no projeto bvavzgmsiflydrlgeiqf.
       // Nunca recorrer ao GAS: o GAS pode estar ligado a credenciais externas.
