@@ -268,6 +268,7 @@
           <img src="logo.webp" alt="Logo"
             style="width: 45px; height: 45px; border-radius: 50%; border: 2px solid #f3e5f5;">
           <span class="header-app-logo">IntérpretePro</span>
+          <span id="badge-ambiente" style="display: none; align-items: center; padding: 4px 8px; border: 1px solid #fcd34d; border-radius: 999px; background: #fef3c7; color: #92400e; font-size: 10px; font-weight: 600; white-space: nowrap;">🧪 Homologação • v2.0.0</span>
         </div>
 
         <a href="#" onclick="logout()"
@@ -328,7 +329,7 @@
 
           <div class="form-row-duo">
             <div style="flex: 1;"><label>Data:</label><input type="date" id="data" required></div>
-            <div style="flex: 1.5;"><label>Tipo de Serviço:</label><select id="tipoServico" required></select></div>
+            <div style="flex: 1.5;"><label>Tipo de Serviço:</label><select id="tipoServico" required onchange="atualizarObrigatoriedadeHorarios()"></select></div>
           </div>
 
           <label>Intérprete:</label><select id="interprete" required></select>
@@ -368,7 +369,7 @@
           </div>
 
           <label id="label-valor">Valor:</label>
-          <input type="text" inputmode="numeric" id="valor-base" oninput="formatarMoeda(this); calcularTotalLive()"
+          <input type="text" inputmode="numeric" id="valor-base" oninput="valorBaseEditadoManualmente = true; formatarMoeda(this); calcularTotalLive()"
             required>
 
           <div class="box-valor-live">
@@ -443,6 +444,16 @@
 
         </div>
 
+        <div id="controles-baixa-lote" style="margin:12px 0 8px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+          <label style="display:flex;align-items:center;gap:7px;font-size:12px;color:#666;cursor:pointer;margin:0;">
+            <input type="checkbox" id="selecionarTodosBaixaLote" onchange="selecionarTodosBaixaLote(this)" style="width:16px;height:16px;margin:0;accent-color:#2e7d32;">
+            Selecionar Todos (pendentes visíveis)
+          </label>
+        </div>
+        <div id="barra-baixa-lote" style="display:none;position:sticky;bottom:8px;z-index:20;background:#f1f8e9;border:1px solid #c5e1a5;border-radius:10px;padding:10px 12px;align-items:center;justify-content:space-between;gap:8px;box-shadow:0 3px 12px rgba(0,0,0,.12);">
+          <strong id="resumo-baixa-lote" style="font-size:12px;color:#33691e;">0 selecionados • Total: R$ 0,00</strong>
+          <button type="button" onclick="abrirModalBaixaLote()" class="btn-primario" style="margin:0;padding:9px 11px;background:#2e7d32;font-size:12px;white-space:nowrap;">💰 Dar Baixa nos Selecionados</button>
+        </div>
         <div id="lista-html"></div>
       </div>
     </div>
@@ -457,13 +468,34 @@
           <select id="tipoRelatorio" onchange="gerarRelatorio()">
             <option value="nf">📄 Nota Fiscal (Por Agência/Membro)</option>
             <option value="horas">⏱️ Produtividade (Total de Horas)</option>
+            <option value="cobranca_pendencias">💰 Extrato de Pendências / Cobrança (Por Agência)</option>
           </select>
-          <label id="labelMesFiltro">Mês Recebido:</label><input type="month" id="filtroMesRelatorio"
-            onchange="gerarRelatorio()">
-          <label>Membro:</label><select id="filtroMembroRelatorio" onchange="gerarRelatorio()"></select>
-          <label>Agência (Opcional):</label><select id="filtroAgenciaRelatorio" onchange="gerarRelatorio()"></select>
+          <div id="filtros-relatorio-padrao">
+            <label id="labelMesFiltro">Mês Recebido:</label><input type="month" id="filtroMesRelatorio"
+              onchange="gerarRelatorio()">
+            <label>Membro:</label><select id="filtroMembroRelatorio" onchange="gerarRelatorio()"></select>
+            <label>Agência (Opcional):</label><select id="filtroAgenciaRelatorio" onchange="gerarRelatorio()"></select>
+          </div>
+          <div id="filtros-cobranca-pendencias" style="display:none;">
+            <label>Agência:</label>
+            <select id="filtroAgenciaCobranca" onchange="gerarRelatorio()">
+              <option value="todas">Todas as Agências</option>
+            </select>
+            <label for="filtroMembroCobranca">Membro:</label>
+            <select id="filtroMembroCobranca" aria-label="Filtrar extrato por membro" onchange="gerarRelatorio()">
+              <option value="todos">Todos os Membros</option>
+            </select>
+            <label for="filtroClienteFinalCobranca">Cliente Final (Opcional):</label>
+            <select id="filtroClienteFinalCobranca" onchange="gerarRelatorio()">
+              <option value="todos">Todos os Clientes</option>
+            </select>
+            <label>Data Início:</label>
+            <input type="date" id="filtroDataInicioCobranca" onchange="gerarRelatorio()">
+            <label>Data Fim:</label>
+            <input type="date" id="filtroDataFimCobranca" onchange="gerarRelatorio()">
+          </div>
         </div>
-        <div class="relatorio-stats">
+        <div class="relatorio-stats" id="relatorio-stats">
           <div class="stat-card"><span class="stat-label">Faturamento</span><strong id="valor-total-relatorio">R$
               0,00</strong></div>
           <div class="stat-card"><span class="stat-label">Total Horas</span><strong
@@ -713,11 +745,12 @@
         <span>💡</span> Sugerir uma melhoria para o App
       </a>
     </div>
+    <p id="rodape-ambiente" style="margin: 8px 0 12px; text-align: center; color: #bdbdbd; font-size: 10px;">IntérpretePro v2.0.0</p>
 
   </div>
-  <script src="script.js"></script>
 
-  <div id="modal-termos" class="modal-lgpd" style="display: none;">
+
+<div id="modal-termos" class="modal-lgpd" style="display: none;">
     <div class="modal-content">
       <div class="header-app"
         style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px;">
@@ -792,6 +825,24 @@
     </div>
   </div>
 
+  <div id="modal-baixa-lote" class="modal-lgpd" style="display:none;z-index:12000;">
+    <div class="modal-content" style="max-width:420px;text-align:left;">
+      <h3 style="margin:0 0 8px;color:#2e7d32;">💰 Confirmar Baixa em Lote</h3>
+      <p style="font-size:12px;color:#666;margin:0 0 10px;">Confira os atendimentos selecionados:</p>
+      <div id="resumo-itens-baixa-lote" style="max-height:190px;overflow-y:auto;margin-bottom:12px;"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;background:#f1f8e9;border-radius:8px;padding:10px;margin-bottom:14px;">
+        <strong style="font-size:13px;color:#33691e;">Total selecionado</strong>
+        <strong id="total-modal-baixa-lote" style="font-size:17px;color:#2e7d32;">R$ 0,00</strong>
+      </div>
+      <label for="data-pagamento-lote" style="font-size:12px;font-weight:bold;">Data do Pagamento</label>
+      <input type="date" id="data-pagamento-lote" style="width:100%;box-sizing:border-box;margin:6px 0 16px;padding:10px;border:1px solid #ccc;border-radius:6px;">
+      <div style="display:flex;gap:10px;">
+        <button type="button" onclick="fecharModalBaixaLote()" class="btn-voltar" style="flex:1;margin:0;">Cancelar</button>
+        <button type="button" id="btn-confirmar-baixa-lote" onclick="confirmarBaixaLote()" class="btn-primario" style="flex:1;margin:0;background:#2e7d32;">✔️ Confirmar Baixa</button>
+      </div>
+    </div>
+  </div>
+
   <div id="modal-logout" class="modal-lgpd" style="display: none;">
     <div class="modal-content" style="text-align: center;">
       <div style="font-size: 40px; margin-bottom: 10px;">🚪</div>
@@ -807,18 +858,27 @@
   </div>
 
   <div id="modal-confirmacao" class="modal-lgpd" style="display: none; z-index: 30000;">
-    <div class="modal-content" style="text-align: center; max-width: 320px;">
+    <div class="modal-content" style="text-align: center; max-width: 420px; width: calc(100% - 32px);">
       <div id="confirm-icon" style="font-size: 40px; margin-bottom: 15px;">❓</div>
       <h3 id="confirm-titulo" style="color: #4a148c; margin-bottom: 10px;">Confirmar Ação</h3>
-      <p id="confirm-mensagem" style="color: #666; font-size: 14px; margin-bottom: 25px;">Você tem certeza que
-        deseja
-        realizar esta alteração?</p>
+      <p id="confirm-mensagem" style="color: #666; font-size: 14px; margin-bottom: 18px;">Você tem certeza que deseja realizar esta alteração?</p>
+
+      <div id="admin-licenca-campos" style="display: none; text-align: left; margin: 0 0 20px;">
+        <div id="admin-licenca-atual" style="font-size: 12px; color: #666; background: #f7f4fa; border-radius: 8px; padding: 10px; margin-bottom: 14px;"></div>
+        <label for="admin-plano-select" style="display:block; font-size:13px; font-weight:bold; margin-bottom:6px; color:#444;">Novo plano</label>
+        <select id="admin-plano-select" class="input-field" style="width:100%; margin-bottom:14px;">
+          <option value="">Carregando planos...</option>
+        </select>
+        <label for="admin-data-expiracao" style="display:block; font-size:13px; font-weight:bold; margin-bottom:6px; color:#444;">Nova data de expiração</label>
+        <input id="admin-data-expiracao" type="date" class="input-field" style="width:100%; margin-bottom:4px;">
+        <small style="display:block; color:#666; font-size:11px;">A data escolhida será gravada exatamente como informada.</small>
+      </div>
 
       <div style="display: flex; gap: 10px;">
         <button onclick="fecharConfirmacao(false)" class="btn-voltar"
-          style="flex: 1; margin: 0; padding: 12px;">Não</button>
+          style="flex: 1; margin: 0; padding: 12px;">Cancelar</button>
         <button id="btn-confirmar-ok" class="btn-primario"
-          style="flex: 1; margin: 0; padding: 12px; background: #4a148c;">Sim, confirmar</button>
+          style="flex: 1; margin: 0; padding: 12px; background: #4a148c;">Confirmar</button>
       </div>
     </div>
   </div>
@@ -966,6 +1026,9 @@
     </div>
   </div>
 
+  <!-- Bibliotecas e scripts carregados após o conteúdo e todos os modais -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="script.js?v=20261028-orders-pix"></script>
 </body>
-
 </html>
