@@ -1,0 +1,6 @@
+# robots.txt para IntérpretePro
+User-agent: *
+Allow: /
+
+# Sitemap Oficial para indexação no Google Search Console & Bing
+Sitemap: https://interpretepro.deab.com.br/sitemap.xml
