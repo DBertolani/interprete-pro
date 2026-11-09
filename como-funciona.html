@@ -549,7 +549,7 @@
       }
     }
   </style>
-</head>
+<script src="/_aistudio-iframe.js?v=1f94f900"></script></head>
 <body>
   <header class="topo">
     <h1>Manual do IntérpretePro</h1>
@@ -562,9 +562,10 @@
       <div class="tour-links">
         <a href="#tela-dashboard">Dashboard</a>
         <a href="#tela-novo-servico">Novo Serviço</a>
-        <a href="#tela-historico">Histórico</a>
-        <a href="#tela-relatorios">Relatórios/NF</a>
-        <a href="#tela-ajustes">Ajustes</a>
+        <a href="#tela-historico">Histórico & Baixa em Lote</a>
+        <a href="#tela-relatorios">Relatórios & Extrato PNG</a>
+        <a href="#tela-simulador">Simulador FEBRAPILS</a>
+        <a href="#tela-ajustes">Ajustes & PWA</a>
       </div>
     </nav>
 
@@ -723,33 +724,46 @@
       </ul>
     </section>
 
-    <section class="bloco" id="tela-historico" aria-label="Guia da tela Histórico">
-      <h3 class="manual-sub">Tela Histórico: filtros e controle financeiro</h3>
+    <section class="bloco" id="tela-historico" aria-label="Guia da tela Histórico e Baixa em Lote">
+      <h3 class="manual-sub">Tela Histórico: Filtros e Baixa em Lote de Pagamentos</h3>
+      <p class="lead">
+        No Histórico você gerencia todos os atendimentos lançados e dá baixa instantânea quando a agência ou cliente realiza o pagamento.
+      </p>
       <ul class="checklist">
-        <li><span class="check">✓</span><span>Use filtro de <strong>Status</strong> para focar em pendentes ou pagos.</span></li>
-        <li><span class="check">✓</span><span>Filtre por <strong>Agência, Membro e Cliente</strong> para localizar atendimentos rapidamente.</span></li>
-        <li><span class="check">✓</span><span>Defina período por data para fechamento semanal, quinzenal ou mensal.</span></li>
-        <li><span class="check">✓</span><span>Abra o item e atualize para <strong>Pago</strong> na data correta para manter os relatórios fiéis.</span></li>
+        <li><span class="check">✓</span><span><strong>Filtros Inteligentes:</strong> Filtre por Status (Pendente/Pago), Agência, Membro da Equipe, Cliente ou Período por data.</span></li>
+        <li><span class="check">✓</span><span><strong>Baixa em Lote de Atendimentos:</strong> Cada card pendente conta com uma caixa de seleção. Você pode marcar múltiplos atendimentos da mesma agência e dar baixa de uma só vez, informando a data do recebimento.</span></li>
+        <li><span class="check">✓</span><span><strong>Barra de Ações Rápidas:</strong> Selecione todos os visíveis com 1 clique e visualize o valor acumulado em tempo real antes de confirmar a baixa.</span></li>
+        <li><span class="check">✓</span><span><strong>Edição e Exclusão Segura:</strong> Abra qualquer item para ajustar horários, notas e valores quando necessário.</span></li>
       </ul>
     </section>
 
-    <section class="bloco" id="tela-relatorios" aria-label="Simulação da área de relatórios">
-      <h3 class="manual-sub">Simulação de Relatórios/NF (esqueleto)</h3>
-      <p class="lead">Esta prévia replica os cards e organização visual usados na aba de relatórios do IntérpretePro.</p>
+    <section class="bloco" id="tela-relatorios" aria-label="Simulação da área de relatórios e extrato PNG">
+      <h3 class="manual-sub">Relatórios/NF e Extrato de Cobrança com Imagem PNG</h3>
+      <p class="lead">
+        Emita relatórios consolidados por mês e membro para faturamento de Nota Fiscal e gere o Extrato de Cobrança visual para envio no WhatsApp.
+      </p>
 
-      <div class="mock-relatorio">
+      <ul class="checklist">
+        <li><span class="check">✓</span><span><strong>Fechamento Mensal de NF:</strong> Veja o total faturado, quantidade de horas executadas e lista detalhada pronta para emitir suas notas fiscais.</span></li>
+        <li><span class="check">✓</span><span><strong>Extrato de Cobrança por Agência/Cliente:</strong> O sistema agrupa automaticamente todos os serviços não pagos daquele contratante em um card elegante.</span></li>
+        <li><span class="check">✓</span><span><strong>🖼️ Exportar como Imagem PNG para WhatsApp:</strong> Com 1 clique no botão "Salvar Imagem", o sistema gera um arquivo PNG profissional com a lista dos atendimentos e valor total, pronto para encaminhar ao financeiro da agência.</span></li>
+        <li><span class="check">✓</span><span><strong>Cópia de Texto Formatado:</strong> Copie o resumo completo em formato de texto para colar diretamente em mensagens de e-mail ou WhatsApp.</span></li>
+      </ul>
+
+      <div class="mock-relatorio" style="margin-top: 18px;">
         <div class="mock-rel-head">
           <span class="mock-pill">Relatório NF</span>
-          <span class="mock-pill">Mês 2026-03</span>
+          <span class="mock-pill">Mês Selecionado</span>
+          <span class="mock-pill" style="background: #e8f5e9; color: #2e7d32;">Extrato PNG Pronto</span>
         </div>
 
         <div class="mock-stats">
           <div class="mock-stat">
-            <span>Faturamento</span>
+            <span>Faturamento no Período</span>
             <strong>R$ 0,00</strong>
           </div>
           <div class="mock-stat">
-            <span>Total Horas</span>
+            <span>Total de Horas Executadas</span>
             <strong>0.00h</strong>
           </div>
         </div>
@@ -758,7 +772,7 @@
           <thead>
             <tr>
               <th>Data</th>
-              <th>Cliente</th>
+              <th>Cliente / Agência</th>
               <th>Serviço</th>
               <th>Valor</th>
             </tr>
@@ -779,6 +793,36 @@
           </tbody>
         </table>
       </div>
+    </section>
+
+    <section class="bloco" id="tela-simulador" aria-label="Simulador Oficial de Orçamento FEBRAPILS">
+      <h3 class="manual-sub">Simulador Oficial de Orçamento FEBRAPILS & Proposta Formal PDF</h3>
+      <p class="lead">
+        Precifique seus serviços com base na tabela oficial da FEBRAPILS & SINTRA e gere orçamentos profissionais em segundos.
+      </p>
+      <ul class="checklist">
+        <li><span class="check">✓</span><span><strong>Pacotes Combinados:</strong> Calcule interpretação ao vivo (presencial ou online) e tradução audiovisual (janela de Libras) em uma única proposta integrada.</span></li>
+        <li><span class="check">✓</span><span><strong>Revezamento Obrigatório em Dupla (NR-17):</strong> O sistema alerta automaticamente quando o evento supera 1 hora, aplicando a regra de dupla de revezamento a cada 20-30 minutos.</span></li>
+        <li><span class="check">✓</span><span><strong>Isolamento da Hora de Estudo:</strong> As horas dedicadas à preparação terminológica de bastidores são calculadas na tarifa pura, sem acréscimo de direitos de imagem.</span></li>
+        <li><span class="check">✓</span><span><strong>🏢 Consulta Automática de CNPJ (BrasilAPI):</strong> Digite o CNPJ da sua empresa e puxe Razão Social, endereço e contato direto da Receita Federal.</span></li>
+        <li><span class="check">✓</span><span><strong>📄 Proposta Comercial Formal em PDF (A4):</strong> Emita uma proposta comercial completa para editais (FAPERJ, UERJ, agências de fomento) e empresas, pronta para salvar em PDF ou imprimir.</span></li>
+        <li><span class="check">✓</span><span><strong>Triagem Inteligente de WhatsApp:</strong> Cole a mensagem enviada pelo cliente para o sistema preencher automaticamente datas, horários e formato.</span></li>
+      </ul>
+      <div style="text-align: center; margin-top: 14px;">
+        <a href="/simulador-orcamento" data-rota="simulador-orcamento" class="btn-voltar" style="background: #7b1fa2; font-size: 13.5px; padding: 10px 18px;">
+          ⚡ Acessar Simulador de Orçamento FEBRAPILS Gratuito
+        </a>
+      </div>
+    </section>
+
+    <section class="bloco" id="tela-ajustes-pwa" aria-label="Instalação do Aplicativo e Segurança">
+      <h3 class="manual-sub">Instalação do App (PWA) e Segurança em Nuvem</h3>
+      <ul class="checklist">
+        <li><span class="check">✓</span><span><strong>Instale no Celular ou Computador:</strong> Na aba <strong>Sobre</strong>, clique em <strong>"Baixar Aplicativo"</strong> (no Android/Chrome) ou use <strong>"Adicionar à Tela de Início"</strong> no iPhone/Safari para ter o ícone do IntérpretePro direto na sua tela inicial, com abertura em tela cheia e carregamento instantâneo.</span></li>
+        <li><span class="check">✓</span><span><strong>Banco Relacional Supabase PostgreSQL:</strong> Seus atendimentos e valores financeiros são armazenados em nuvem com criptografia TLS 1.3 em trânsito e AES-256 em repouso.</span></li>
+        <li><span class="check">✓</span><span><strong>Row Level Security (RLS) & LGPD:</strong> Políticas rígidas de isolamento no banco de dados garantem que nenhum usuário tenha acesso aos dados ou faturamento de outro intérprete.</span></li>
+        <li><span class="check">✓</span><span><strong>Login Oficial Google:</strong> Autenticação sem necessidade de criar senhas, garantindo a proteção da sua conta por duplo fator de autenticação (2FA) do Google.</span></li>
+      </ul>
     </section>
 
     <section class="bloco" aria-label="Dúvidas frequentes e erros comuns">
@@ -803,9 +847,32 @@
       </div>
     </section>
 
-    <div class="cta">
-      <a class="btn-voltar" href="index.html">Voltar para o IntérpretePro</a>
+    <div class="cta" style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+      <a class="btn-voltar" href="index.html">Entrar no Aplicativo</a>
+      <a class="btn-voltar" href="/venda" data-rota="venda" style="background: #2E7D32;">Conhecer Planos & Testar 7 Dias &rarr;</a>
+      <a class="btn-voltar" href="/simulador-orcamento" data-rota="simulador-orcamento" style="background: #4a148c;">Simulador de Orçamento &rarr;</a>
     </div>
   </main>
+
+  <script>
+    function ajustarLinksAmbiente() {
+      const isGitHubPages = window.location.hostname.includes("github.io");
+      const pathParts = window.location.pathname.split("/").filter(Boolean);
+      let basePath = "";
+      if (pathParts.length > 1 && !pathParts[0].includes(".")) {
+        basePath = "/" + pathParts[0];
+      }
+
+      document.querySelectorAll("a[data-rota]").forEach(link => {
+        const rota = link.getAttribute("data-rota");
+        if (isGitHubPages) {
+          link.href = basePath ? `${basePath}/${rota}.html` : `${rota}.html`;
+        } else {
+          link.href = `/${rota}`;
+        }
+      });
+    }
+    ajustarLinksAmbiente();
+  </script>
 </body>
 </html>
