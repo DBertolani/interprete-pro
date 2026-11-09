@@ -1,18 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+
+  <!-- 1. Aplicação Principal IntérpretePro -->
   <url>
     <loc>https://interpretepro.deab.com.br/</loc>
+    <lastmod>2026-11-09</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
+
+  <!-- 2. Página Oficial de Vendas & Planos -->
   <url>
     <loc>https://interpretepro.deab.com.br/venda</loc>
-    <changefreq>monthly</changefreq>
+    <lastmod>2026-11-09</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
+
+  <!-- 3. Simulador Oficial de Orçamento FEBRAPILS & SINTRA -->
   <url>
     <loc>https://interpretepro.deab.com.br/simulador-orcamento</loc>
-    <changefreq>monthly</changefreq>
+    <lastmod>2026-11-09</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
+
+  <!-- 4. Tour Guiado e Como Funciona -->
+  <url>
+    <loc>https://interpretepro.deab.com.br/como-funciona</loc>
+    <lastmod>2026-11-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- 5. Política de Privacidade & Termos de Uso -->
+  <url>
+    <loc>https://interpretepro.deab.com.br/privacidade</loc>
+    <lastmod>2026-11-09</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
 </urlset>
