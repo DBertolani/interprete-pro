@@ -14,6 +14,7 @@
   <meta name="author" content="IntérpretePro">
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
   <link rel="canonical" href="https://interpretepro.deab.com.br/venda">
+  <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml">
 
   <!-- OpenGraph / Facebook / WhatsApp / LinkedIn -->
   <meta property="og:type" content="website">
@@ -1593,11 +1594,11 @@
         </div>
 
         <div class="simulador-actions">
-          <a href="simulador-orcamento" class="btn-abrir-simulador">
+          <a href="/simulador-orcamento" data-rota="simulador-orcamento" class="btn-abrir-simulador">
             <span>🚀 Acessar Simulador de Orçamento Gratuito</span>
             <span>&rarr;</span>
           </a>
-          <a href="simulador-orcamento" target="_blank" class="btn-abrir-simulador-novaaba">
+          <a href="/simulador-orcamento" data-rota="simulador-orcamento" target="_blank" class="btn-abrir-simulador-novaaba">
             <span>Abrir em Nova Aba ↗</span>
           </a>
         </div>
@@ -1741,6 +1742,19 @@
       </div>
     </section>
 
+    <!-- Bloco de Confiança: Segurança & LGPD -->
+    <div style="background: linear-gradient(135deg, #f3e5f5, #e8f5e9); border: 2px solid #ce93d8; border-radius: 16px; padding: 24px; margin: 30px auto; max-width: 900px; display: flex; gap: 18px; align-items: center; box-shadow: var(--sombra-card);">
+      <div style="font-size: 38px; flex-shrink: 0;">🔒</div>
+      <div>
+        <h3 style="color: #4a148c; margin: 0 0 6px; font-size: 18px; font-weight: 900;">
+          Seus Dados Blindados: Segurança em Nuvem & Conformidade com a LGPD
+        </h3>
+        <p style="margin: 0; color: #37474f; font-size: 14px; line-height: 1.55;">
+          No IntérpretePro seus atendimentos e valores financeiros são armazenados em banco de dados relacional <strong>Supabase (PostgreSQL)</strong> com tecnologia <strong>Row Level Security (RLS)</strong>, garantindo isolamento matemático por conta. O login é autenticado diretamente pelo Google OAuth (sem armazenamento de senhas) e suas informações nunca são comercializadas ou compartilhadas com terceiros, em estrito respeito à <strong>Lei Geral de Proteção de Dados (Lei 13.709/2018)</strong>.
+        </p>
+      </div>
+    </div>
+
     <!-- 6. FAQ Semântico Completo -->
     <section class="section" id="faq">
       <span class="section-tag">Dúvidas Frequentes</span>
@@ -1751,6 +1765,11 @@
         <div class="faq-item">
           <h3 class="faq-pergunta">O IntérpretePro foi feito exclusivamente para intérpretes de Libras?</h3>
           <p class="faq-resposta">Sim! Diferente de sistemas genéricos de controle de serviços, o IntérpretePro possui campos nativos para agência intermediária vs. cliente final, acompanhamento de status de recebimento a prazo, rateio com duplas de revezamento e parâmetros oficiais da FEBRAPILS.</p>
+        </div>
+
+        <div class="faq-item">
+          <h3 class="faq-pergunta">Os meus dados financeiros e clientes estão seguros e protegidos pela LGPD?</h3>
+          <p class="faq-resposta">Totalmente. O IntérpretePro utiliza banco de dados relacional Supabase (PostgreSQL) com criptografia TLS 1.3 em trânsito e AES-256 em repouso. Além disso, aplicamos a tecnologia Row Level Security (RLS), o que significa que seus dados são isolados: nenhum outro usuário ou terceiro tem acesso aos seus clientes, atendimentos ou valores faturados. Estamos 100% em conformidade com a Lei Geral de Proteção de Dados (LGPD - Lei 13.709/2018) e você nunca precisará cadastrar senhas, pois o login é feito de forma segura e direta via Google OAuth.</p>
         </div>
 
         <div class="faq-item">
@@ -1805,8 +1824,9 @@
     </p>
     <p>
       <a href="index.html">Acessar Sistema</a> &bull;
-      <a href="simulador-orcamento">Simulador de Orçamento Gratuito</a> &bull;
-      <a href="privacidade.html">Política de Privacidade</a> &bull;
+      <a href="/simulador-orcamento" data-rota="simulador-orcamento">Simulador de Orçamento Gratuito</a> &bull;
+      <a href="/como-funciona" data-rota="como-funciona">Como Funciona (Tour)</a> &bull;
+      <a href="/privacidade" data-rota="privacidade">Política de Privacidade</a> &bull;
       <a href="#planos">Planos & Preços</a>
     </p>
     <p>&copy; 2026 IntérpretePro. Todos os direitos reservados. CNPJ e suporte no portal do cliente.</p>
@@ -1830,6 +1850,7 @@
     function obterUrlAmbienteAtual(pagina = "venda") {
       const origin = window.location.origin;
       const pathname = window.location.pathname;
+      const host = window.location.hostname.toLowerCase();
       const pathParts = pathname.split("/").filter(Boolean);
 
       let basePath = "";
@@ -1838,11 +1859,10 @@
         basePath = "/" + pathParts[0];
       }
 
-      // No GitHub Pages puro, arquivos estáticos precisam de .html
-      // Na Vercel ou domínio próprio (com vercel.json), usamos a rota limpa sem .html
-      const isGitHubPages = window.location.hostname.includes("github.io");
-      const usaExtensao = isGitHubPages || (pathname.endsWith(".html") && !window.location.hostname.includes("interpretepro.deab.com.br") && !window.location.hostname.includes("vercel.app"));
-      const ext = usaExtensao ? ".html" : "";
+      // No domínio de produção oficial (interpretepro.deab.com.br) ou Vercel: NUNCA usar .html
+      // Apenas no GitHub Pages puro (*.github.io) usamos .html para evitar erro 404 estático
+      const isGitHubPages = host.includes("github.io");
+      const ext = isGitHubPages ? ".html" : "";
 
       return `${origin}${basePath}/${pagina}${ext}`;
     }
@@ -2047,7 +2067,26 @@
       carregarPlanosSupabase(novoEnv);
     }
 
+    function ajustarLinksAmbiente() {
+      const isGitHubPages = window.location.hostname.includes("github.io");
+      const pathParts = window.location.pathname.split("/").filter(Boolean);
+      let basePath = "";
+      if (pathParts.length > 1 && !pathParts[0].includes(".")) {
+        basePath = "/" + pathParts[0];
+      }
+
+      document.querySelectorAll("a[data-rota]").forEach(link => {
+        const rota = link.getAttribute("data-rota");
+        if (isGitHubPages) {
+          link.href = basePath ? `${basePath}/${rota}.html` : `${rota}.html`;
+        } else {
+          link.href = `/${rota}`;
+        }
+      });
+    }
+
     // Inicialização automática dos planos e dos links de compartilhamento
+    ajustarLinksAmbiente();
     carregarPlanosSupabase(detectarAmbiente());
     atualizarLinksCompartilhamentoVenda();
   </script>
