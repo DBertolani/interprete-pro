@@ -1,6 +1,10 @@
 # robots.txt para IntérpretePro
 User-agent: *
 Allow: /
+Allow: /venda
+Allow: /simulador-orcamento
+Allow: /como-funciona
+Allow: /privacidade
 
 # Sitemap Oficial para indexação no Google Search Console & Bing
 Sitemap: https://interpretepro.deab.com.br/sitemap.xml
