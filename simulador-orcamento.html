@@ -14,6 +14,7 @@
   <meta name="author" content="IntérpretePro">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://interpretepro.deab.com.br/simulador-orcamento">
+  <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml">
 
   <!-- OpenGraph / Facebook / WhatsApp / LinkedIn -->
   <meta property="og:type" content="website">
@@ -939,6 +940,401 @@
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
     }
 
+    .btn-buscar-cnpj {
+      background: var(--roxo);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0 14px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+    .btn-buscar-cnpj:hover {
+      background: var(--roxo-medio);
+      transform: translateY(-1px);
+    }
+    .btn-buscar-cnpj:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+
+    .btn-proposta-formal-pdf {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      background: linear-gradient(135deg, #4a148c, #7b1fa2);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 13px 18px;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      margin-top: 10px;
+      box-shadow: 0 4px 14px rgba(74, 20, 140, 0.25);
+      transition: all 0.2s ease;
+    }
+    .btn-proposta-formal-pdf:hover {
+      background: linear-gradient(135deg, #6a1b9a, #8e24aa);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(74, 20, 140, 0.35);
+    }
+
+    /* Modal da Proposta Comercial Formal (PDF / A4) */
+    .modal-proposta-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(15, 23, 42, 0.75);
+      z-index: 99999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    }
+    .modal-proposta-overlay.ativo {
+      display: flex;
+    }
+    .modal-proposta-container {
+      background: #f8fafc;
+      border-radius: 16px;
+      max-width: 900px;
+      width: 100%;
+      max-height: 94vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+      overflow: hidden;
+      border: 1px solid #cbd5e1;
+    }
+    .modal-proposta-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 20px;
+      background: #ffffff;
+      border-bottom: 1px solid #e2e8f0;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .modal-proposta-body {
+      padding: 24px;
+      overflow-y: auto;
+      background: #e2e8f0;
+      display: flex;
+      justify-content: center;
+    }
+
+    /* Documento A4 Formal */
+    .doc-a4-sheet {
+      background: #ffffff;
+      width: 100%;
+      max-width: 800px;
+      min-height: 1000px;
+      padding: 38px 42px;
+      border-radius: 8px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      color: #1e293b;
+      font-size: 13.5px;
+      line-height: 1.55;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+    .doc-header-grid {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 20px;
+      border-bottom: 2px solid #4a148c;
+      padding-bottom: 18px;
+      margin-bottom: 20px;
+    }
+    .doc-empresa-nome {
+      font-size: 19px;
+      font-weight: 900;
+      color: #4a148c;
+      margin: 0 0 4px;
+      line-height: 1.25;
+    }
+    .doc-empresa-sub {
+      font-size: 12px;
+      color: #475569;
+      line-height: 1.45;
+    }
+    .doc-num-box {
+      text-align: right;
+    }
+    .doc-num-tag {
+      display: inline-block;
+      background: #f3e5f5;
+      color: #4a148c;
+      font-weight: 800;
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      margin-bottom: 4px;
+      border: 1px solid #ce93d8;
+    }
+    .doc-num-info {
+      font-size: 11.5px;
+      color: #64748b;
+    }
+    .doc-section-title {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: #4a148c;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin: 18px 0 8px;
+      border-left: 3px solid #7b1fa2;
+      padding-left: 8px;
+    }
+    .doc-info-grid {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 12px 14px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 16px;
+      font-size: 12.5px;
+      margin-bottom: 14px;
+    }
+    .doc-info-item strong {
+      color: #0f172a;
+    }
+    .doc-tabela-servicos {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 16px;
+      font-size: 12px;
+    }
+    .doc-tabela-servicos th {
+      background: #f1f5f9;
+      color: #334155;
+      font-weight: 800;
+      text-align: left;
+      padding: 9px 10px;
+      border-bottom: 2px solid #cbd5e1;
+      font-size: 11.5px;
+      text-transform: uppercase;
+    }
+    .doc-tabela-servicos td {
+      padding: 9px 10px;
+      border-bottom: 1px solid #e2e8f0;
+      color: #1e293b;
+      vertical-align: top;
+    }
+    .doc-tabela-servicos tr:nth-child(even) {
+      background: #f8fafc;
+    }
+    .doc-total-box {
+      background: #faf5ff;
+      border: 1.5px solid #d1c4e9;
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin: 16px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .doc-total-box .valor-destaque {
+      font-size: 22px;
+      font-weight: 900;
+      color: #4a148c;
+    }
+    .doc-declaracao-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 11.5px;
+      color: #475569;
+      line-height: 1.45;
+      margin: 14px 0;
+    }
+    .doc-assinaturas-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      margin-top: 36px;
+      padding-top: 14px;
+    }
+    .doc-assinatura-bloco {
+      text-align: center;
+    }
+    .doc-assinatura-linha {
+      border-top: 1px solid #475569;
+      margin-bottom: 6px;
+    }
+    .doc-assinatura-nome {
+      font-weight: 800;
+      color: #0f172a;
+      font-size: 12.5px;
+    }
+    .doc-assinatura-sub {
+      font-size: 11px;
+      color: #64748b;
+    }
+
+    }
+
+    /* Estilos para o Controle de Sigilo do Endereço Comercial */
+    .campo-endereco-translucido {
+      opacity: 0.55 !important;
+      filter: grayscale(0.6) !important;
+      background-color: #f1f5f9 !important;
+      border: 1.5px dashed #94a3b8 !important;
+      color: #64748b !important;
+      transition: all 0.25s ease !important;
+    }
+    .campo-endereco-ativo {
+      opacity: 1 !important;
+      filter: none !important;
+      background-color: #ffffff !important;
+      border: 1.5px solid var(--roxo) !important;
+      color: #1e293b !important;
+      transition: all 0.25s ease !important;
+    }
+    .aviso-sigilo-endereco {
+      font-size: 11.5px;
+      color: #475569;
+      margin-top: 6px;
+      line-height: 1.45;
+      padding: 6px 10px;
+      background: #f1f5f9;
+      border-radius: 6px;
+      border-left: 3px solid #78909c;
+      transition: all 0.25s ease;
+    }
+    .aviso-visivel-endereco {
+      font-size: 11.5px;
+      color: #1b5e20;
+      margin-top: 6px;
+      line-height: 1.45;
+      padding: 6px 10px;
+      background: #e8f5e9;
+      border-radius: 6px;
+      border-left: 3px solid #2e7d32;
+      transition: all 0.25s ease;
+    }
+    .toggle-switch-endereco input[type="checkbox"] {
+      width: 17px;
+      height: 17px;
+      accent-color: var(--roxo);
+      cursor: pointer;
+    }
+
+    /* Regras de Impressão A4 Profissional e Otimizada (Zero Páginas Extras e Zero Cabeçalho/Rodapé de Browser) */
+    @media print {
+      /* Ocultar estritamente todo o DOM exceto o modal da proposta */
+      body > *:not(#modal-proposta-pdf) {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        max-height: 0 !important;
+        overflow: hidden !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      
+      html, body {
+        width: 100% !important;
+        height: auto !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #ffffff !important;
+        overflow: visible !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      #modal-proposta-pdf {
+        display: block !important;
+        position: static !important;
+        inset: auto !important;
+        width: 100% !important;
+        height: auto !important;
+        min-height: 0 !important;
+        background: #ffffff !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        overflow: visible !important;
+        box-shadow: none !important;
+      }
+
+      .modal-proposta-container {
+        max-width: 100% !important;
+        width: 100% !important;
+        height: auto !important;
+        max-height: none !important;
+        box-shadow: none !important;
+        border: none !important;
+        border-radius: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        overflow: visible !important;
+        background: #ffffff !important;
+      }
+
+      .modal-proposta-toolbar,
+      .no-print {
+        display: none !important;
+      }
+
+      .modal-proposta-body {
+        padding: 0 !important;
+        margin: 0 !important;
+        background: #ffffff !important;
+        display: block !important;
+        overflow: visible !important;
+      }
+
+      .doc-a4-sheet {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 12mm 15mm !important;
+        margin: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-height: 0 !important;
+        box-sizing: border-box !important;
+        page-break-after: auto !important;
+        break-after: auto !important;
+      }
+
+      /* Anti-quebra indesejada: manter blocos íntegros e evitar estourar páginas vazias */
+      .doc-header-grid,
+      .doc-info-grid,
+      .doc-tabela-servicos,
+      .doc-tabela-servicos tr,
+      .doc-total-box,
+      .doc-declaracao-box,
+      .doc-assinaturas-grid {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+      }
+
+      /* @page com margin 0 elimina o cabeçalho e rodapé do navegador (data, URL, título de aba) */
+      @page {
+        size: A4 portrait;
+        margin: 0;
+      }
+    }
+
     /* Banner CTA IntérpretePro */
     .banner-interpretepro {
       margin-top: 36px;
@@ -1286,13 +1682,13 @@
   <!-- Top Bar Promocional -->
   <div class="promo-top-bar">
     Organize todos os seus atendimentos e controle faturas de agências com o 
-    <a href="/venda">IntérpretePro — Teste 7 dias grátis</a>
+    <a href="/venda" data-rota="venda">IntérpretePro — Teste 7 dias grátis</a>
   </div>
 
   <!-- Header -->
   <header>
     <div class="header-inner">
-      <a href="index.html" class="brand-row">
+      <a href="/venda" data-rota="venda" class="brand-row">
         <img src="logo.webp" onerror="this.onerror=null; this.src='logo.png';" alt="Logo IntérpretePro" class="brand-logo">
         <span class="brand-name">IntérpretePro</span>
       </a>
@@ -1366,23 +1762,157 @@
         <!-- LADO ESQUERDO: PARÂMETROS DO FORMULÁRIO -->
         <div>
 
-          <!-- 1. DADOS DA PROPOSTA (EMISSOR, CONTRATANTE E EDITAL/PROJETO) -->
-          <div class="form-row">
-            <div class="form-group">
-              <label for="emissor-nome">Seu Nome / Equipe / CNPJ (Emissor):</label>
-              <input type="text" id="emissor-nome" class="form-control" placeholder="Ex: Danilo Silva — Intérprete de Libras" oninput="calcular()">
-              <small>Aparecerá na assinatura e encerramento da proposta comercial.</small>
+          <!-- 1. DADOS DO PRESTADOR E EMISSOR (COM CONSULTA DE CNPJ VIA RECEITA FEDERAL) -->
+          <div class="prestador-box" style="background: #faf5ff; border: 1.5px solid #d1c4e9; border-radius: 12px; padding: 16px; margin-bottom: 18px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+              <span style="font-weight: 800; color: var(--roxo); font-size: 13.5px; display: flex; align-items: center; gap: 6px;">
+                🏢 Prestador de Serviços & Identificação Comercial
+              </span>
+              <button type="button" onclick="toggleDadosPrestadorAvancados()" id="btn-toggle-prestador" style="background: none; border: none; color: var(--roxo); font-size: 12px; font-weight: 700; cursor: pointer; text-decoration: underline;">
+                + Mais Detalhes (Endereço, PIX e E-mail)
+              </button>
             </div>
+
+            <!-- Linha 1: CNPJ e Nome Pessoal / Profissional -->
+            <div class="form-row" style="margin-bottom: 10px;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="prestador-cnpj">CNPJ da Empresa ou Prestador (Busca Automática):</label>
+                <div style="display: flex; gap: 8px;">
+                  <input type="text" id="prestador-cnpj" class="form-control" placeholder="00.000.000/0000-00" maxlength="18" oninput="aoDigitarCnpj(this)">
+                  <button type="button" class="btn-buscar-cnpj" id="btn-buscar-cnpj" onclick="consultarCnpjPrestador()" title="Buscar dados da empresa na Receita Federal via BrasilAPI">
+                    <span>🔍 Buscar</span>
+                  </button>
+                </div>
+                <small id="cnpj-status-msg" style="color: #64748b; font-size: 11px;">Preenche razão social, endereço e dados automaticamente.</small>
+              </div>
+
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="prestador-nome-pessoa">Seu Nome Profissional (Pessoa Física):</label>
+                <input type="text" id="prestador-nome-pessoa" class="form-control" placeholder="Ex: Danilo Bertolani" oninput="aoMudarIdentificacaoPrestador()">
+                <small>Como você prefere ser chamado(a) pelo cliente e no WhatsApp.</small>
+              </div>
+            </div>
+
+            <!-- Linha 2: Razão Social Oficial e Cargo -->
+            <div class="form-row" style="margin-bottom: 10px;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="prestador-razao-social">Razão Social Oficial (CNPJ):</label>
+                <input type="text" id="prestador-razao-social" class="form-control" placeholder="Ex: 31.080.316 DANILO DOS SANTOS BERTOLANI" oninput="aoMudarIdentificacaoPrestador()">
+                <small>Razão cadastrada na Receita Federal para notas e proposta em PDF.</small>
+                <!-- Campo oculto mantido para compatibilidade -->
+                <input type="hidden" id="emissor-nome">
+              </div>
+
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="prestador-cargo">Título / Cargo Profissional:</label>
+                <input type="text" id="prestador-cargo" class="form-control" value="Tradutor(a) e Intérprete de Libras" placeholder="Ex: Tradutor(a) e Intérprete de Libras" oninput="calcular()">
+                <small>Função técnica para a assinatura e registro ético profissional.</small>
+              </div>
+            </div>
+
+            <!-- Bloco de Personalização da Assinatura (WhatsApp & PDF) -->
+            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; margin-top: 8px; margin-bottom: 8px;">
+              <div class="form-row" style="margin-bottom: 0; align-items: center;">
+                <div class="form-group" style="margin-bottom: 0; flex: 1.4;">
+                  <label for="sel-formato-assinatura" style="font-size: 12px; font-weight: 700; color: #4a148c; margin-bottom: 4px;">
+                    ✍️ Qual nome você prefere que assine o WhatsApp e a Proposta?
+                  </label>
+                  <select id="sel-formato-assinatura" class="form-control" style="font-size: 12.5px; padding: 7px 10px;" onchange="calcular()">
+                    <option value="pessoal_cargo" selected>Nome Profissional + Cargo (Recomendado — mais humanizado)</option>
+                    <option value="pessoal_razao">Nome Profissional + Razão Social e CNPJ (Formal p/ Editais)</option>
+                    <option value="apenas_pessoal">Apenas Meu Nome Profissional</option>
+                    <option value="apenas_razao">Apenas a Razão Social da Empresa (com CNPJ)</option>
+                    <option value="fantasia_cargo">Nome Fantasia / Marca + Cargo</option>
+                  </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 0; flex: 1;">
+                  <label style="font-size: 11.5px; font-weight: 700; color: #475569; margin-bottom: 4px; display: block;">
+                    Opções Rápidas do WhatsApp:
+                  </label>
+                  <div style="display: flex; gap: 10px; flex-wrap: wrap; font-size: 11.5px; color: #37474f;">
+                    <label style="display: inline-flex; align-items: center; gap: 4px; cursor: pointer;">
+                      <input type="checkbox" id="chk-wa-pix" checked onchange="calcular()">
+                      <span>PIX</span>
+                    </label>
+                    <label style="display: inline-flex; align-items: center; gap: 4px; cursor: pointer;">
+                      <input type="checkbox" id="chk-wa-contato" checked onchange="calcular()">
+                      <span>Telefone</span>
+                    </label>
+                    <label style="display: inline-flex; align-items: center; gap: 4px; cursor: pointer;">
+                      <input type="checkbox" id="chk-wa-cnpj" onchange="calcular()">
+                      <span>CNPJ</span>
+                    </label>
+                    <label style="display: inline-flex; align-items: center; gap: 4px; cursor: pointer;">
+                      <input type="checkbox" id="chk-wa-email" onchange="calcular()">
+                      <span>E-mail</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- DETALHES AVANÇADOS (ENDEREÇO, TELEFONE, PIX, FANTASIA) -->
+            <div id="box-prestador-detalhes" style="display: none; margin-top: 10px; border-top: 1px dashed #d1c4e9; padding-top: 10px;">
+              <div class="form-row" style="margin-bottom: 8px;">
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label for="prestador-fantasia">Nome Fantasia / Marca (se houver):</label>
+                  <input type="text" id="prestador-fantasia" class="form-control" placeholder="Ex: LibrasPro Acessibilidade" oninput="calcular()">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label for="prestador-email">E-mail Comercial do Prestador:</label>
+                  <input type="email" id="prestador-email" class="form-control" placeholder="contato@seuservico.com.br" oninput="calcular()">
+                </div>
+              </div>
+
+              <div class="form-row" style="margin-bottom: 8px;">
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label for="prestador-telefone">Telefone / WhatsApp Comercial:</label>
+                  <input type="text" id="prestador-telefone" class="form-control" placeholder="(00) 00000-0000" oninput="calcular()">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label for="prestador-pix">Dados Bancários / Chave PIX (Faturamento):</label>
+                  <input type="text" id="prestador-pix" class="form-control" placeholder="Chave PIX (CNPJ ou E-mail): 00.000..." oninput="calcular()">
+                </div>
+              </div>
+
+              <!-- CONTROLE AVANÇADO DE ENDEREÇO COM OPÇÃO DE MARCAR/DESMARCAR -->
+              <div class="box-campo-endereco-container" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; margin-top: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 8px;">
+                  <label for="prestador-endereco" style="font-weight: 700; color: #4a148c; margin: 0; font-size: 12.5px;">
+                    📍 Endereço Comercial Completo:
+                  </label>
+                  <label class="toggle-switch-endereco" style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 12px; font-weight: 700; color: #37474f;">
+                    <input type="checkbox" id="chk-exibir-endereco" onchange="aoMudarExibicaoEndereco()">
+                    <span id="label-status-endereco" style="color: #64748b;">Exibir endereço na proposta (PDF / WhatsApp)</span>
+                  </label>
+                </div>
+                
+                <input type="text" id="prestador-endereco" class="form-control campo-endereco-translucido" placeholder="Logradouro, número, bairro, cidade/UF, CEP (preenchido na busca de CNPJ)" oninput="calcular()">
+
+                <div id="aviso-sigilo-endereco" class="aviso-sigilo-endereco">
+                  🔒 <strong>Endereço mantido em sigilo:</strong> Os dados ficam guardados aqui para controle interno, mas <u>NÃO</u> serão impressos no PDF nem enviados no WhatsApp. Marque a caixinha acima caso deseje que o endereço apareça no documento.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. DADOS DO CONTRATANTE E EDITAL / PROJETO -->
+          <div class="form-row">
             <div class="form-group">
               <label for="cliente-nome">Contratante / Solicitante:</label>
               <input type="text" id="cliente-nome" class="form-control" placeholder="Ex: Rodrigo Silva Campos" oninput="calcular()">
               <small>Nome da pessoa ou empresa que receberá o orçamento.</small>
             </div>
+            <div class="form-group">
+              <label for="cliente-doc">CPF ou CNPJ do Contratante (Opcional):</label>
+              <input type="text" id="cliente-doc" class="form-control" placeholder="Ex: 123.456.789-00 ou 00.000.000/0001-00" oninput="calcular()">
+              <small>Para constar na Proposta Formal / Prestação de Contas.</small>
+            </div>
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label for="destinatario-projeto">Destinatário Formal / Projeto / Edital / CPF (Opcional):</label>
+              <label for="destinatario-projeto">Destinatário Formal / Projeto / Edital (Opcional):</label>
               <input type="text" id="destinatario-projeto" class="form-control" placeholder="Ex: Rodrigo Silva Campos - CPF 123... | Projeto ELAC-RJ / Edital FAPERJ (UERJ)" oninput="calcular()">
               <small>Para cotações acadêmicas, editais de pesquisa ou faturamento formal.</small>
             </div>
@@ -1701,6 +2231,11 @@
               <span>📑 Justificativa de Preço e 3 Cotações de Referência (Edital / FAPERJ)</span>
             </button>
 
+            <!-- 6. BOTÃO DE PROPOSTA COMERCIAL FORMAL EM PDF / IMPRESSÃO -->
+            <button type="button" class="btn-proposta-formal-pdf" onclick="abrirModalPropostaFormal()">
+              <span>📄 Gerar Proposta Comercial Formal (PDF / A4 Imprimir)</span>
+            </button>
+
             <label style="font-size: 13px; font-weight: 700; color: var(--roxo); display: block; margin: 14px 0 6px;">
               📄 Mensagem Pronta para Envio no WhatsApp:
             </label>
@@ -1729,7 +2264,7 @@
         <p>No <strong>IntérpretePro</strong> você cadastra todos os seus atendimentos, separa quem contrata (agência) de onde o chamado ocorreu (empresa final), dá baixa em lote de pagamentos recebidos e gera relatórios consolidados para emissão de Nota Fiscal com 1 clique.</p>
       </div>
       <div>
-        <a href="/venda" class="btn-testar-pro">🚀 Testar IntérpretePro 7 Dias Grátis</a>
+        <a href="/venda" data-rota="venda" class="btn-testar-pro">🚀 Testar IntérpretePro 7 Dias Grátis</a>
       </div>
     </section>
 
@@ -1812,15 +2347,131 @@
   <!-- Footer -->
   <footer>
     <p>Simulador desenvolvido como contribuição para a comunidade de Tradutores e Intérpretes de Língua de Sinais (TILS).</p>
-    <p><a href="index.html">IntérpretePro</a> &bull; <a href="venda">Página Oficial de Gestão</a> &bull; <a href="privacidade.html">Privacidade</a></p>
+    <p><a href="index.html">IntérpretePro (Sistema)</a> &bull; <a href="/venda" data-rota="venda">Página Oficial de Vendas</a> &bull; <a href="/como-funciona" data-rota="como-funciona">Como Funciona (Tour)</a> &bull; <a href="/privacidade" data-rota="privacidade">Privacidade</a></p>
     <p>&copy; 2026 IntérpretePro. Todos os direitos reservados.</p>
   </footer>
 
   <script>
     let mensagemPendenciasWhatsApp = "";
 
+    // Formatação de moeda sem espaços inquebráveis para não quebrar linha no WhatsApp
     function formatarMoeda(val) {
-      return (val || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+      const num = Number(val) || 0;
+      return "R$ " + num.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    // Extrair Nome Pessoal amigável da Razão Social da Receita Federal (ex: '31.080.316 DANILO DOS SANTOS BERTOLANI' -> 'Danilo dos Santos Bertolani')
+    function extrairNomeLimpoRazaoSocial(razao) {
+      if (!razao) return "";
+      let limpo = razao.replace(/^[\d\.\-\/\s]+/, "").trim();
+      limpo = limpo.replace(/[\d\.\-\/\s]+$/, "").trim();
+      if (limpo && limpo === limpo.toUpperCase() && limpo.length > 3) {
+        limpo = limpo.split(/\s+/).map(palavra => {
+          const pLower = palavra.toLowerCase();
+          if (['de', 'da', 'do', 'das', 'dos', 'e'].includes(pLower)) return pLower;
+          return palavra.charAt(0).toUpperCase() + palavra.slice(1).toLowerCase();
+        }).join(' ');
+      }
+      return limpo;
+    }
+
+    // Sincronizar identificação do prestador e atualizar emissor-nome
+    function aoMudarIdentificacaoPrestador() {
+      const nomePessoa = document.getElementById("prestador-nome-pessoa")?.value.trim() || "";
+      const razaoSocial = document.getElementById("prestador-razao-social")?.value.trim() || "";
+      const inputOcultoEmissor = document.getElementById("emissor-nome");
+      if (inputOcultoEmissor) {
+        inputOcultoEmissor.value = nomePessoa || razaoSocial;
+      }
+      calcular();
+    }
+
+    // Alternar modo de sigilo vs visibilidade do endereço comercial
+    function aoMudarExibicaoEndereco() {
+      const chk = document.getElementById("chk-exibir-endereco");
+      const inputEnd = document.getElementById("prestador-endereco");
+      const aviso = document.getElementById("aviso-sigilo-endereco");
+      const labelStatus = document.getElementById("label-status-endereco");
+
+      if (chk && chk.checked) {
+        if (inputEnd) {
+          inputEnd.classList.remove("campo-endereco-translucido");
+          inputEnd.classList.add("campo-endereco-ativo");
+        }
+        if (aviso) {
+          aviso.className = "aviso-visivel-endereco";
+          aviso.innerHTML = `👁️ <strong>Endereço visível:</strong> O endereço completo será exibido no cabeçalho formal da proposta em PDF.`;
+        }
+        if (labelStatus) {
+          labelStatus.textContent = "Visível na proposta em PDF";
+          labelStatus.style.color = "#2e7d32";
+        }
+      } else {
+        if (inputEnd) {
+          inputEnd.classList.remove("campo-endereco-ativo");
+          inputEnd.classList.add("campo-endereco-translucido");
+        }
+        if (aviso) {
+          aviso.className = "aviso-sigilo-endereco";
+          aviso.innerHTML = `🔒 <strong>Endereço mantido em sigilo:</strong> Os dados ficam guardados aqui para controle interno, mas <u>NÃO</u> serão impressos no PDF nem enviados no WhatsApp. Marque a caixinha acima caso deseje que o endereço apareça no documento.`;
+        }
+        if (labelStatus) {
+          labelStatus.textContent = "Exibir endereço na proposta (PDF / WhatsApp)";
+          labelStatus.style.color = "#64748b";
+        }
+      }
+      calcular();
+    }
+
+    // Obter dados da assinatura com base nas preferências selecionadas
+    function obterAssinaturaConfigurada() {
+      const nomePessoa = document.getElementById("prestador-nome-pessoa")?.value.trim() || "";
+      const razaoSocial = document.getElementById("prestador-razao-social")?.value.trim() || "";
+      const fantasia = document.getElementById("prestador-fantasia")?.value.trim() || "";
+      const cargo = document.getElementById("prestador-cargo")?.value.trim() || "Tradutor(a) e Intérprete de Libras";
+      const formato = document.getElementById("sel-formato-assinatura")?.value || "pessoal_cargo";
+      const cnpj = document.getElementById("prestador-cnpj")?.value.trim() || "";
+      const pix = document.getElementById("prestador-pix")?.value.trim() || "";
+      const tel = document.getElementById("prestador-telefone")?.value.trim() || "";
+      const email = document.getElementById("prestador-email")?.value.trim() || "";
+
+      let linhaPrincipal = nomePessoa || razaoSocial || fantasia || "Equipe de Tradutores e Intérpretes de Libras";
+      let linhaSub = cargo;
+      let linhaFiscal = "";
+
+      if (formato === "pessoal_cargo") {
+        linhaPrincipal = nomePessoa || razaoSocial || "Intérprete de Libras";
+        linhaSub = cargo;
+      } else if (formato === "pessoal_razao") {
+        linhaPrincipal = nomePessoa || "Intérprete de Libras";
+        linhaSub = cargo;
+        if (razaoSocial) {
+          linhaFiscal = cnpj ? `${razaoSocial} (CNPJ: ${cnpj})` : razaoSocial;
+        }
+      } else if (formato === "apenas_pessoal") {
+        linhaPrincipal = nomePessoa || razaoSocial || "Intérprete de Libras";
+        linhaSub = "";
+      } else if (formato === "apenas_razao") {
+        linhaPrincipal = razaoSocial || nomePessoa || "Prestador de Serviços";
+        linhaSub = cnpj ? `CNPJ: ${cnpj} — ${cargo}` : cargo;
+      } else if (formato === "fantasia_cargo") {
+        linhaPrincipal = fantasia || razaoSocial || nomePessoa || "Libras Acessibilidade";
+        linhaSub = nomePessoa ? `${nomePessoa} — ${cargo}` : cargo;
+      }
+
+      return {
+        linhaPrincipal,
+        linhaSub,
+        linhaFiscal,
+        nomePessoa,
+        razaoSocial,
+        fantasia,
+        cargo,
+        cnpj,
+        pix,
+        tel,
+        email
+      };
     }
 
     // =========================================================
@@ -2276,6 +2927,12 @@ Assim que me passar esses dados, te envio a proposta formal detalhada! 🤟`;
         identificados.push(`Contratante: ${nomeCliente}`);
       }
 
+      if (cpfCliente) {
+        const inputClienteDoc = document.getElementById("cliente-doc");
+        if (inputClienteDoc) inputClienteDoc.value = cpfCliente;
+        identificados.push(`CPF/Doc: ${cpfCliente}`);
+      }
+
       if (destinatarioFormal) {
         document.getElementById("destinatario-projeto").value = destinatarioFormal;
         identificados.push(`Destinatário / Edital: ${destinatarioFormal}`);
@@ -2608,6 +3265,8 @@ Assim que me responder, gero sua proposta comercial completa imediatamente!`;
       let equipeMax = 1;
       let temPresencial = false;
       let temRemoto = false;
+      let prepValor = 0;
+      let addPrep = false;
 
       let subtotaisAtividadesArray = [];
 
@@ -2625,13 +3284,13 @@ Assim que me responder, gero sua proposta comercial completa imediatamente!`;
       // 1. CÁLCULO SÍNCRONO (AO VIVO COM MULTI-ATIVIDADES)
       if (sincAtivo) {
         const selArea = document.getElementById("area-atendimento");
-        const areaNome = selArea.options[selArea.selectedIndex].getAttribute("data-nome") || selArea.value;
+        const areaNome = selArea ? (selArea.options[selArea.selectedIndex]?.getAttribute("data-nome") || selArea.value) : "Geral";
 
-        const addStreaming = document.getElementById("add-streaming").checked;
-        const addPrep = document.getElementById("add-preparacao").checked;
-        const addFimDeSemana = document.getElementById("add-fimdesemana").checked;
-        const addUrgencia = document.getElementById("add-urgencia").checked;
-        const percUrgencia = addUrgencia ? Number(document.getElementById("sel-perc-urgencia").value) : 0;
+        const addStreaming = document.getElementById("add-streaming") ? document.getElementById("add-streaming").checked : false;
+        addPrep = document.getElementById("add-preparacao") ? document.getElementById("add-preparacao").checked : false;
+        const addFimDeSemana = document.getElementById("add-fimdesemana") ? document.getElementById("add-fimdesemana").checked : false;
+        const addUrgencia = document.getElementById("add-urgencia") ? document.getElementById("add-urgencia").checked : false;
+        const percUrgencia = addUrgencia ? Number(document.getElementById("sel-perc-urgencia")?.value || 0) : 0;
 
         let percAdic = 0;
         if (addStreaming) percAdic += 0.30;
@@ -2690,21 +3349,35 @@ Assim que me responder, gero sua proposta comercial completa imediatamente!`;
             texto += `  - *Subtotal do Módulo:* ${formatarMoeda(totalAtiv)}\n`;
           } else {
             texto += `• *Atividade:* ${ativ.nome || "Atendimento Geral"}${localStr}\n`;
-            texto += `• *Carga Horária:* ${horas}h (${horas * equipe}h da equipe)${cronoStr}${addPrep ? " + 1h de preparação prévia de glossário" : ""}\n`;
+            texto += `• *Carga Horária de Execução:* ${horas}h (${horas * equipe}h da equipe)${cronoStr}\n`;
             texto += `• *Equipe:* ${equipe} intérprete(s)${equipe > 1 ? " em revezamento alternado (norma FEBRAPILS)" : ""}\n`;
             texto += `• *Tarifa Base:* ${formatarMoeda(taxaHora)}/hora por intérprete (${formatarMoeda(taxaHora * equipe)}/hora da dupla)\n`;
+            texto += `• *Subtotal Execução:* ${formatarMoeda(totalAtiv)}\n`;
           }
         });
 
-        // Adicional de Preparação Técnica Prévia
-        if (addPrep && listaAtividades.length > 1) {
-          const prepValor = 1 * valPresencial * equipeMax * (1 + percAdic);
+        // ---------------------------------------------------------
+        // ISOLAMENTO REGULAMENTAR DA HORA DE ESTUDO PRÉVIO (TILSP)
+        // A preparação técnica e alinhamento terminológico ocorre nos
+        // bastidores (backstage). Não há gravação, exibição pública ou
+        // transmissão ao vivo. Conforme a Lei 9.610/98 e as normas da
+        // FEBRAPILS, NÃO INCIDEM DIREITOS DE IMAGEM (+30%) SOBRE ESTUDO.
+        // ---------------------------------------------------------
+        let prepValor = 0;
+        if (addPrep) {
+          const taxaPrep = temPresencial ? valPresencial : (listaAtividades[0]?.formato === "presencial" ? valPresencial : valRemoto);
+          // Tarifa base crua da equipe (ex: R$ 360,00 para a dupla acadêmica presencial)
+          prepValor = 1 * taxaPrep * equipeMax;
           subtotalSincrono += prepValor;
-          texto += `\n• *Estudo e Preparação Técnica Prévia (Glossário / Alinhamento de Ementas):* Inclusa (${formatarMoeda(prepValor)})\n`;
+          totalHorasSincrono += 1;
+          totalHorasHomem += (1 * equipeMax);
+
+          texto += `\n📖 *Estudo e Preparação Técnica Prévia (Glossário / Ementas):* 1h inclusa (${formatarMoeda(prepValor)})\n`;
+          texto += `  _• Tarifa Base de bastidores sem incidência de Direitos de Imagem / Acervo (Lei 9.610/98)_\n`;
         }
 
-        if (addStreaming) texto += `• *Cessão de Imagem / Streaming / Acervo AVA (Moodle):* Inclusa (+30%)\n`;
-        if (addFimDeSemana) texto += `• *Adicional Noturno / Final de Semana:* Incluso\n`;
+        if (addStreaming) texto += `• *Cessão de Imagem / Streaming / Acervo AVA (Moodle):* Inclusa (+30% sobre as horas de execução ao vivo)\n`;
+        if (addFimDeSemana) texto += `• *Adicional Noturno / Final de Semana:* Incluso (+30%)\n`;
         if (addUrgencia) texto += `• *Taxa de Urgência:* Inclusa (${(percUrgencia * 100).toFixed(0)}%)\n`;
 
         // Informação de Diferencial de Modalidade (Presencial vs Remoto)
@@ -2846,7 +3519,7 @@ Assim que me responder, gero sua proposta comercial completa imediatamente!`;
       const quadroEtapasEl = document.getElementById("res-quadro-etapas");
       if (quadroEtapasEl) {
         if (sincAtivo && subtotaisAtividadesArray.length > 0) {
-          quadroEtapasEl.innerHTML = subtotaisAtividadesArray.map((ativ, i) => `
+          let htmlEtapas = subtotaisAtividadesArray.map((ativ, i) => `
             <div class="etapa-resultado-item">
               <div class="etapa-res-topo">
                 <span class="etapa-res-titulo">
@@ -2864,6 +3537,27 @@ Assim que me responder, gero sua proposta comercial completa imediatamente!`;
               </div>
             </div>
           `).join("");
+
+          if (prepValor > 0) {
+            htmlEtapas += `
+              <div class="etapa-resultado-item" style="border-left: 4px solid #2E7D32; background: #fafdfa;">
+                <div class="etapa-res-topo">
+                  <span class="etapa-res-titulo" style="color: #2E7D32;">
+                    📖 Estudo Prévio e Preparação de Glossário
+                  </span>
+                  <span class="etapa-res-subtotal">${formatarMoeda(prepValor)}</span>
+                </div>
+                <div class="etapa-res-detalhes">
+                  <span class="badge-formato-remoto" style="background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9;">🔬 Bastidores / Estudo</span>
+                  &bull; <strong>1h</strong> (${1 * equipeMax}h da equipe) &bull; ${equipeMax} intérprete(s)
+                  <br>
+                  <span>Alinhamento de ementas e terminologia &bull; Tarifa base isenta de cessão de imagem (Lei 9.610/98)</span>
+                </div>
+              </div>
+            `;
+          }
+
+          quadroEtapasEl.innerHTML = htmlEtapas;
           quadroEtapasEl.style.display = "grid";
         } else {
           quadroEtapasEl.innerHTML = "";
@@ -2875,16 +3569,34 @@ Assim que me responder, gero sua proposta comercial completa imediatamente!`;
       // RENDERIZAR BOX DE FATURAMENTO POR ETAPAS
       // =========================================================
       const boxFatEtapas = document.getElementById("res-box-faturamento-etapas");
+      let parcelasNf = [];
+      if (subtotaisAtividadesArray.length > 1 && condicaoPgto === "etapas") {
+        subtotaisAtividadesArray.forEach((ativ, i) => {
+          let valorNf = ativ.subtotalComAdicionais;
+          let nomeNf = ativ.nome;
+          // Se houver hora de preparação prévia de glossário, é incorporada na 1ª NF (início do projeto / curso)
+          if (i === 0 && prepValor > 0) {
+            valorNf += prepValor;
+            nomeNf += " (inclui 1h de Estudo Técnico Prévio)";
+          }
+          parcelasNf.push({
+            ordem: i + 1,
+            nome: nomeNf,
+            valor: valorNf
+          });
+        });
+      }
+
       if (boxFatEtapas) {
-        if (subtotaisAtividadesArray.length > 1 && condicaoPgto === "etapas") {
+        if (parcelasNf.length > 1) {
           boxFatEtapas.innerHTML = `
             <div class="quadro-faturamento-title">
               🧾 Subtotais para Faturamento em Etapas (NFs Separadas):
             </div>
-            ${subtotaisAtividadesArray.map((ativ, i) => `
+            ${parcelasNf.map(p => `
               <div class="faturamento-etapa-linha">
-                <span><strong>${i + 1}ª NF:</strong> ${ativ.nome}</span>
-                <strong>${formatarMoeda(ativ.subtotalComAdicionais)}</strong>
+                <span><strong>${p.ordem}ª NF:</strong> ${p.nome}</span>
+                <strong>${formatarMoeda(p.valor)}</strong>
               </div>
             `).join("")}
             <div style="font-size: 11px; color: #795548; margin-top: 6px;">
@@ -2942,9 +3654,9 @@ Assim que me responder, gero sua proposta comercial completa imediatamente!`;
 
       // Condições de Pagamento e Faturamento
       let textoCondicoesFormatado = "";
-      if (condicaoPgto === "etapas" && subtotaisAtividadesArray.length > 1) {
-        textoCondicoesFormatado = `Faturamento por etapas em 2 Notas Fiscais separadas:\n` +
-          subtotaisAtividadesArray.map((ativ, i) => `  - ${i + 1}ª NF (${ativ.nome}): ${formatarMoeda(ativ.subtotalComAdicionais)} (após conclusão da atividade)`).join("\n") +
+      if (condicaoPgto === "etapas" && parcelasNf.length > 1) {
+        textoCondicoesFormatado = `Faturamento por etapas em ${parcelasNf.length} Notas Fiscais separadas:\n` +
+          parcelasNf.map(p => `  - ${p.ordem}ª NF (${p.nome}): ${formatarMoeda(p.valor)} (após conclusão da etapa)`).join("\n") +
           `\n  - Pagamento por Pix ou transferência para conta bancária da pessoa jurídica prestadora.`;
       } else if (condicaoPgto === "etapas") {
         textoCondicoesFormatado = "Faturamento por etapas (1 Nota Fiscal por atividade/módulo executado).";
@@ -2970,10 +3682,39 @@ Assim que me responder, gero sua proposta comercial completa imediatamente!`;
 
       texto += `\n_Orçamento elaborado conforme as normas de ergonomia (NR-17) e a tabela de honorários oficiais FEBRAPILS & SINTRA._`;
 
-      if (emissor) {
-        texto += `\n\nAtenciosamente,\n*${emissor}*\n_Tradutor(a) e Intérprete de Libras_`;
-      } else {
-        texto += `\n\nAtenciosamente,\n*Equipe de Tradutores e Intérpretes de Libras*`;
+      const assConfig = obterAssinaturaConfigurada();
+      texto += `\n\nAtenciosamente,\n*${assConfig.linhaPrincipal}*`;
+      if (assConfig.linhaSub) {
+        texto += `\n_${assConfig.linhaSub}_`;
+      }
+      if (assConfig.linhaFiscal) {
+        texto += `\n🏢 ${assConfig.linhaFiscal}`;
+      }
+
+      // Opções complementares de contato e faturamento para o WhatsApp
+      const chkWaCnpj = document.getElementById("chk-wa-cnpj")?.checked;
+      const chkWaPix = document.getElementById("chk-wa-pix")?.checked;
+      const chkWaContato = document.getElementById("chk-wa-contato")?.checked;
+      const chkWaEmail = document.getElementById("chk-wa-email")?.checked;
+
+      if (chkWaCnpj && assConfig.cnpj && (!assConfig.linhaFiscal || !assConfig.linhaFiscal.includes(assConfig.cnpj))) {
+        texto += `\n📄 *CNPJ:* ${assConfig.cnpj}`;
+      }
+      if (chkWaPix && assConfig.pix) {
+        texto += `\n💳 *Chave PIX:* ${assConfig.pix}`;
+      }
+      if (chkWaContato && assConfig.tel) {
+        texto += `\n📞 *Contato / WhatsApp:* ${assConfig.tel}`;
+      }
+      if (chkWaEmail && assConfig.email) {
+        texto += `\n✉️ *E-mail Comercial:* ${assConfig.email}`;
+      }
+
+      // Exibir endereço somente se a caixinha estiver explicitamente marcada
+      const chkExibirEnd = document.getElementById("chk-exibir-endereco")?.checked;
+      const endPrestador = document.getElementById("prestador-endereco")?.value.trim() || "";
+      if (chkExibirEnd && endPrestador) {
+        texto += `\n📍 *Endereço Comercial:* ${endPrestador}`;
       }
 
       document.getElementById("res-texto").textContent = texto;
@@ -3099,6 +3840,541 @@ A Cotação 1 apresenta o valor mais vantajoso para a administração pública, 
       if (modal) modal.classList.add("ativo");
     }
 
+    // Interceptar alert nativo para usar o toast moderno e elegante do app
+    window.alert = function(msg) {
+      exibirToast(String(msg), "info", "Aviso do Sistema");
+    };
+
+    // =========================================================
+    // CONSULTA AUTOMÁTICA DE CNPJ (BRASILAPI) & DADOS DO PRESTADOR
+    // =========================================================
+    function aoDigitarCnpj(input) {
+      let v = input.value.replace(/\D/g, "");
+      if (v.length > 14) v = v.substring(0, 14);
+      if (v.length > 12) {
+        v = v.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{1,2})$/, "$1.$2.$3/$4-$5");
+      } else if (v.length > 8) {
+        v = v.replace(/^(\d{2})(\d{3})(\d{3})(\d{1,4})$/, "$1.$2.$3/$4");
+      } else if (v.length > 5) {
+        v = v.replace(/^(\d{2})(\d{3})(\d{1,3})$/, "$1.$2.$3");
+      } else if (v.length > 2) {
+        v = v.replace(/^(\d{2})(\d{1,3})$/, "$1.$2");
+      }
+      input.value = v;
+
+      const btnBuscar = document.getElementById("btn-buscar-cnpj");
+      const digitos = input.value.replace(/\D/g, "");
+      if (digitos.length === 14) {
+        if (btnBuscar) btnBuscar.style.background = "#2e7d32";
+      } else {
+        if (btnBuscar) btnBuscar.style.background = "var(--roxo)";
+      }
+    }
+
+    function toggleDadosPrestadorAvancados() {
+      const box = document.getElementById("box-prestador-detalhes");
+      const btn = document.getElementById("btn-toggle-prestador");
+      if (!box) return;
+      if (box.style.display === "none" || !box.style.display) {
+        box.style.display = "block";
+        if (btn) btn.textContent = "- Ocultar Detalhes Avançados";
+      } else {
+        box.style.display = "none";
+        if (btn) btn.textContent = "+ Mais Detalhes (Endereço, PIX e E-mail)";
+      }
+    }
+
+    async function consultarCnpjPrestador() {
+      const inputCnpj = document.getElementById("prestador-cnpj");
+      const btnBuscar = document.getElementById("btn-buscar-cnpj");
+      const statusMsg = document.getElementById("cnpj-status-msg");
+      if (!inputCnpj) return;
+
+      const cnpj = inputCnpj.value.replace(/\D/g, "");
+      if (cnpj.length !== 14) {
+        exibirToast("Por favor, digite um CNPJ completo com 14 dígitos para consulta.", "alerta", "CNPJ Incompleto");
+        inputCnpj.focus();
+        return;
+      }
+
+      const textoOriginalBtn = btnBuscar ? btnBuscar.innerHTML : "🔍 Buscar";
+      if (btnBuscar) {
+        btnBuscar.disabled = true;
+        btnBuscar.innerHTML = "<span>⏳ Consultando...</span>";
+      }
+      if (statusMsg) {
+        statusMsg.innerHTML = "<span style='color: var(--roxo);'>⏳ Consultando Receita Federal via BrasilAPI...</span>";
+      }
+
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 9000);
+
+        const resp = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpj}`, {
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        if (!resp.ok) {
+          throw new Error(`CNPJ não localizado na Receita Federal (HTTP ${resp.status})`);
+        }
+
+        const data = await resp.json();
+
+        // 1. Razão Social Oficial & Nome Pessoal Limpo
+        const razaoSocial = (data.razao_social || "").trim();
+        const nomeFantasia = (data.nome_fantasia || "").trim();
+
+        // Salvar a Razão Social Oficial (CNPJ)
+        const inputRazao = document.getElementById("prestador-razao-social");
+        if (inputRazao) {
+          inputRazao.value = razaoSocial;
+        }
+
+        // Extrair Nome Pessoal amigável (sem os dígitos fiscais no início)
+        const inputNomePessoa = document.getElementById("prestador-nome-pessoa");
+        if (inputNomePessoa) {
+          const nomeLimpo = extrairNomeLimpoRazaoSocial(razaoSocial);
+          inputNomePessoa.value = nomeLimpo || nomeFantasia || razaoSocial;
+        }
+
+        const inputEmissor = document.getElementById("emissor-nome");
+        if (inputEmissor) {
+          inputEmissor.value = (inputNomePessoa && inputNomePessoa.value.trim()) ? inputNomePessoa.value.trim() : (razaoSocial || nomeFantasia);
+        }
+
+        const inputFantasia = document.getElementById("prestador-fantasia");
+        if (inputFantasia && nomeFantasia) {
+          inputFantasia.value = nomeFantasia;
+        }
+
+        // 2. Endereço completo formatado
+        const partesEndereco = [];
+        const tipoLogradouro = data.descricao_tipo_de_logradouro || "";
+        const logradouro = data.logradouro || "";
+        const numero = data.numero || "S/N";
+        const complemento = data.complemento || "";
+        const bairro = data.bairro || "";
+        const municipio = data.municipio || "";
+        const uf = data.uf || "";
+        const cep = data.cep ? data.cep.replace(/^(\d{5})(\d{3})$/, "$1-$2") : "";
+
+        if (logradouro) {
+          let rua = `${tipoLogradouro ? tipoLogradouro + ' ' : ''}${logradouro}, nº ${numero}`;
+          if (complemento) rua += ` (${complemento})`;
+          partesEndereco.push(rua);
+        }
+        if (bairro) partesEndereco.push(bairro);
+        if (municipio && uf) partesEndereco.push(`${municipio}/${uf}`);
+        if (cep) partesEndereco.push(`CEP: ${cep}`);
+
+        const inputEndereco = document.getElementById("prestador-endereco");
+        if (inputEndereco) {
+          inputEndereco.value = partesEndereco.join(" - ");
+        }
+
+        // Manter o endereço sob sigilo por padrão (desmarcado), em formato translúcido com aviso
+        const chkEndereco = document.getElementById("chk-exibir-endereco");
+        if (chkEndereco && !chkEndereco.checked) {
+          aoMudarExibicaoEndereco();
+        }
+
+        // 3. E-mail e Telefone Comercial
+        const inputEmail = document.getElementById("prestador-email");
+        if (inputEmail && data.email) {
+          inputEmail.value = data.email.toLowerCase();
+        }
+
+        const inputTelefone = document.getElementById("prestador-telefone");
+        if (inputTelefone && data.ddd_telefone_1) {
+          const tel = data.ddd_telefone_1.replace(/\D/g, "");
+          if (tel.length === 10) {
+            inputTelefone.value = tel.replace(/^(\d{2})(\d{4})(\d{4})$/, "($1) $2-$3");
+          } else if (tel.length === 11) {
+            inputTelefone.value = tel.replace(/^(\d{2})(\d{5})(\d{4})$/, "($1) $2-$3");
+          } else {
+            inputTelefone.value = data.ddd_telefone_1;
+          }
+        }
+
+        // 4. Se o campo PIX estiver vazio, sugerir o próprio CNPJ
+        const inputPix = document.getElementById("prestador-pix");
+        if (inputPix && !inputPix.value.trim()) {
+          inputPix.value = inputCnpj.value;
+        }
+
+        // Abrir detalhes avançados para o usuário conferir
+        const boxDetalhes = document.getElementById("box-prestador-detalhes");
+        const btnToggle = document.getElementById("btn-toggle-prestador");
+        if (boxDetalhes) boxDetalhes.style.display = "block";
+        if (btnToggle) btnToggle.textContent = "- Ocultar Detalhes Avançados";
+
+        if (statusMsg) {
+          statusMsg.innerHTML = `<span style="color: #2e7d32; font-weight: 700;">✅ ${razaoSocial} (${data.descricao_situacao_cadastral || 'ATIVA'})</span>`;
+        }
+
+        exibirToast(`CNPJ carregado com sucesso!\n${razaoSocial}`, "sucesso", "Empresa Identificada");
+        calcular();
+
+      } catch (err) {
+        console.warn("Erro ao buscar CNPJ via BrasilAPI:", err);
+        if (statusMsg) {
+          statusMsg.innerHTML = "<span style='color: #c62828;'>⚠️ CNPJ não localizado na API pública ou instabilidade temporária. Você pode preencher os dados manualmente.</span>";
+        }
+        exibirToast("Não foi possível consultar os dados do CNPJ automaticamente na Receita Federal. Preencha os campos manualmente.", "alerta", "Consulta de CNPJ");
+      } finally {
+        if (btnBuscar) {
+          btnBuscar.disabled = false;
+          btnBuscar.innerHTML = textoOriginalBtn;
+        }
+      }
+    }
+
+    // =========================================================
+    // PROPOSTA COMERCIAL FORMAL EM PDF (DOCUMENTO A4)
+    // =========================================================
+    function abrirModalPropostaFormal() {
+      // Garantir que os cálculos estão atualizados
+      calcular();
+
+      const modal = document.getElementById("modal-proposta-pdf");
+      const containerDoc = document.getElementById("doc-proposta-formal");
+      if (!modal || !containerDoc) return;
+
+      // 1. Dados do Prestador / Emissor e Assinatura
+      const assConfig = obterAssinaturaConfigurada();
+      const emissorNome = assConfig.linhaPrincipal;
+      const prestadorCnpj = assConfig.cnpj;
+      const prestadorFantasia = assConfig.fantasia;
+      const chkExibirEndereco = document.getElementById("chk-exibir-endereco")?.checked;
+      const prestadorEndereco = chkExibirEndereco ? (document.getElementById("prestador-endereco")?.value.trim() || "") : "";
+      const prestadorEmail = assConfig.email;
+      const prestadorTelefone = assConfig.tel;
+      const prestadorPix = assConfig.pix;
+
+      // 2. Dados do Contratante / Solicitante
+      const clienteNome = document.getElementById("cliente-nome")?.value.trim() || "A/C Coordenação / Contratante";
+      const clienteDoc = document.getElementById("cliente-doc")?.value.trim() || "";
+      const destinatarioProjeto = document.getElementById("destinatario-projeto")?.value.trim() || "";
+      const eventoData = document.getElementById("evento-data")?.value.trim() || "Datas e horários a definir no cronograma de execução";
+      const validadeProposta = document.getElementById("validade-proposta")?.value || "30 dias";
+      const condicoesPagamento = document.getElementById("condicoes-pagamento")?.value || "etapas";
+
+      // 3. Parâmetros e Valores Calculados
+      const sincAtivo = document.getElementById("chk-servico-sincrono")?.checked;
+      const audioAtivo = document.getElementById("chk-servico-audiovisual")?.checked;
+      const addStreaming = sincAtivo && document.getElementById("add-streaming")?.checked;
+      const addPrep = sincAtivo && document.getElementById("add-preparacao")?.checked;
+      const valPresencial = Number(document.getElementById("valor-hora-presencial")?.value) || 180;
+      const valRemoto = Number(document.getElementById("valor-hora-remoto")?.value) || 150;
+      const selArea = document.getElementById("area-atendimento");
+      const nomeArea = selArea ? selArea.options[selArea.selectedIndex]?.getAttribute("data-nome") || "Técnica / FEBRAPILS" : "Acadêmico / FEBRAPILS";
+
+      const totalHorasAtividades = listaAtividades.reduce((acc, a) => acc + (Number(a.horas) || 0), 0);
+      const valorTotalGeral = document.getElementById("res-total")?.textContent || "R$ 0,00";
+      const valorIndividual = document.getElementById("res-individual")?.textContent || "R$ 0,00";
+      const valorLogistica = Number(document.getElementById("valor-transporte")?.value || 0) + 
+                             Number(document.getElementById("valor-alimentacao")?.value || 0) + 
+                             Number(document.getElementById("valor-hospedagem")?.value || 0);
+
+      const percDesconto = document.getElementById("sel-desconto")?.value === "custom" 
+        ? Number(document.getElementById("val-desconto-custom")?.value || 0) 
+        : Number(document.getElementById("sel-desconto")?.value || 0);
+
+      // Data de Hoje
+      const hoje = new Date();
+      const dataFormatada = hoje.toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" });
+      const anoAtual = hoje.getFullYear();
+      const numProposta = `${anoAtual}-${String(hoje.getMonth() + 1).padStart(2, "0")}${String(hoje.getDate()).padStart(2, "0")}`;
+
+      // Gerar linhas da tabela de serviços
+      let itensTabelaHtml = "";
+      let itemNum = 1;
+
+      if (sincAtivo) {
+        listaAtividades.forEach((ativ, idx) => {
+          const isPres = ativ.formato === "presencial";
+          const tarifaHoraBase = isPres ? valPresencial : valRemoto;
+          const qtdInt = ativ.equipe || (ativ.horas > 1 ? 2 : 1);
+          const tarifaHoraEquipe = tarifaHoraBase * qtdInt;
+          const subtotalAtiv = ativ.horas * tarifaHoraEquipe;
+
+          itensTabelaHtml += `
+            <tr>
+              <td style="text-align: center; font-weight: bold;">${itemNum++}</td>
+              <td>
+                <strong>Interpretação de Libras: ${ativ.nome || 'Atividade Ao Vivo'}</strong><br>
+                <span style="font-size: 11px; color: #475569;">
+                  Modalidade: <strong>${isPres ? '📍 Presencial' : '💻 Remoto / Online'}</strong> | Local/Plataforma: ${ativ.local || (isPres ? 'A definir' : 'Google Meet')}<br>
+                  Equipe: <strong>${qtdInt === 2 ? 'Dupla de Revezamento Alternado (Norma FEBRAPILS & NR-17)' : '1 Intérprete Individual'}</strong>
+                </span>
+              </td>
+              <td>${ativ.horas}h</td>
+              <td>${formatarMoeda(tarifaHoraEquipe)}/h</td>
+              <td style="font-weight: 700; text-align: right;">${formatarMoeda(subtotalAtiv)}</td>
+            </tr>
+          `;
+        });
+
+        // 3. Estudo e Preparação de Glossário Técnico (Isolado de Direitos de Imagem)
+        if (addPrep) {
+          const tarifaPrepEquipe = valPresencial * 2; // Padrão da dupla
+          itensTabelaHtml += `
+            <tr>
+              <td style="text-align: center; font-weight: bold;">${itemNum++}</td>
+              <td>
+                <strong>Estudo Prévio e Preparação de Glossário Terminológico</strong><br>
+                <span style="font-size: 11px; color: #475569;">
+                  Análise prévia de slides, ementas acadêmicas e alinhamento conceitual com os palestrantes.<br>
+                  <em>* Atividade técnica de bastidores calculada sobre a tarifa base pura (isenta de direitos conexos de imagem).</em>
+                </span>
+              </td>
+              <td>1h</td>
+              <td>${formatarMoeda(tarifaPrepEquipe)}</td>
+              <td style="font-weight: 700; text-align: right;">${formatarMoeda(tarifaPrepEquipe)}</td>
+            </tr>
+          `;
+        }
+
+        // 4. Cessão de Direitos Autorais e Imagem (+30%)
+        if (addStreaming) {
+          const totalHorasExec = listaAtividades.reduce((acc, a) => {
+            const isPres = a.formato === "presencial";
+            const valH = isPres ? valPresencial : valRemoto;
+            const qInt = a.equipe || (a.horas > 1 ? 2 : 1);
+            return acc + (a.horas * valH * qInt);
+          }, 0);
+          const valStreaming = totalHorasExec * 0.30;
+
+          itensTabelaHtml += `
+            <tr>
+              <td style="text-align: center; font-weight: bold;">${itemNum++}</td>
+              <td>
+                <strong>Cessão de Direitos Conexos e Imagem / Streaming (+30%)</strong><br>
+                <span style="font-size: 11px; color: #475569;">
+                  Autorização para transmissão online e disponibilização em Ambiente Virtual (AVA / Moodle / Acervo), conforme Lei 9.610/98.<br>
+                  <em>* Incidência estrita de +30% sobre as horas de interpretação executadas ao vivo.</em>
+                </span>
+              </td>
+              <td>Pacote</td>
+              <td>+30%</td>
+              <td style="font-weight: 700; text-align: right;">${formatarMoeda(valStreaming)}</td>
+            </tr>
+          `;
+        }
+      }
+
+      // Tradução Audiovisual
+      if (audioAtivo) {
+        const tipoAudio = document.getElementById("tipo-cobranca-audiovisual")?.value;
+        const valAudio = document.getElementById("res-kpi-audiovisual")?.textContent || "R$ 0,00";
+        if (tipoAudio === "minuto") {
+          const qtdMin = document.getElementById("qtd-minutos-video")?.value || 10;
+          itensTabelaHtml += `
+            <tr>
+              <td style="text-align: center; font-weight: bold;">${itemNum++}</td>
+              <td>
+                <strong>Tradução Audiovisual (Gravação e Janela de Libras)</strong><br>
+                <span style="font-size: 11px; color: #475569;">Gravação em estúdio com fundo chroma-key, sincronização e entrega em arquivo MP4 Full HD.</span>
+              </td>
+              <td>${qtdMin} min</td>
+              <td>Tabela</td>
+              <td style="font-weight: 700; text-align: right;">${valAudio}</td>
+            </tr>
+          `;
+        } else {
+          const qtdDia = document.getElementById("qtd-diarias-estudio")?.value || 1;
+          itensTabelaHtml += `
+            <tr>
+              <td style="text-align: center; font-weight: bold;">${itemNum++}</td>
+              <td>
+                <strong>Tradução Audiovisual (Diária de Estúdio para Gravação de Libras)</strong><br>
+                <span style="font-size: 11px; color: #475569;">Atuação em estúdio de gravação para captação de videoaulas / conteúdo institucional.</span>
+              </td>
+              <td>${qtdDia} diária(s)</td>
+              <td>Tabela</td>
+              <td style="font-weight: 700; text-align: right;">${valAudio}</td>
+            </tr>
+          `;
+        }
+      }
+
+      // Logística
+      if (valorLogistica > 0) {
+        itensTabelaHtml += `
+          <tr>
+            <td style="text-align: center; font-weight: bold;">${itemNum++}</td>
+            <td>
+              <strong>Custos de Logística e Deslocamento Presencial</strong><br>
+              <span style="font-size: 11px; color: #475569;">Transporte, alimentação e/ou hospedagem para atendimento presencial da equipe.</span>
+            </td>
+            <td>Geral</td>
+            <td>—</td>
+            <td style="font-weight: 700; text-align: right;">${formatarMoeda(valorLogistica)}</td>
+          </tr>
+        `;
+      }
+
+      // Descrição do Faturamento por Etapas
+      let faturamentoHtml = "";
+      if (condicoesPagamento === "etapas" && sincAtivo && listaAtividades.length > 1) {
+        const ativ1 = listaAtividades[0];
+        const ativ2 = listaAtividades[1];
+        faturamentoHtml = `
+          <div style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px 14px; margin-top: 8px; font-size: 12px;">
+            <strong>📌 Cronograma de Faturamento por Etapas Concluídas (2 Notas Fiscais):</strong><br>
+            • <strong>1ª Fatura / Parcela:</strong> Emitida logo após a conclusão da 1ª Etapa (${ativ1.nome || 'Módulo Presencial'}) — 50% do valor do pacote.<br>
+            • <strong>2ª Fatura / Parcela:</strong> Emitida logo após a conclusão da 2ª Etapa (${ativ2.nome || 'Módulo Remoto / Devolutivas'}) — 50% restante.<br>
+            <em>* Cada fatura com prazo de pagamento para até 15 a 30 dias corridos após a entrega da respectiva Nota Fiscal / Relatório.</em>
+          </div>
+        `;
+      } else if (condicoesPagamento === "prazo_15") {
+        faturamentoHtml = `<p style="margin: 4px 0; font-size: 12px;">• <strong>Faturamento:</strong> Emissão de Nota Fiscal de Prestação de Serviços com vencimento em até <strong>15 dias corridos</strong> após a conclusão.</p>`;
+      } else if (condicoesPagamento === "prazo_30") {
+        faturamentoHtml = `<p style="margin: 4px 0; font-size: 12px;">• <strong>Faturamento:</strong> Emissão de Nota Fiscal com vencimento em até <strong>30 dias corridos</strong> (padrão agências de fomento / FAPERJ).</p>`;
+      } else if (condicoesPagamento === "entrada_50") {
+        faturamentoHtml = `<p style="margin: 4px 0; font-size: 12px;">• <strong>Condição:</strong> 50% de sinal / reserva na aprovação da proposta e 50% na conclusão dos serviços.</p>`;
+      } else {
+        faturamentoHtml = `<p style="margin: 4px 0; font-size: 12px;">• <strong>Faturamento:</strong> À vista mediante emissão de Nota Fiscal / Relatório de Atendimento concluído.</p>`;
+      }
+
+      // Declaração de Conformidade com o Edital (Sem Servidor UERJ)
+      const chkServidor = document.getElementById("chk-clausula-servidor")?.checked;
+      let declaracaoEditalHtml = "";
+      if (chkServidor) {
+        declaracaoEditalHtml = `
+          <div class="doc-declaracao-box">
+            <strong>🏛️ DECLARAÇÃO DE CONFORMIDADE COM O EDITAL / UERJ / FAPERJ:</strong><br>
+            Declara-se, para todos os fins de direito e instrução processual junto à contratante e à agência de fomento, que a equipe profissional designada para a execução dos serviços de tradução e interpretação de Libras é constituída exclusivamente por profissionais autônomos / externos, <strong>não possuindo qualquer vínculo empregatício, funcional ou cargo de servidor público</strong> com a Universidade do Estado do Rio de Janeiro (UERJ) ou com suas fundações de apoio, atendendo integralmente aos requisitos de elegibilidade do edital.
+          </div>
+        `;
+      }
+
+      // Título e identificação limpa do emissor no topo do documento
+      const nomeTopo = assConfig.nomePessoa || assConfig.razaoSocial || "Intérprete Profissional de Libras";
+
+      // Montagem do Documento A4
+      containerDoc.innerHTML = `
+        <div class="doc-header-grid">
+          <div>
+            <div class="doc-empresa-nome">${nomeTopo}</div>
+            ${assConfig.razaoSocial && assConfig.nomePessoa && assConfig.razaoSocial !== assConfig.nomePessoa ? `<div style="font-weight: 700; color: #475569; font-size: 12.5px; margin-bottom: 2px;">Razão Social: ${assConfig.razaoSocial}</div>` : ''}
+            ${prestadorFantasia ? `<div style="font-weight: 600; color: #64748b; font-size: 12px; margin-bottom: 2px;">Marca / Nome Fantasia: ${prestadorFantasia}</div>` : ''}
+            <div class="doc-empresa-sub">
+              ${prestadorCnpj ? `<strong>CNPJ:</strong> ${prestadorCnpj}<br>` : ''}
+              ${prestadorEndereco ? `<strong>Endereço Comercial:</strong> ${prestadorEndereco}<br>` : ''}
+              ${prestadorTelefone ? `<strong>Telefone / WhatsApp:</strong> ${prestadorTelefone} ` : ''}
+              ${prestadorEmail ? `| <strong>E-mail:</strong> ${prestadorEmail}` : ''}
+            </div>
+          </div>
+          <div class="doc-num-box">
+            <span class="doc-num-tag">PROPOSTA COMERCIAL</span><br>
+            <span style="font-weight: 800; font-size: 13px; color: #1e293b;">Nº ${numProposta}</span><br>
+            <span class="doc-num-info">Emissão: ${dataFormatada}</span><br>
+            <span class="doc-num-info" style="color: #4a148c; font-weight: 700;">Validade: ${validadeProposta}</span>
+          </div>
+        </div>
+
+        <div class="doc-section-title">1. Dados do Contratante e Identificação do Projeto</div>
+        <div class="doc-info-grid">
+          <div class="doc-info-item">
+            <strong>Contratante / Solicitante:</strong><br>
+            <span>${clienteNome}${clienteDoc ? ` — Doc: ${clienteDoc}` : ''}</span>
+          </div>
+          <div class="doc-info-item">
+            <strong>Projeto / Edital / Instituição:</strong><br>
+            <span>${destinatarioProjeto || 'Projeto Acadêmico / Demanda Institucional'}</span>
+          </div>
+          <div class="doc-info-item">
+            <strong>Previsão de Execução / Cronograma:</strong><br>
+            <span>${eventoData}</span>
+          </div>
+          <div class="doc-info-item">
+            <strong>Referência Técnica Normativa:</strong><br>
+            <span>Tabela Oficial FEBRAPILS & SINTRA (${nomeArea})</span>
+          </div>
+        </div>
+
+        <div class="doc-section-title">2. Objeto da Proposta & Discriminação dos Serviços de Libras</div>
+        <p style="font-size: 12px; color: #475569; margin: 0 0 8px;">
+          Prestação de serviços especializados de Tradução e Interpretação de Língua Brasileira de Sinais (Libras/Língua Portuguesa) conforme discriminado abaixo:
+        </p>
+
+        <table class="doc-tabela-servicos">
+          <thead>
+            <tr>
+              <th style="width: 40px; text-align: center;">Item</th>
+              <th>Discriminação Técnica dos Serviços</th>
+              <th style="width: 80px;">Carga</th>
+              <th style="width: 110px;">Tarifa Base</th>
+              <th style="width: 110px; text-align: right;">Subtotal</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${itensTabelaHtml}
+          </tbody>
+        </table>
+
+        <!-- Total da Proposta -->
+        <div class="doc-total-box">
+          <div>
+            <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; font-weight: 700;">
+              Investimento Total da Proposta Comercial:
+            </div>
+            ${percDesconto > 0 ? `<div style="font-size: 12px; color: #b45309; font-weight: 700;">* Inclui ${percDesconto}% de desconto comercial sobre a tabela normatizada</div>` : ''}
+          </div>
+          <div class="valor-destaque">${valorTotalGeral}</div>
+        </div>
+
+        <div class="doc-section-title">3. Condições de Faturamento e Dados para Pagamento</div>
+        <div style="font-size: 12.5px; color: #334155; line-height: 1.5;">
+          ${faturamentoHtml}
+          ${prestadorPix ? `<p style="margin: 6px 0 0; font-size: 12px;">• <strong>Chave PIX / Dados Bancários para Pagamento:</strong> <span style="font-weight: 700; color: #4a148c;">${prestadorPix}</span></p>` : ''}
+        </div>
+
+        ${declaracaoEditalHtml}
+
+        <div class="doc-declaracao-box" style="margin-top: 10px;">
+          <strong>⚖️ CUMPRIMENTO DAS DIRETRIZES DA LEI 12.319/2010 E CÓDIGO DE ÉTICA:</strong><br>
+          A prestação dos serviços pauta-se pelo rigor terminológico, fidelidade comunicativa e sigilo profissional. Em consonância com a Norma Regulamentadora NR-17 de Ergonomia do Trabalho, atendimentos superiores a 1 hora contam com atuação em duplas de revezamento alternado a cada 20 a 30 minutos, resguardando a higidez física e cognitiva dos profissionais.
+        </div>
+
+        <div class="doc-assinaturas-grid">
+          <div class="doc-assinatura-bloco">
+            <div class="doc-assinatura-linha"></div>
+            <div class="doc-assinatura-nome">${assConfig.linhaPrincipal}</div>
+            <div class="doc-assinatura-sub">${assConfig.linhaSub || 'Tradutor(a) e Intérprete de Libras'}${prestadorCnpj ? ' • CNPJ: ' + prestadorCnpj : ''}</div>
+          </div>
+          <div class="doc-assinatura-bloco">
+            <div class="doc-assinatura-linha"></div>
+            <div class="doc-assinatura-nome">${clienteNome}</div>
+            <div class="doc-assinatura-sub">De Acordo / Contratante (Data: ____/____/________)</div>
+          </div>
+        </div>
+      `;
+
+      modal.classList.add("ativo");
+    }
+
+    function fecharModalPropostaFormal(e) {
+      const modal = document.getElementById("modal-proposta-pdf");
+      if (modal) modal.classList.remove("ativo");
+    }
+
+    function imprimirPropostaFormal() {
+      window.print();
+    }
+
+    function copiarTextoPropostaFormal() {
+      const doc = document.getElementById("doc-proposta-formal");
+      if (!doc) return;
+      navigator.clipboard.writeText(doc.innerText).then(() => {
+        exibirToast("Texto da Proposta Formal copiado com sucesso para a área de transferência!", "sucesso", "Proposta Copiada");
+      }).catch(() => {
+        exibirToast("Não foi possível acessar a área de transferência. Use a opção de Imprimir / Salvar PDF.", "alerta");
+      });
+    }
+
     function fecharModalCotacoesEdital(e) {
       const modal = document.getElementById("modal-cotacoes-edital");
       if (modal) modal.classList.remove("ativo");
@@ -3114,11 +4390,57 @@ A Cotação 1 apresenta o valor mais vantajoso para a administração pública, 
       });
     }
 
+    function ajustarLinksAmbiente() {
+      const isGitHubPages = window.location.hostname.includes("github.io");
+      const pathParts = window.location.pathname.split("/").filter(Boolean);
+      let basePath = "";
+      if (pathParts.length > 1 && !pathParts[0].includes(".")) {
+        basePath = "/" + pathParts[0];
+      }
+
+      document.querySelectorAll("a[data-rota]").forEach(link => {
+        const rota = link.getAttribute("data-rota");
+        if (isGitHubPages) {
+          link.href = basePath ? `${basePath}/${rota}.html` : `${rota}.html`;
+        } else {
+          link.href = `/${rota}`;
+        }
+      });
+    }
+
     // Inicialização na carga da página
+    ajustarLinksAmbiente();
     atualizarLabelsDupla();
     renderizarAtividades();
     calcular();
   </script>
+
+  <!-- Modal da Proposta Comercial Formal (PDF / A4) -->
+  <div id="modal-proposta-pdf" class="modal-proposta-overlay" onclick="fecharModalPropostaFormal(event)">
+    <div class="modal-proposta-container" onclick="event.stopPropagation()">
+      <div class="modal-proposta-toolbar no-print">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 22px;">📄</span>
+          <div>
+            <strong style="color: #4a148c; font-size: 15px; display: block;">Proposta Comercial Formal (Documento PDF / Impressão A4)</strong>
+            <span style="color: #2e7d32; font-size: 12px; font-weight: 600;">✨ Otimizado: Sem cabeçalhos ou rodapés automáticos do navegador e sem páginas em branco extras.</span>
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button type="button" class="btn-buscar-cnpj" style="background: #2e7d32; padding: 9px 14px; font-size: 13px;" onclick="imprimirPropostaFormal()">
+            <span>🖨️ Imprimir / Salvar como PDF</span>
+          </button>
+          <button type="button" class="btn-buscar-cnpj" style="background: #4a148c; padding: 9px 14px; font-size: 13px;" onclick="copiarTextoPropostaFormal()">
+            <span>📋 Copiar Texto</span>
+          </button>
+          <button type="button" onclick="fecharModalPropostaFormal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #64748b; line-height: 1; padding: 0 6px;">✕</button>
+        </div>
+      </div>
+      <div class="modal-proposta-body">
+        <div id="doc-proposta-formal" class="doc-a4-sheet"></div>
+      </div>
+    </div>
+  </div>
 
   <!-- Modal de 3 Cotações de Referência para Edital / FAPERJ -->
   <div id="modal-cotacoes-edital" class="modal-edital-overlay" onclick="fecharModalCotacoesEdital(event)">
