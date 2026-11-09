@@ -1191,21 +1191,27 @@
 
     }
 
-    /* Estilos para o Controle de Sigilo do Endereço Comercial */
+    /* Estilos para o Controle de Inclusão do Endereço Comercial (Ticado vs Não Ticado) */
     .campo-endereco-translucido {
-      opacity: 0.55 !important;
-      filter: grayscale(0.6) !important;
-      background-color: #f1f5f9 !important;
+      opacity: 0.42 !important;
+      filter: grayscale(0.8) !important;
+      background-color: #f8fafc !important;
       border: 1.5px dashed #94a3b8 !important;
       color: #64748b !important;
+      cursor: pointer !important;
       transition: all 0.25s ease !important;
+    }
+    .campo-endereco-translucido:focus {
+      opacity: 0.8 !important;
+      background-color: #ffffff !important;
     }
     .campo-endereco-ativo {
       opacity: 1 !important;
       filter: none !important;
       background-color: #ffffff !important;
-      border: 1.5px solid var(--roxo) !important;
+      border: 2px solid var(--roxo) !important;
       color: #1e293b !important;
+      box-shadow: 0 0 0 3px rgba(74, 20, 140, 0.12) !important;
       transition: all 0.25s ease !important;
     }
     .aviso-sigilo-endereco {
@@ -1213,7 +1219,7 @@
       color: #475569;
       margin-top: 6px;
       line-height: 1.45;
-      padding: 6px 10px;
+      padding: 7px 12px;
       background: #f1f5f9;
       border-radius: 6px;
       border-left: 3px solid #78909c;
@@ -1224,15 +1230,15 @@
       color: #1b5e20;
       margin-top: 6px;
       line-height: 1.45;
-      padding: 6px 10px;
+      padding: 7px 12px;
       background: #e8f5e9;
       border-radius: 6px;
       border-left: 3px solid #2e7d32;
       transition: all 0.25s ease;
     }
     .toggle-switch-endereco input[type="checkbox"] {
-      width: 17px;
-      height: 17px;
+      width: 18px;
+      height: 18px;
       accent-color: var(--roxo);
       cursor: pointer;
     }
@@ -1788,7 +1794,7 @@
 
               <div class="form-group" style="margin-bottom: 0;">
                 <label for="prestador-nome-pessoa">Seu Nome Profissional (Pessoa Física):</label>
-                <input type="text" id="prestador-nome-pessoa" class="form-control" placeholder="Ex: Danilo Bertolani" oninput="aoMudarIdentificacaoPrestador()">
+                <input type="text" id="prestador-nome-pessoa" class="form-control" placeholder="Ex: Mariana Souza ou Carlos Silva" oninput="aoMudarIdentificacaoPrestador()">
                 <small>Como você prefere ser chamado(a) pelo cliente e no WhatsApp.</small>
               </div>
             </div>
@@ -1797,7 +1803,7 @@
             <div class="form-row" style="margin-bottom: 10px;">
               <div class="form-group" style="margin-bottom: 0;">
                 <label for="prestador-razao-social">Razão Social Oficial (CNPJ):</label>
-                <input type="text" id="prestador-razao-social" class="form-control" placeholder="Ex: 31.080.316 DANILO DOS SANTOS BERTOLANI" oninput="aoMudarIdentificacaoPrestador()">
+                <input type="text" id="prestador-razao-social" class="form-control" placeholder="Ex: 00.123.456/0001-90 LIBRAS ACESSIBILIDADE LTDA" oninput="aoMudarIdentificacaoPrestador()">
                 <small>Razão cadastrada na Receita Federal para notas e proposta em PDF.</small>
                 <!-- Campo oculto mantido para compatibilidade -->
                 <input type="hidden" id="emissor-nome">
@@ -1851,7 +1857,28 @@
               </div>
             </div>
 
-            <!-- DETALHES AVANÇADOS (ENDEREÇO, TELEFONE, PIX, FANTASIA) -->
+            <!-- CONTROLE DE INCLUSÃO DO ENDEREÇO COMERCIAL (TICADO = INCLUI | NÃO TICADO = MEIO TRANSPARENTE) -->
+            <div class="box-campo-endereco-container" style="background: #ffffff; border: 1.5px solid #d1c4e9; border-radius: 10px; padding: 12px 14px; margin-top: 10px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+                <label for="prestador-endereco" style="font-weight: 700; color: #4a148c; margin: 0; font-size: 13px; display: flex; align-items: center; gap: 6px;">
+                  <span>📍 Endereço Comercial Completo:</span>
+                </label>
+                <label class="toggle-switch-endereco" style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; background: #f8fafc; padding: 5px 12px; border-radius: 8px; border: 1.5px solid #cbd5e1; user-select: none;">
+                  <input type="checkbox" id="chk-exibir-endereco" onchange="aoMudarExibicaoEndereco()">
+                  <span id="label-status-endereco" style="font-size: 12px; font-weight: 700; color: #64748b;">
+                    Incluir endereço na proposta (Desmarcado)
+                  </span>
+                </label>
+              </div>
+              
+              <input type="text" id="prestador-endereco" class="form-control campo-endereco-translucido" placeholder="Ex: Av. Paulista, 1000, Bela Vista, São Paulo/SP, CEP: 01310-100 (ou busca do CNPJ)" oninput="calcular()">
+
+              <div id="aviso-sigilo-endereco" class="aviso-sigilo-endereco">
+                🔒 <strong>Endereço NÃO ticado:</strong> O endereço fica guardado aqui, mas <u>NÃO</u> será incluído no PDF nem no WhatsApp. Se quiser incluir na proposta, basta ticar a caixinha acima.
+              </div>
+            </div>
+
+            <!-- DETALHES AVANÇADOS (TELEFONE, PIX, E-MAIL, FANTASIA) -->
             <div id="box-prestador-detalhes" style="display: none; margin-top: 10px; border-top: 1px dashed #d1c4e9; padding-top: 10px;">
               <div class="form-row" style="margin-bottom: 8px;">
                 <div class="form-group" style="margin-bottom: 0;">
@@ -1874,25 +1901,6 @@
                   <input type="text" id="prestador-pix" class="form-control" placeholder="Chave PIX (CNPJ ou E-mail): 00.000..." oninput="calcular()">
                 </div>
               </div>
-
-              <!-- CONTROLE AVANÇADO DE ENDEREÇO COM OPÇÃO DE MARCAR/DESMARCAR -->
-              <div class="box-campo-endereco-container" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; margin-top: 8px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 8px;">
-                  <label for="prestador-endereco" style="font-weight: 700; color: #4a148c; margin: 0; font-size: 12.5px;">
-                    📍 Endereço Comercial Completo:
-                  </label>
-                  <label class="toggle-switch-endereco" style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 12px; font-weight: 700; color: #37474f;">
-                    <input type="checkbox" id="chk-exibir-endereco" onchange="aoMudarExibicaoEndereco()">
-                    <span id="label-status-endereco" style="color: #64748b;">Exibir endereço na proposta (PDF / WhatsApp)</span>
-                  </label>
-                </div>
-                
-                <input type="text" id="prestador-endereco" class="form-control campo-endereco-translucido" placeholder="Logradouro, número, bairro, cidade/UF, CEP (preenchido na busca de CNPJ)" oninput="calcular()">
-
-                <div id="aviso-sigilo-endereco" class="aviso-sigilo-endereco">
-                  🔒 <strong>Endereço mantido em sigilo:</strong> Os dados ficam guardados aqui para controle interno, mas <u>NÃO</u> serão impressos no PDF nem enviados no WhatsApp. Marque a caixinha acima caso deseje que o endereço apareça no documento.
-                </div>
-              </div>
             </div>
           </div>
 
@@ -1900,7 +1908,7 @@
           <div class="form-row">
             <div class="form-group">
               <label for="cliente-nome">Contratante / Solicitante:</label>
-              <input type="text" id="cliente-nome" class="form-control" placeholder="Ex: Rodrigo Silva Campos" oninput="calcular()">
+              <input type="text" id="cliente-nome" class="form-control" placeholder="Ex: Coordenação de Eventos ou Fundação Exemplo" oninput="calcular()">
               <small>Nome da pessoa ou empresa que receberá o orçamento.</small>
             </div>
             <div class="form-group">
@@ -1913,7 +1921,7 @@
           <div class="form-row">
             <div class="form-group">
               <label for="destinatario-projeto">Destinatário Formal / Projeto / Edital (Opcional):</label>
-              <input type="text" id="destinatario-projeto" class="form-control" placeholder="Ex: Rodrigo Silva Campos - CPF 123... | Projeto ELAC-RJ / Edital FAPERJ (UERJ)" oninput="calcular()">
+              <input type="text" id="destinatario-projeto" class="form-control" placeholder="Ex: Prof. Dr. Silva - CPF 000.000.000-00 | Projeto de Extensão / Edital de Pesquisa nº 01/2026" oninput="calcular()">
               <small>Para cotações acadêmicas, editais de pesquisa ou faturamento formal.</small>
             </div>
             <div class="form-group">
@@ -2360,7 +2368,7 @@
       return "R$ " + num.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
-    // Extrair Nome Pessoal amigável da Razão Social da Receita Federal (ex: '31.080.316 DANILO DOS SANTOS BERTOLANI' -> 'Danilo dos Santos Bertolani')
+    // Extrair Nome Pessoal amigável da Razão Social da Receita Federal (ex: '00.123.456 NOME EXEMPLO' -> 'Nome Exemplo')
     function extrairNomeLimpoRazaoSocial(razao) {
       if (!razao) return "";
       let limpo = razao.replace(/^[\d\.\-\/\s]+/, "").trim();
@@ -2386,7 +2394,7 @@
       calcular();
     }
 
-    // Alternar modo de sigilo vs visibilidade do endereço comercial
+    // Alternar modo de inclusão (ticado) vs transparência/não inclusão (não ticado) do endereço comercial
     function aoMudarExibicaoEndereco() {
       const chk = document.getElementById("chk-exibir-endereco");
       const inputEnd = document.getElementById("prestador-endereco");
@@ -2394,30 +2402,30 @@
       const labelStatus = document.getElementById("label-status-endereco");
 
       if (chk && chk.checked) {
+        // Se estiver ticado: inclui o endereço e deixa o campo nítido/destacado
         if (inputEnd) {
           inputEnd.classList.remove("campo-endereco-translucido");
           inputEnd.classList.add("campo-endereco-ativo");
         }
         if (aviso) {
           aviso.className = "aviso-visivel-endereco";
-          aviso.innerHTML = `👁️ <strong>Endereço visível:</strong> O endereço completo será exibido no cabeçalho formal da proposta em PDF.`;
+          aviso.innerHTML = `✅ <strong>Endereço TICADO:</strong> O endereço comercial <u>SERÁ INCLUÍDO</u> no cabeçalho da proposta em PDF e na mensagem de WhatsApp.`;
         }
         if (labelStatus) {
-          labelStatus.textContent = "Visível na proposta em PDF";
-          labelStatus.style.color = "#2e7d32";
+          labelStatus.innerHTML = `<strong style="color: #2e7d32;">✓ Incluir endereço na proposta (Ticado)</strong>`;
         }
       } else {
+        // Se NÃO estiver ticado: deixa meio transparente e NÃO inclui o endereço
         if (inputEnd) {
           inputEnd.classList.remove("campo-endereco-ativo");
           inputEnd.classList.add("campo-endereco-translucido");
         }
         if (aviso) {
           aviso.className = "aviso-sigilo-endereco";
-          aviso.innerHTML = `🔒 <strong>Endereço mantido em sigilo:</strong> Os dados ficam guardados aqui para controle interno, mas <u>NÃO</u> serão impressos no PDF nem enviados no WhatsApp. Marque a caixinha acima caso deseje que o endereço apareça no documento.`;
+          aviso.innerHTML = `🔒 <strong>Endereço NÃO TICADO:</strong> O endereço fica guardado aqui meio transparente, mas <u>NÃO</u> será incluído no PDF nem no WhatsApp. Se desejar incluir, basta ticar a caixinha acima.`;
         }
         if (labelStatus) {
-          labelStatus.textContent = "Exibir endereço na proposta (PDF / WhatsApp)";
-          labelStatus.style.color = "#64748b";
+          labelStatus.innerHTML = `<span style="color: #64748b;">Incluir endereço na proposta (Desmarcado)</span>`;
         }
       }
       calcular();
@@ -4412,6 +4420,7 @@ A Cotação 1 apresenta o valor mais vantajoso para a administração pública, 
     ajustarLinksAmbiente();
     atualizarLabelsDupla();
     renderizarAtividades();
+    aoMudarExibicaoEndereco();
     calcular();
   </script>
 
