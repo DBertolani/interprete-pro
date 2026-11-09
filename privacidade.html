@@ -75,7 +75,7 @@
             margin: 15px 0;
         }
     </style>
-</head>
+<script src="/_aistudio-iframe.js?v=1f94f900"></script></head>
 <body>
 
     <div class="container">
@@ -98,32 +98,72 @@
             <strong>Importante:</strong> O IntérpretePro não tem acesso à sua senha, não lê seus e-mails do Gmail, não acessa seus arquivos do Google Drive e não coleta nenhum dado pessoal sensível da sua Conta do Google.
         </div>
 
-        <h2>2. Como Usamos as Suas Informações</h2>
-        <p>As informações coletadas são utilizadas de forma restrita para o funcionamento do sistema de gestão (SaaS):</p>
+        <h2>2. Como Usamos as Suas Informações e Bases Legais (LGPD)</h2>
+        <p>O tratamento dos seus dados pessoais é realizado em estrita conformidade com a <strong>Lei Geral de Proteção de Dados (LGPD - Lei nº 13.709/2018)</strong>, com base nos seguintes fundamentos jurídicos:</p>
         <ul>
-            <li><strong>Autenticação e Segurança:</strong> Verificar sua identidade para permitir que apenas você acesse seus registros financeiros.</li>
-            <li><strong>Gestão de Acesso:</strong> Controlar o seu período de teste gratuito (trial) e verificar a validade da sua licença/assinatura.</li>
-            <li><strong>Comunicação de Suporte:</strong> Entrar em contato para tratar de assuntos técnicos ou operacionais do sistema.</li>
+            <li><strong>Execução de Contrato SaaS (Art. 7º, V da LGPD):</strong> Para fornecer as funcionalidades do aplicativo IntérpretePro, autenticar sua conta, vincular seus lançamentos e gerenciar seu período de assinatura ou teste.</li>
+            <li><strong>Legítimo Interesse e Segurança (Art. 7º, IX da LGPD):</strong> Para prevenir fraudes, registrar auditoria de acessos e garantir a integridade do banco de dados relacional.</li>
+            <li><strong>Comunicação e Suporte Técnico:</strong> Para responder a solicitações de suporte operacional e dúvidas de faturamento iniciadas por você.</li>
         </ul>
 
-        <h2>3. Compartilhamento de Dados</h2>
-        <p>O IntérpretePro <strong>NÃO vende, não aluga e não compartilha</strong> as suas informações pessoais ou os seus dados financeiros (registros de clientes e horas) com terceiros. Seus dados gerados dentro do aplicativo são de sua propriedade e armazenados em bancos de dados privados com acesso restrito.</p>
+        <h2>3. Compartilhamento e Não Comercialização de Dados</h2>
+        <p>O IntérpretePro <strong>NÃO vende, não comercializa, não aluga e não compartilha</strong> as suas informações cadastrais, clientes cadastrados, atendimentos ou dados financeiros com nenhuma empresa de marketing, terceiros ou outros usuários. Seus dados gerados dentro do aplicativo pertencem exclusivamente a você.</p>
 
-        <h2>4. Armazenamento e Segurança</h2>
-        <p>Utilizamos os protocolos de segurança fornecidos pelo próprio Google Cloud e mantemos o nosso site criptografado (HTTPS) para evitar interceptação de dados. Todo o seu banco de dados financeiro é gerado em infraestrutura do Google Workspace, garantindo estabilidade e proteção.</p>
-
-        <h2>5. Seus Direitos (Exclusão de Dados)</h2>
-        <p>Você possui total controle sobre suas informações. A qualquer momento, você pode solicitar a exclusão permanente do seu e-mail e de todo o seu histórico financeiro e cadastral do nosso sistema.</p>
-        <p>Para solicitar a remoção completa dos seus dados, envie um e-mail para: <a href="mailto:danilobertolani@gmail.com">danilobertolani@gmail.com</a>.</p>
-        <p>Você também pode remover a permissão do IntérpretePro na sua conta acessando as <a href="https://myaccount.google.com/permissions" target="_blank">Configurações de Segurança do Google</a>.</p>
-
-        <h2>6. Contato</h2>
-        <p>Se tiver dúvidas sobre esta Política de Privacidade ou precisar de ajuda técnica, entre em contato através dos canais abaixo:</p>
+        <h2>4. Armazenamento Seguro e Arquitetura Supabase (PostgreSQL)</h2>
+        <p>Garantimos padrões bancários de segurança da informação e proteção dos seus dados através das seguintes camadas de controle:</p>
         <ul>
-            <li><strong>Desenvolvedor:</strong> Danilo Bertolani</li>
-            <li><strong>E-mail de Suporte:</strong> <a href="mailto:danilobertolani@gmail.com">danilobertolani@gmail.com</a></li>
+            <li><strong>Banco de Dados Relacional Supabase (PostgreSQL):</strong> Os dados de atendimentos, histórico e clientes são gravados em clusters em nuvem de alta disponibilidade, com backups contínuos e redundância geográfica.</li>
+            <li><strong>Row Level Security (RLS) Nativo:</strong> Cada tabela do banco de dados possui políticas rigorosas de isolamento a nível de linha (RLS). Isso assegura matematicamente que apenas o usuário autenticado consiga consultar, alterar ou excluir seus próprios registros. Nenhum outro usuário da plataforma possui visibilidade sobre seus atendimentos ou faturamento.</li>
+            <li><strong>Criptografia em Trânsito e Repouso:</strong> Todas as comunicações entre seu navegador/aplicativo e o banco de dados utilizam conexões seguras criptografadas via protocolo HTTPS com TLS 1.3, além de criptografia AES-256 para dados armazenados em repouso.</li>
+            <li><strong>Autenticação Descentralizada (Google OAuth 2.0):</strong> Não armazenamos nem temos acesso à sua senha pessoal. O acesso é verificado diretamente pelos servidores seguros do Google, com suporte ao seu duplo fator de autenticação (2FA).</li>
         </ul>
+
+        <h2>5. Direitos do Titular de Dados (Art. 18 da LGPD)</h2>
+        <p>Em conformidade com o Artigo 18 da LGPD, você pode exercer os seguintes direitos a qualquer momento:</p>
+        <ul>
+            <li><strong>Confirmação e Acesso:</strong> Confirmar a existência de tratamento e acessar todos os seus dados e atendimentos no dashboard do aplicativo.</li>
+            <li><strong>Correção:</strong> Atualizar ou retificar dados cadastrais incompletos, inexatos ou desatualizados diretamente na aba Meu Perfil ou nos formulários de edição.</li>
+            <li><strong>Portabilidade:</strong> Exportar seus relatórios e extratos de atendimentos a qualquer momento em formato de imagem, texto ou documento.</li>
+            <li><strong>Eliminação e Exclusão Permanente:</strong> Solicitar a exclusão definitiva da sua conta e de todos os registros de atendimentos associados a ela da nossa base de dados.</li>
+            <li><strong>Revogação de Consentimento:</strong> Desconectar o aplicativo da sua Conta Google a qualquer momento através do painel de segurança do Google.</li>
+        </ul>
+        <p>Para exercer qualquer um dos seus direitos de titular ou solicitar a exclusão integral da sua conta, basta enviar uma mensagem para o nosso Encarregado de Dados (DPO) através do e-mail: <a href="mailto:danilobertolani@gmail.com">danilobertolani@gmail.com</a>.</p>
+
+        <h2>6. Encarregado pelo Tratamento de Dados Pessoais (DPO) e Contato</h2>
+        <p>Para esclarecimentos, dúvidas sobre a privacidade dos seus dados ou suporte com base na LGPD, entre em contato com o responsável:</p>
+        <ul>
+            <li><strong>Responsável / DPO:</strong> Danilo Bertolani</li>
+            <li><strong>E-mail Direto:</strong> <a href="mailto:danilobertolani@gmail.com">danilobertolani@gmail.com</a></li>
+            <li><strong>WhatsApp de Atendimento:</strong> <a href="https://wa.me/5527996962395" target="_blank">+55 (27) 99696-2395</a></li>
+        </ul>
+
+        <div style="text-align: center; margin-top: 35px; padding-top: 20px; border-top: 1px solid #eee; font-size: 14px;">
+            <a href="index.html">Acessar o IntérpretePro</a> &bull;
+            <a href="/venda" data-rota="venda">Página Oficial de Vendas</a> &bull;
+            <a href="/como-funciona" data-rota="como-funciona">Como Funciona (Manual)</a> &bull;
+            <a href="/simulador-orcamento" data-rota="simulador-orcamento">Simulador de Orçamento</a>
+        </div>
     </div>
 
+    <script>
+      function ajustarLinksAmbiente() {
+        const isGitHubPages = window.location.hostname.includes("github.io");
+        const pathParts = window.location.pathname.split("/").filter(Boolean);
+        let basePath = "";
+        if (pathParts.length > 1 && !pathParts[0].includes(".")) {
+          basePath = "/" + pathParts[0];
+        }
+
+        document.querySelectorAll("a[data-rota]").forEach(link => {
+          const rota = link.getAttribute("data-rota");
+          if (isGitHubPages) {
+            link.href = basePath ? `${basePath}/${rota}.html` : `${rota}.html`;
+          } else {
+            link.href = `/${rota}`;
+          }
+        });
+      }
+      ajustarLinksAmbiente();
+    </script>
 </body>
 </html>
